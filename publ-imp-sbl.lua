@@ -120,6 +120,7 @@ categories.book = {
         "translator", "origlanguage",
         "volumes",
         "volume",
+        "part",
         "maintitle",
         "maineditor",
         "withmaineditor", "withmaineditortype",
@@ -166,6 +167,7 @@ categories.manual = {
         "translator", "origlanguage",
         "volumes",
         "volume",
+        "part",
         "maintitle",
         "maineditor",
         "withmaineditor", "withmaineditortype",
@@ -276,6 +278,7 @@ categories.suppbook = {
         "witheditor", "witheditortype",
         "translator", "origlanguage",
         "volume",
+        "part",
         "maintitle",
         "maineditor",
         "withmaineditor", "withmaineditortype",
@@ -412,6 +415,7 @@ categories.incollection = {
         "translator", "origlanguage",
         "maineditor",
         "withmaineditor", "withmaineditortype",
+        "part",
         "edition",
         "series", "seriesseries", "number",
         "location",
@@ -475,8 +479,8 @@ categories.review = {
         "revdeditor", "revdwitheditor", "revdwitheditortype", -- for the book
         "revdtranslator", "revdoriglanguage", -- for the book
         "revdedition", -- for the book
-        "date",
-        "volume", "number", "pages",
+        "date", -- for the journal
+        "volume", "number", "pages", -- for the journal
         "doi", "note",
     },
 }
@@ -563,7 +567,7 @@ categories.thesis = {
         "title",
         "institution", -- a set
         "date", -- a set
-        "type", -- typically "Masters" or "PhD"
+        "type", -- typically a category name, like "mastersthesis" or "phdthesis"
     },
     optional = {
         "withauthor", "withauthortype",

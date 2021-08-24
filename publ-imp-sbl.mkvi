@@ -820,6 +820,7 @@
   [sbl:edition={ed.},
    sbl:editor={ed.},
    sbl:editors={eds.},
+   sbl:Page={Page},
    sbl:Pages={Pages},
    sbl:Edited={Edited},
    sbl:translator={trans.},
@@ -1373,10 +1374,9 @@
       \btxcomma
     }
     % Close the publication block
+    \removeunwantedspaces
+    \removepunctuation
     \doifnot {#1} {list} {
-      % If this is not a list citation, then remove all preceding punctuation and spaces
-      \removeunwantedspaces
-      \removepunctuation
       \doifelse {#1} {paren} {
         % If this citation is already in parentheses, then use a bracket
         \btxrightbracket
@@ -1393,8 +1393,20 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:institution
+\starttexdefinition btx:sbl:institution #1
   \btxdoif {institution} {
+    \doifnot {#1} {list} {
+      % If this is not a list citation, then remove all preceding punctuation and spaces
+      \removeunwantedspaces
+      \removepunctuation
+      \doifelse {#1} {paren} {
+        % If this citation is already in parentheses, then use a bracket
+        \btxleftbracket
+      } {
+        % Otherwise, assume it is an in-text citation, and use a parenthesis
+        \btxleftparenthesis
+      }
+    }
     % Remove any preceding punctuation and open the institution block
     \removeunwantedspaces
     \removepunctuation
@@ -1413,10 +1425,18 @@
         \btxcolon
       } {
         \btxdoif {type} {
-          \btxflush{type}
-          \btxspace
-          \btxlabeltext{sbl:diss}
-          \btxcolon
+          \doif {\btxfield{type}} {phdthesis} {
+            \btxlabeltext{sbl:phd}
+            \btxspace
+            \btxlabeltext{sbl:diss}
+            \btxcolon
+          }
+          \doif {\btxfield{type}} {mastersthesis} {
+            \btxlabeltext{sbl:masters}
+            \btxspace
+            \btxlabeltext{sbl:diss}
+            \btxcolon
+          }
         }
       }
     }
@@ -1431,21 +1451,58 @@
     % Close the institution block
     \removeunwantedspaces
     \removepunctuation
-    \btxrightparenthesis
-    \btxcomma
+    \doifnot {#1} {list} {
+      \doifelse {#1} {paren} {
+        % If this citation is already in parentheses, then use a bracket
+        \btxrightbracket
+      } {
+        % Otherwise, assume it is an in-text citation, and use a parenthesis
+        \btxrightparenthesis
+      }
+    }
+    \doifelse {#1} {list} {
+      \btxperiod
+    } {
+      \btxcomma
+    }
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:pages
+\starttexdefinition btx:sbl:pages #1
   \btxdoif {pages} {
-    % Print the page range
-    % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL, if I have to
+    % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
     \btxflush{pages}
-    \btxcomma
+    \doifelse {#1} {list} {
+      \btxperiod
+    } {
+      \btxcomma
+    }
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:eprint
+\starttexdefinition btx:sbl:pagesinbook #1
+  \btxdoif {pages} {
+    % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
+    \doifelse {#1} {list} {
+      % For the bibliographic list, the page numbers for an entry in a book are listed before the book title
+      \btxoneorrange {pages} {
+        \btxlabeltext{sbl:Page}
+      } {
+        \btxlabeltext{sbl:Pages}
+      }
+      \btxspace
+      \btxflush{pages}
+      \btxlabeltext{sbl:in}
+      \btxspace
+    } {
+      \btxflush{pages}
+      \btxcomma
+    }
+    
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:eprint #1
   % Is the eprint field present?
   \btxdoifelse {eprint} {
     % If so, then treat this as an e-print
@@ -1454,10 +1511,17 @@
       % If so, then this is a document published only online
       % Print the release date first, if there is one:
       \btxdoif {eprintdate} {
-        \btxlabeltext{sbl:released}
-        \btxspace
-        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-        \btxcomma
+        \doifelse {#1} {list} {
+          \btxlabeltext{sbl:Released}
+          \btxspace
+          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+          \btxperiod
+        } {
+          \btxlabeltext{sbl:released}
+          \btxspace
+          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+          \btxcomma
+        }
       }
       % If it has an eprinttype, then produce a DOI using it
       \btxdoif {eprinttype} {
@@ -1469,33 +1533,63 @@
       % Then print the eprint identifier
       \btxflush{eprint}
       \btxspace
-      % Finally, print its eprintclass in parentheses
-      \btxleftparenthesis
-      \btxflush{eprintclass}
-      \btxrightparenthesis
-      \btxcomma
+      % Finally, print its eprintclass in parentheses (or brackets, if we are already in paren mode)
+      \doifelse {#1} {paren} {
+        \btxleftbracket
+        \btxflush{eprintclass}
+        \btxrightbracket
+      } {
+        \btxleftparenthesis
+        \btxflush{eprintclass}
+        \btxrightparenthesis
+      }
+      \doifelse {#1} {list} {
+        \btxperiod
+      } {
+        \btxcomma
+      }
     } {
       % If not, then this is an online database or website with eprint fields
       % Print its eprinttype first, if there is one
       \btxdoif {eprinttype} {
         \btxflush{eprinttype}
-        \btxcomma
+        \doifelse {#1} {list} {
+          \btxperiod
+        } {
+          \btxcomma
+        }
       }
       % Print the release date next, if there is one:
       \btxdoif {eprintdate} {
-        \btxlabeltext{sbl:released}
-        \btxspace
-        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-        \btxcomma
+        \doifelse {#1} {list} {
+          \btxlabeltext{sbl:Released}
+          \btxspace
+          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+          \btxperiod
+        } {
+          \btxlabeltext{sbl:released}
+          \btxspace
+          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+          \btxcomma
+        }
       }
       % Then print the eprint identifier
       \btxflush{eprint}
-      \btxcomma
+      \doifelse {#1} {list} {
+        \btxperiod
+      } {
+        \btxcomma
+      }
       % If a DOI was specified, then use it here
       \btxdoif {doi} {
         {\sc doi}
         {:} % no space afterwards
         \btxflush{doi}
+        \doifelse {#1} {list} {
+          \btxperiod
+        } {
+          \btxcomma
+        }
       }
     }
   } {
@@ -1503,52 +1597,59 @@
     % Does it have a blog title?
     \btxdoif {journal} {
       \btxflush{journal}
-      \btxcomma
+      \doifelse {#1} {list} {
+        \btxperiod
+      } {
+        \btxcomma
+      }
     }
     % Then print the date of the post, if specified
     \btxdoif {date} {
       \btxflush{date} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-      \btxcomma
+      \doifelse {#1} {list} {
+        \btxperiod
+      } {
+        \btxcomma
+      }
     }
     % Then print the URL, if specified
     \btxdoif {doi} {
       \hyphenatedurl{\btxflush{doi}}
+      \doifelse {#1} {list} {
+        \btxperiod
+      } {
+        \btxcomma
+      }
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:doi #1
+  \btxdoif {doi} {
+    % If the URL is actually a DOI (the preferred case), then indicate this
+    \doifelse {\btxfoundname{doi}} {doi} {
+      {\sc doi}
+      \btxcolon % no space afterwards
+      \hyphenatedurl{\btxflush{doi}}
+    } {
+      \hyphenatedurl{\btxflush{doi}}
+    }
+    \doifelse {#1} {list} {
+      \btxperiod
+    } {
       \btxcomma
     }
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:doi
-  \btxdoif {doi} {
-    % Only print DOIs (as opposed to URLs)
-    \doif {\btxfoundname{doi}} {doi} {
-      {\sc doi}
-      {:}
-      \hyphenatedurl{\btxflush{doi}}
-    }
-    \btxcomma
-  }
-\stoptexdefinition
-
-% doi is the argument to \btxdoif because URLs fall under the "doi" field set in publ-imp-sbl.lua
-\starttexdefinition btx:sbl:url
-  \btxdoif {doi} {
-    % If the URL is actually a DOI (the preferred case), then indicate this
-    \doifelse {\btxfoundname{doi}} {doi} {
-      {\sc doi}
-      \btxcolon
-      \hyphenatedurl{\btxflush{doi}}
-    } {
-      \hyphenatedurl{\btxflush{doi}}
-    }
-    \btxcomma
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:note
+\starttexdefinition btx:sbl:note #1
   \btxdoif {note} {
     \btxflush{note}
-    \btxcomma
+    \doifelse {#1} {list} {
+      \btxperiod
+    } {
+      \btxcomma
+    }
   }
 \stoptexdefinition
 
