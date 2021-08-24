@@ -1,0 +1,11 @@
+%Setup bibliography settings:
+\usebtxdataset[publ-imp-sbl-test.bib]
+\usebtxdefinitions[sbl]%use SBL style for citation rendering
+
+\starttext
+
+\page
+\startsection[title=Bibliography]
+	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text
+\stopsection
+\stoptext
