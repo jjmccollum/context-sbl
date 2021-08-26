@@ -1,11 +1,152 @@
 %Setup bibliography settings:
-\usebtxdefinitions[sbl]
-\usebtxdataset[publ-imp-sbl-test.bib]
+%\usebtxdataset[publ-imp-sbl-test.bib]
+%\usebtxdefinitions[sbl]
 
+\startbuffer[example]
+	@book{scott+etal:1993,
+		author = {Scott, Bernard Brandon and Dean, Margaret and Sparks, Kristen and LaZar, Frances},
+		title = {Reading New Testament Greek},
+		location = {Peabody, MA},
+		publisher = {Hendrickson},
+		date = {1993}
+	}
+\stopbuffer
+\usebtxdataset[example.buffer]
+\startbtxrenderingdefinitions[mystyle]
+	\definebtx
+		[mystyle]
+		[\c!default=default,
+ 		\c!specification=mystyle,
+ 		\c!otherstext={\btxspace\btxlabeltext{others}},
+		\c!monthconversion=\v!month,
+		\c!stopper:initials={. }, % with a (breakable) space
+		\c!separator:names:2={\btxcomma}, % between subsequent names except for last 2
+		\c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % between last 2 names if > 2
+		\c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % between only 2 names
+
+	\definebtxrendering
+		[mystyle]
+		[\c!specification=mystyle,
+		\c!sorttype=authoryear, % by default, sort bibliographic entries by (author, year)
+		\c!numbering=\v!no] % by default, do not number bibliographic entries
+
+	% Print the bibliographic list as a paragraph, 
+	% with normal alignment settings (justified and with hyphenation)
+	\setupbtxlist
+		[mystyle]
+		[\c!alternative=\v!paragraph,
+ 		\c!align={normal,verytolerant,stretch},
+		\c!margin=3.5\emwidth]
+		
+	\definebtx
+		[mystyle:list:author]
+		[mystyle:list]
+
+	% List entry settings
+	\definebtx
+		[mystyle:list]
+		[mystyle]
+		[\c!etallimit=,
+		\c!etaldisplay=,
+		\c!authorconversion=inverted] % TODO: need to print the first name inverted, with all subsequent names in normal order
+		
+	% Citation settings
+	\definebtx
+		[mystyle:cite]
+		[mystyle]
+		[\c!alternative=entry, % by default, cite the entire entry
+ 		\c!otherstext={\btxspace\btxlabeltext{others}}, % use et al. for truncated author / editor list
+   		\c!etallimit=3, % don't use et al. for 3 or fewer authors
+   		\c!etaldisplay=1, % print et al. after the first author if more than 3
+   		\c!authorconversion=\v!normal, % by default, use normal name order for in-text citations
+   		\c!sorttype=normal, % \v!normal ?
+   		\c!style=, % do not apply any styles across the whole citation
+   		\c!compress=\v!yes] % note that cite sorts only work with compress=yes.
+   		
+	% Define default settings for citations in the text
+	\definebtx
+		[mystyle:cite:entry]
+		[mystyle:cite]
+		[\c!left=, % by default, do not typeset anything to the left of the citation
+		\c!right=, % by default, do not typeset anything to the right of the citation
+		\c!otherstext={\btxspace\btxlabeltext{others}}, % use et al. for truncated author / editor list
+   		\c!etallimit=3, % don't use et al. for 3 or fewer authors
+   		\c!etaldisplay=1, % print et al. after the first author if more than 3
+		\c!separator:2={\btxsemicolon}, % between subsequent citations except for last 2
+		\c!separator:3={\btxsemicolon\btxlabeltext{and}\space}, % between last 2 citations if > 2
+		\c!separator:4={\btxspace\btxlabeltext{and}\space}] % between only 2 citations
+	
+	% Common helper functions for list and cite
+	\starttexdefinition btx:mystyle:author
+		\btxdoif {author} {
+			\doifelse {\currentbtxcitealternative} {entry} {
+				\btxflush{author} % why doesn't this get rendered according to mystyle:cite:entry?
+				\btxcomma
+			} {
+				\btxflush{author} % this is correctly rendered according to mystyle:list
+				% If the name ends with a period (as is the case for an initial), 
+	      			% then remove the preceding period before adding another one
+	      			\removeunwantedspaces
+	      			\removepunctuation
+				\btxperiod
+			}
+		}
+	\stoptexdefinition
+	
+	\starttexdefinition btx:mystyle:title
+		\btxdoif {title} {
+			\btxflush{title}
+			% More conditional formatting
+			\doifelse {\currentbtxcitealternative} {entry} {
+				\btxcomma
+			} {
+				\btxperiod
+			}
+		}
+	\stoptexdefinition
+	
+	% Minimal setup for a book entry
+	\startsetups btx:mystyle:list:book
+		\texdefinition{btx:mystyle:author}
+		\texdefinition{btx:mystyle:title}
+	  	\removeunwantedspaces
+	  	\removepunctuation
+	  	\btxperiod
+	\stopsetups
+	
+	% Long-form in-text citation setup
+	\startsetups btx:mystyle:cite:entry
+		\begingroup
+		\edef\currentbtxcategory{\btxfield{category}}
+		\fastsetup{btx:mystyle:list:\currentbtxcategory}
+		% Using the following lines directly instead of the above line also doesn't work...
+%		\texdefinition{btx:mystyle:author}
+%		\texdefinition{btx:mystyle:title}
+		\endgroup
+		% Remove the punctuation left at the end of the citation
+		\removeunwantedspaces
+		\removepunctuation
+	\stopsetups
+\stopbtxrenderingdefinitions
+\usebtxdefinitions[mystyle]
 \starttext
-\cite[talbert:1992]
+\cite[scott+etal:1993]
 \page
 \startsection[title=Bibliography]
-	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text
+	\placelistofpublications
 \stopsection
 \stoptext
+
+%\starttext
+%\cite[talbert:1992]
+%
+%%\cite[paren][talbert:1992]
+%
+%\cite[robinson+koester:1971]
+%
+%\cite[scott+etal:1993]
+%\page
+%\startsection[title=Bibliography]
+%	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text
+%\stopsection
+%\stoptext

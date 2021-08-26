@@ -73,95 +73,14 @@
   \c!etallimit=,
   \c!etaldisplay=,
   \c!etaloption=last,
-  \c!authorconversion=inverted] % TODO: need to print the first name inverted, with all subsequent names in normal order
+  \c!authorconversion=normal]
 
 % First, we define a namespace for a few special fields
 
 \definebtx
   [sbl:\s!list:author]
   [sbl:\s!list]
-
-\definebtx
-  [sbl:\s!list:withauthor]
-  [sbl:\s!list:author]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:editor]
-  [sbl:\s!list:author]
-
-\definebtx
-  [sbl:\s!list:witheditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:bookeditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:withbookeditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:maineditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:withmaineditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:translator]
-  [sbl:\s!list:author]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:revdauthor]
-  [sbl:\s!list]
-
-\definebtx
-  [sbl:\s!list:revdwithauthor]
-  [sbl:\s!list:author]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:revdeditor]
-  [sbl:\s!list:author]
-
-\definebtx
-  [sbl:\s!list:revdwitheditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:revdbookeditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:revdwithbookeditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:revdmaineditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:revdwithmaineditor]
-  [sbl:\s!list:editor]
-  [\c!authorconversion=normal]
-
-\definebtx
-  [sbl:\s!list:revdtranslator]
-  [sbl:\s!list:author]
-  [\c!authorconversion=normal]
+  [\c!authorconversion=inverted] % TODO: need to print just the first name inverted, with all subsequent names in normal order
 
 \definebtx
   [sbl:\s!list:suffix]
@@ -526,7 +445,8 @@
   [\c!alternative=entry, % by default, SBL cites the entire entry
    \c!otherstext={\btxspace\btxlabeltext{others}}, % use et al. for truncated author / editor list
    \c!etallimit=3, % don't use et al. for 3 or fewer authors
-   \c!etaldisplay=3, %
+   \c!etaldisplay=1, % but if there are > 3, then only list the first explicitly
+   \c!etaloption=last,
    \c!authorconversion=\v!normal, % by default, use normal name order for in-text citations
    \c!sorttype=normal, % \v!normal ?
    \c!style=, % do not apply any styles across the whole citation
@@ -536,8 +456,7 @@
 \definebtx
   [sbl:\s!cite:name]
   [sbl:\s!cite]
-  [\c!etaldisplay=1, % if there were more than three authors, then just cite the first with "et al."
-  \c!authorconversion=\v!name]
+  [\c!authorconversion=\v!name]
 
 % The alternatives that follow are not suggested by SBL,
 % so perhaps they are not necessary?
@@ -548,46 +467,29 @@
 \definebtx
   [sbl:\s!cite:inverted]
   [sbl:\s!cite]
-  [\c!etaldisplay=1, % if there were more than three authors, then just cite the first with "et al."
-  \c!authorconversion=\v!inverted]
+  [\c!authorconversion=\v!inverted]
 
 % Just cite the author's last name in full followed by first initial(s)
 \definebtx
   [sbl:\s!cite:invertedshort]
   [sbl:\s!cite]
-  [\c!etaldisplay=1, % if there were more than three authors, then just cite the first with "et al."
-  \c!authorconversion=\v!invertedshort]
+  [\c!authorconversion=\v!invertedshort]
 
 % Just cite the author's first initial(s) followed by last name in full
 \definebtx
   [sbl:\s!cite:normalshort]
   [sbl:\s!cite]
-  [\c!etaldisplay=1, % if there were more than three authors, then just cite the first with "et al."
-  \c!authorconversion=\v!normalshort]
+  [\c!authorconversion=\v!normalshort]
 
 % Just cite the author's name in full
 \definebtx
   [sbl:\s!cite:normal]
   [sbl:\s!cite]
-  [\c!etaldisplay=1, % if there were more than three authors, then just cite the first with "et al."
-  \c!authorconversion=\v!normal]
+  [\c!authorconversion=\v!normal]
 
 \definebtx
   [sbl:\s!cite:author]
-  [sbl:\s!cite]
-  [\c!etaldisplay=1] % if there were more than three authors, then just cite the first with "et al."
-
-\definebtx
-  [sbl:\s!cite:editor]
-  [sbl:\s!cite:author]
-
-\definebtx
-  [sbl:\s!cite:translator]
-  [sbl:\s!cite:author]
-
-\definebtx
-  [sbl:\s!cite:organization]
-  [sbl:\s!cite:author]
+  [sbl:\s!cite:normal]
 
 \definebtx
   [sbl:\s!cite:authoryear]
@@ -644,6 +546,12 @@
   [\c!separator:2={\btxcomma}, % between subsequent years except for last 2
    \c!separator:3={\btxcomma\btxlabeltext{and}\space}, % between last 2 years if > 2
    \c!separator:4={\btxspace\btxlabeltext{and}\space}] % between only 2 years
+
+% these setups need to be explicitly defined in order to get cite rendering
+
+\startsetups \s!btx:sbl:\s!cite:author
+  \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
 
 % Citation rules for titles (italicize by default)
 \definebtx
@@ -803,6 +711,9 @@
   [sbl:\s!cite]
   [\c!left=, % by default, do not typeset anything to the left of the citation
    \c!right=, % by default, do not typeset anything to the right of the citation
+   \c!etallimit=3, % don't use et al. for 3 or fewer authors
+   \c!etaldisplay=1, % but if there are > 3, then only list the first explicitly
+   \c!authorconversion=\v!normal, % by default, use normal name order for in-text citations
    \c!separator:2={\btxsemicolon}, % between subsequent citations except for last 2
    \c!separator:3={\btxsemicolon\btxlabeltext{and}\space}, % between last 2 citations if > 2
    \c!separator:4={\btxspace\btxlabeltext{and}\space}] % between only 2 citations
@@ -872,7 +783,14 @@
 \starttexdefinition btx:sbl:author
   \btxdoif {author} {
     % Print the author/editor/org name first
-    \btxflush{author}
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      % Normal order for in-text citations
+      \btxflush{author}
+    } {
+      % Inverted order for list citations
+      % TODO: need to print the first name inverted, with all subsequent names in normal order
+      \btxflush{author}
+    }
     % If this is an instance of an editor, then there is no author; 
     % indicate that this is an editor
     \doifelse {\btxfoundname{author}} {editor} {
@@ -908,7 +826,7 @@
         \btxflush{withauthor}
       }
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       % If the name ends with a period (as is the case for an initial), 
@@ -925,7 +843,7 @@
     \btxstartstyleandcolor[sbl:\s!list:title]
       \btxflush{title} % set the title
     \btxstopstyleandcolor
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -938,7 +856,7 @@
     \btxstartstyleandcolor[sbl:\s!list:title:article]
       \btxflush{title} % set the title
     \btxstopstyleandcolor
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1039,7 +957,7 @@
       }
       \btxflush{withbookauthor}
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1051,7 +969,7 @@
   \btxdoif {editor} {
     % If editor(s) not already listed in the author position, then list here
     \doifnot {\btxfoundname{author}} {editor} {
-      \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
         \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
         \btxspace
       } {
@@ -1074,7 +992,7 @@
         \btxflush{witheditor}
       }
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1084,7 +1002,7 @@
 
 \starttexdefinition btx:sbl:translator
   \btxdoif {translator} {
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxlabeltext{sbl:translator}
       \btxspace
     } {
@@ -1099,7 +1017,7 @@
       \btxspace
     }
     \btxflush{translator}
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1116,7 +1034,7 @@
     \btxspace
   } {
     % In the bibliographic list, page numbers for an entry in a book are listed before the book
-    \doifnotallmodes {btx:sbl:entry, btx:sbl:paren} {
+    \doifnotinset {\currentbtxcitealternative} {entry, paren} {
       \btxdoifelse {pages} {
         \btxoneorrange {pages} {
           \btxlabeltext{sbl:Page}
@@ -1143,7 +1061,7 @@
 
 \starttexdefinition btx:sbl:bookeditor
   \btxdoif {editor} {
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
       \btxspace
     } {
@@ -1166,7 +1084,7 @@
       \btxflush{witheditor}
       \btxcomma
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1179,13 +1097,13 @@
     % Is there a volume number for the book being cited from this collection?
     \btxdoifelse {volume} {
       \btxoneorrange {volume} {
-        \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
           \btxlabeltext{sbl:volume}
         } {
           \btxlabeltext{sbl:Volume}
         }
       } {
-        \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
           \btxlabeltext{sbl:volumes}
         } {
           \btxlabeltext{sbl:Volumes}
@@ -1209,7 +1127,7 @@
     }
     \btxspace
     \btxflush{maintitle}
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1219,7 +1137,7 @@
 
 \starttexdefinition btx:sbl:maineditor
   \btxdoif {maineditor} {
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
       \btxspace
     } {
@@ -1241,7 +1159,7 @@
       \btxspace
       \btxflush{withmaineditor}
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1253,7 +1171,7 @@
   \btxdoif {volumes} {
     \btxflush{volumes}
     \btxlabeltext{sbl:volumes}
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       % Don't duplicate the period from "vol." or "vols."
@@ -1274,7 +1192,7 @@
       \btxflush{edition}
       \btxlabeltext{sbl:edition}
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1303,7 +1221,7 @@
         \btxflush{number}
       }
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1315,7 +1233,7 @@
   \btxdoif {howpublished} {
     % Print the how-published statement
     \btxflush{howpublished}
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1343,7 +1261,7 @@
     % otherwise, it should be printed as a year in parentheses.
     \btxdoif {date} {
       % If this citation is already in parentheses, then use brackets
-      \doifmodeelse {btx:sbl:paren} {
+      \doifelse {\currentbtxcitealternative} {paren} {
         \btxleftbracket
         \btxflush{date}
         \btxrightbracket
@@ -1359,13 +1277,13 @@
 
 \starttexdefinition btx:sbl:publisher
   \btxdoif {publisher} {
-    \doifmode {btx:sbl:paren} {
+    \doif {\currentbtxcitealternative} {paren} {
       % Remove all preceding punctuation and spaces and use a bracket
       \removeunwantedspaces
       \removepunctuation
       \btxleftbracket
     }
-    \doifmode {btx:sbl:entry} {
+    \doif {\currentbtxcitealternative} {entry} {
       % Remove all preceding punctuation and spaces and use a parenthesis
       \removeunwantedspaces
       \removepunctuation
@@ -1392,7 +1310,7 @@
       % followed by the reprint notation
       \removeunwantedspaces
       \removepunctuation
-      \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
         \btxsemicolon
         \btxlabeltext{sbl:reprint}
       } {
@@ -1420,15 +1338,15 @@
     % Close the publication block
     \removeunwantedspaces
     \removepunctuation
-    \doifmode {btx:sbl:paren} {
+    \doif {\currentbtxcitealternative} {paren} {
       % If this citation is already in parentheses, then use a bracket
       \btxrightbracket
     }
-    \doifmode {btx:sbl:entry} {
+    \doif {\currentbtxcitealternative} {entry} {
       % Otherwise, if it is an in-text citation, then use a parenthesis
       \btxrightparenthesis
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1438,13 +1356,13 @@
 
 \starttexdefinition btx:sbl:institution
   \btxdoif {institution} {
-    \doifmode {btx:sbl:paren} {
+    \doif {\currentbtxcitealternative} {paren} {
       % Remove all preceding punctuation and spaces and use a bracket
       \removeunwantedspaces
       \removepunctuation
       \btxleftbracket
     }
-    \doifmode {btx:sbl:entry} {
+    \doif {\currentbtxcitealternative} {entry} {
       % Remove all preceding punctuation and spaces and use a parenthesis
       \removeunwantedspaces
       \removepunctuation
@@ -1494,15 +1412,15 @@
     % Close the institution block
     \removeunwantedspaces
     \removepunctuation
-    \doifmode {btx:sbl:paren} {
+    \doif {\currentbtxcitealternative} {paren} {
       % If this citation is already in parentheses, then use a bracket
       \btxrightbracket
     }
-    \doifmode {btx:sbl:entry} {
+    \doif {\currentbtxcitealternative} {entry} {
       % Otherwise, if it is an in-text citation, then use a parenthesis
       \btxrightparenthesis
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1514,10 +1432,21 @@
   \btxdoif {pages} {
     % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
     \btxflush{pages}
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:bookpages
+  % Skip this if we're in list mode (book pages get inserted earlier via the btx:sbl:partinbook command)
+  \doifinset {\currentbtxcitealternative} {entry, paren} {
+    \btxdoif {pages} {
+      % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
+      \btxflush{pages}
+      \btxcomma
     }
   }
 \stoptexdefinition
@@ -1531,7 +1460,7 @@
       % If so, then this is a document published only online
       % Print the release date first, if there is one:
       \btxdoif {eprintdate} {
-        \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
           \btxlabeltext{sbl:released}
           \btxspace
           \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
@@ -1554,7 +1483,7 @@
       \btxflush{eprint}
       \btxspace
       % Finally, print its eprintclass in parentheses (or brackets, if we are already in paren mode)
-      \doifmodeelse {btx:sbl:parenmode} {
+      \doifelse {\currentbtxcitealternative} {paren} {
         \btxleftbracket
         \btxflush{eprintclass}
         \btxrightbracket
@@ -1563,7 +1492,7 @@
         \btxflush{eprintclass}
         \btxrightparenthesis
       }
-      \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
         \btxcomma
       } {
         \btxperiod
@@ -1573,7 +1502,7 @@
       % Print its eprinttype first, if there is one
       \btxdoif {eprinttype} {
         \btxflush{eprinttype}
-        \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
           \btxcomma
         } {
           \btxperiod
@@ -1581,7 +1510,7 @@
       }
       % Print the release date next, if there is one:
       \btxdoif {eprintdate} {
-        \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
           \btxlabeltext{sbl:released}
           \btxspace
           \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
@@ -1595,7 +1524,7 @@
       }
       % Then print the eprint identifier
       \btxflush{eprint}
-      \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
         \btxcomma
       } {
         \btxperiod
@@ -1605,7 +1534,7 @@
         {\sc doi}
         {:} % no space afterwards
         \btxflush{doi}
-        \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
           \btxcomma
         } {
           \btxperiod
@@ -1617,7 +1546,7 @@
     % Does it have a blog title?
     \btxdoif {journal} {
       \btxflush{journal}
-      \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
         \btxcomma
       } {
         \btxperiod
@@ -1626,7 +1555,7 @@
     % Then print the date of the post, if specified
     \btxdoif {date} {
       \btxflush{date} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-      \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
         \btxcomma
       } {
         \btxperiod
@@ -1635,7 +1564,7 @@
     % Then print the URL, if specified
     \btxdoif {doi} {
       \hyphenatedurl{\btxflush{doi}}
-      \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
         \btxcomma
       } {
         \btxperiod
@@ -1654,7 +1583,7 @@
     } {
       \hyphenatedurl{\btxflush{doi}}
     }
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1665,7 +1594,7 @@
 \starttexdefinition btx:sbl:note
   \btxdoif {note} {
     \btxflush{note}
-    \doifmodeelse {btx:sbl:entry, btx:sbl:paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
       \btxperiod
@@ -1673,79 +1602,20 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:book
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:italictitle}
-  \texdefinition{btx:sbl:editor}
-  \texdefinition{btx:sbl:maintitle}
-  \texdefinition{btx:sbl:maineditor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:edition}
-  \texdefinition{btx:sbl:bookseries}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:series
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:italictitle}
-  \texdefinition{btx:sbl:editor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:series
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:italictitle}
-  \texdefinition{btx:sbl:editor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:inbook
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
-  \texdefinition{btx:sbl:partinbook}
-  \texdefinition{btx:sbl:booktitle}
-  \texdefinition{btx:sbl:bookauthor}
-  \texdefinition{btx:sbl:bookeditor}
-  \texdefinition{btx:sbl:maintitle}
-  \texdefinition{btx:sbl:maineditor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:edition}
-  \texdefinition{btx:sbl:bookseries}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:incollection
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:italictitle}
-  \texdefinition{btx:sbl:editor}
-  \texdefinition{btx:sbl:maintitle}
-  \texdefinition{btx:sbl:maineditor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:edition}
-  \texdefinition{btx:sbl:bookseries}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-\stoptexdefinition
-
 % List citation setups
 \startsetups btx:sbl:list:book
-  \texdefinition{btx:sbl:book}
+  \texdefinition{btx:sbl:author}
+  \texdefinition{btx:sbl:italictitle}
+  \texdefinition{btx:sbl:editor}
+  \texdefinition{btx:sbl:maintitle}
+  \texdefinition{btx:sbl:maineditor}
+  \texdefinition{btx:sbl:translator}
+  \texdefinition{btx:sbl:volumes}
+  \texdefinition{btx:sbl:edition}
+  \texdefinition{btx:sbl:bookseries}
+  \texdefinition{btx:sbl:publisher}
+  \texdefinition{btx:sbl:doi}
+  \texdefinition{btx:sbl:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
@@ -1784,14 +1654,36 @@
 \stopsetups
 
 \startsetups btx:sbl:list:series
-  \texdefinition{btx:sbl:series}{list}
+  \texdefinition{btx:sbl:author}
+  \texdefinition{btx:sbl:italictitle}
+  \texdefinition{btx:sbl:editor}
+  \texdefinition{btx:sbl:translator}
+  \texdefinition{btx:sbl:volumes}
+  \texdefinition{btx:sbl:publisher}
+  \texdefinition{btx:sbl:doi}
+  \texdefinition{btx:sbl:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:inbook
-  \texdefinition{btx:sbl:inbook}{list}
+  \texdefinition{btx:sbl:author}
+  \texdefinition{btx:sbl:quotetitle}
+  \texdefinition{btx:sbl:partinbook} % used for suppbook type or pages in list mode
+  \texdefinition{btx:sbl:booktitle}
+  \texdefinition{btx:sbl:bookauthor}
+  \texdefinition{btx:sbl:bookeditor}
+  \texdefinition{btx:sbl:maintitle}
+  \texdefinition{btx:sbl:maineditor}
+  \texdefinition{btx:sbl:translator}
+  \texdefinition{btx:sbl:volumes}
+  \texdefinition{btx:sbl:edition}
+  \texdefinition{btx:sbl:bookseries}
+  \texdefinition{btx:sbl:publisher}
+  \texdefinition{btx:sbl:bookpages} % used for pages when not in list mode
+  \texdefinition{btx:sbl:doi}
+  \texdefinition{btx:sbl:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
@@ -1818,7 +1710,18 @@
 \stopsetups
 
 \startsetups btx:sbl:list:incollection
-  \texdefinition{btx:sbl:incollection}{list}
+  \texdefinition{btx:sbl:author}
+  \texdefinition{btx:sbl:italictitle}
+  \texdefinition{btx:sbl:editor}
+  \texdefinition{btx:sbl:maintitle}
+  \texdefinition{btx:sbl:maineditor}
+  \texdefinition{btx:sbl:translator}
+  \texdefinition{btx:sbl:volumes}
+  \texdefinition{btx:sbl:edition}
+  \texdefinition{btx:sbl:bookseries}
+  \texdefinition{btx:sbl:publisher}
+  \texdefinition{btx:sbl:doi}
+  \texdefinition{btx:sbl:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
@@ -1827,6 +1730,7 @@
 \startsetups btx:sbl:list:article
   \texdefinition{btx:sbl:author}
   \texdefinition{btx:sbl:quotetitle}
+  \texdefinition{btx:sbl:translator}
   \texdefinition{btx:sbl:journal}
   \texdefinition{btx:sbl:pages}
   \texdefinition{btx:sbl:doi}
@@ -1837,39 +1741,15 @@
 \stopsetups
 
 \startsetups btx:sbl:list:magazine
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
-  \texdefinition{btx:sbl:journal}
-  \texdefinition{btx:sbl:pages}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-  \removeunwantedspaces
-  \removepunctuation
-  \btxperiod
+  \fastsetup{btx:sbl:list:article}
 \stopsetups
 
 \startsetups btx:sbl:list:newspaper
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
-  \texdefinition{btx:sbl:journal}
-  \texdefinition{btx:sbl:pages}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-  \removeunwantedspaces
-  \removepunctuation
-  \btxperiod
+  \fastsetup{btx:sbl:list:article}
 \stopsetups
 
 \startsetups btx:sbl:list:periodical
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
-  \texdefinition{btx:sbl:journal}
-  \texdefinition{btx:sbl:pages}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-  \removeunwantedspaces
-  \removepunctuation
-  \btxperiod
+  \fastsetup{btx:sbl:list:article}
 \stopsetups
 
 \startsetups btx:sbl:list:review
@@ -1901,27 +1781,11 @@
 \stopsetups
 
 \startsetups btx:sbl:list:mastersthesis
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:institution}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-  \removeunwantedspaces
-  \removepunctuation
-  \btxperiod
+  \fastsetup{btx:sbl:list:thesis}
 \stopsetups
 
 \startsetups btx:sbl:list:phdthesis
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:institution}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-  \removeunwantedspaces
-  \removepunctuation
-  \btxperiod
+  \fastsetup{btx:sbl:list:thesis}
 \stopsetups
 
 \startsetups btx:sbl:list:online
@@ -1954,17 +1818,30 @@
 \stopsetups
 
 % Long-form in-text citation setup
-\startsetups btx:sbl:cite:entry
+\startsetups btx:sbl:\s!cite:entry
   \fastsetup{\s!btx:\s!cite:concat}
   \fastsetup{\s!btx:\s!cite:lefttext}
-  \setmode{btx:sbl:entry}
-  \btxhandleciteentry
+  \begingroup
+  \dotagpublication\currentbtxdataset\currentbtxtag
+  \edef\currentbtxcategory{\btxfield{category}}
+  \fastsetup{btx:sbl:list:\currentbtxcategory}
+  \endgroup
+  % Remove the punctuation left at the end of the citation
   \removeunwantedspaces
   \removepunctuation
-  \resetmode{btx:sbl:entry}
   \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
 
-% In-text parenthetical citation setups
+% In-text parenthetical citation setup
+\startsetups btx:sbl:cite:paren
+  \fastsetup{btx:sbl:cite:entry}
+\stopsetups
+
+% Footnote citation setup
+\startsetups btx:sbl:cite:footnote
+  \startfootnote
+    \fastsetup{btx:sbl:cite:entry}
+  \stopfootnote
+\stopsetups
 
 \stopbtxrenderingdefinitions
