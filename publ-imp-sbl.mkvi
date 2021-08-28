@@ -722,6 +722,8 @@
    sbl:Reprint={Repr.},
    sbl:review={review},
    sbl:Review={Review},
+   sbl:paperpresentedat={paper presented at},
+   sbl:Paperpresentedat={Paper presented at},
    sbl:with={with},
    sbl:by={by},
    sbl:in={in},
@@ -830,7 +832,11 @@
 
 \starttexdefinition btx:sbl:revdtitle
   \btxdoif {revdtitle} {
-    \btxlabeltext{sbl:review}
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxlabeltext{sbl:review}
+    } {
+      \btxlabeltext{sbl:Review}
+    }
     \btxspace
     \btxlabeltext{sbl:of}
     \btxspace
@@ -839,12 +845,19 @@
         \btxflush{revdtitle}
       }
     \btxstopstyleandcolor
-    \btxcomma % even in list citations
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:revdauthor
   \btxdoif {revdauthor} {
+    \removeunwantedspaces
+    \removepunctuation
+    \btxcomma
     \btxlabeltext{sbl:by}
     \btxspace
     \btxflush{revdauthor}
@@ -860,12 +873,19 @@
       }
       \btxflush{withauthor}
     }
-    \btxcomma % even in list citations
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:revdeditor
   \btxdoif {revdeditor} {
+    \removeunwantedspaces
+    \removepunctuation
+    \btxcomma
     \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
     \btxspace
     \btxflush{revdeditor}
@@ -881,21 +901,35 @@
       }
       \btxflush{revdwitheditor} % even in list citations
     }
-    \btxcomma
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:revdtranslator
   \btxdoif {revdtranslator} {
+    \removeunwantedspaces
+    \removepunctuation
+    \btxcomma
     \btxlabeltext{sbl:translator}
     \btxspace
     \btxflush{revdtranslator}
-    \btxcomma % even in list citations
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:revdedition
   \btxdoif{revdedition} {
+    \removeunwantedspaces
+    \removepunctuation
+    \btxcomma
     % Is the edition a string or a number?
     \doifnumberelse {\btxflush{revdedition}} {
       % If a number, then convert it to an ordinal
@@ -916,7 +950,11 @@
       \btxspace
       \btxlabeltext{sbl:edition}
     }
-    \btxcomma % even in list citations
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
   }
 \stoptexdefinition
 
@@ -1356,8 +1394,8 @@
     }
     % Print the date
     % TODO: If date is in "YYYY-MM-DD" format, 
-    % then it should be printed in "DD Month YYYY" format without parentheses;
-    % otherwise, it should be printed as a year in parentheses.
+    % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
+    % otherwise, it should be printed as a year in parentheses followed by a colon.
     \btxdoif {date} {
       % If this citation is already in parentheses, then use brackets
       \doifelse {\currentbtxcitealternative} {paren} {
@@ -1455,6 +1493,7 @@
 
 \starttexdefinition btx:sbl:institution
   \btxdoif {institution} {
+    % Open the institution block
     \doif {\currentbtxcitealternative} {paren} {
       % Remove all preceding punctuation and spaces and use a bracket
       \removeunwantedspaces
@@ -1467,35 +1506,33 @@
       \removepunctuation
       \btxleftparenthesis
     }
-    % Remove any preceding punctuation and open the institution block
-    \removeunwantedspaces
-    \removepunctuation
-    \btxleftparenthesis
     % Print which type of thesis is being cited
+    % TODO: Could we just temporarily reset \currentbtxcategory
+    % and recite the whole thing based on its type field?
     \doifelse {\currentbtxcategory} {phdthesis} {
       \btxlabeltext{sbl:phd}
       \btxspace
       \btxlabeltext{sbl:diss}
-      \btxcolon
+      \btxcomma
     } {
       \doifelse {\currentbtxcategory} {mastersthesis} {
         \btxlabeltext{sbl:masters}
         \btxspace
         \btxlabeltext{sbl:diss}
-        \btxcolon
+        \btxcomma
       } {
         \btxdoif {type} {
           \doif {\btxfield{type}} {phdthesis} {
             \btxlabeltext{sbl:phd}
             \btxspace
             \btxlabeltext{sbl:diss}
-            \btxcolon
+            \btxcomma
           }
           \doif {\btxfield{type}} {mastersthesis} {
             \btxlabeltext{sbl:masters}
             \btxspace
             \btxlabeltext{sbl:diss}
-            \btxcolon
+            \btxcomma
           }
         }
       }
@@ -1509,6 +1546,60 @@
       \btxcomma
     }
     % Close the institution block
+    \removeunwantedspaces
+    \removepunctuation
+    \doif {\currentbtxcitealternative} {paren} {
+      % If this citation is already in parentheses, then use a bracket
+      \btxrightbracket
+    }
+    \doif {\currentbtxcitealternative} {entry} {
+      % Otherwise, if it is an in-text citation, then use a parenthesis
+      \btxrightparenthesis
+    }
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:presentedat
+  \btxdoif {eventtitle} {
+    \doif {\currentbtxcitealternative} {paren} {
+      % Remove all preceding punctuation and spaces and use a bracket
+      \removeunwantedspaces
+      \removepunctuation
+      \btxleftbracket
+    }
+    \doif {\currentbtxcitealternative} {entry} {
+      % Remove all preceding punctuation and spaces and use a parenthesis
+      \removeunwantedspaces
+      \removepunctuation
+      \btxleftparenthesis
+    }
+    % Print the "paper presented at" preamble
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxlabeltext{sbl:paperpresentedat}
+    } {
+      \btxlabeltext{sbl:Paperpresentedat}
+    }
+    \btxspace
+    \btxflush{eventtitle}
+    \btxcomma
+    % Is there a location?
+    \btxdoif {location} {
+      \btxflush{location}
+      \btxcomma
+    }
+    % Is there an event date?
+    % TODO: If date is in "YYYY-MM-DD" format, 
+    % then it should be printed in "DD Month YYYY" format
+    \btxdoif {date} {
+      \btxflush{date} % 
+      \btxcomma
+    }
+    % Close the block
     \removeunwantedspaces
     \removepunctuation
     \doif {\currentbtxcitealternative} {paren} {
@@ -1839,6 +1930,10 @@
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
+\startsetups btx:sbl:list:inproceedings
+  \fastsetup{btx:sbl:list:inbook}
+\stopsetups
+
 \startsetups btx:sbl:list:incollection
   \texdefinition{btx:sbl:author}
   \texdefinition{btx:sbl:title}
@@ -1917,6 +2012,18 @@
 
 \startsetups btx:sbl:list:phdthesis
   \fastsetup{btx:sbl:list:thesis}
+\stopsetups
+
+\startsetups btx:sbl:list:conferencepaper
+  \texdefinition{btx:sbl:author}
+  \texdefinition{btx:sbl:title}
+  \texdefinition{btx:sbl:translator}
+  \texdefinition{btx:sbl:presentedat}
+  \texdefinition{btx:sbl:doi}
+  \texdefinition{btx:sbl:note}
+  \removeunwantedspaces
+  \removepunctuation
+  \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:online

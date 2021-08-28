@@ -516,22 +516,7 @@ categories.proceedings = {
 }
 
 -- an article in a conference proceedings.
-categories.inproceedings = {
-    sets     = categories.incollection.sets,
-    required = categories.incollection.required,
-    optional = {
-        "withauthor", "withauthortype",
-        "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "year", "date", "origdate",
-        "edition", 
-        "series", "seriesseries", "number",
-        "location",
-        "date",
-        "origpublisher",
-        "doi", "note",
-    },
-}
+categories.inproceedings = categories.inbook
 
 -- not covered by SBL, but treated as interchangeable with inproceedings in other ConTeXt citation .lua files
 categories.conference = categories.inproceedings
