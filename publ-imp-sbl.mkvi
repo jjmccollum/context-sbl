@@ -69,18 +69,78 @@
 \definebtx
   [sbl:\s!list]
   [sbl]
-  [\c!otherstext={\btxcomma\btxnobreakspace\textellipsis\space},
+  [\c!otherstext={\btxspace\btxlabeltext{others}},
   \c!etallimit=,
   \c!etaldisplay=,
   \c!etaloption=last,
   \c!authorconversion=normal]
 
-% First, we define a namespace for a few special fields
+% First, we define a namespace for a few special fields (mostly names that require special handling)
 
 \definebtx
   [sbl:\s!list:author]
   [sbl:\s!list]
   [\c!authorconversion=inverted] % TODO: need to print just the first name inverted, with all subsequent names in normal order
+
+\definebtx
+  [sbl:\s!list:withauthor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:bookauthor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:withbookauthor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:editor]
+  [sbl:\s!list] % use normal authorconversion for editors who are in addition to authors (editors in place of authors should be handled by sbl:\s!list:author)
+
+\definebtx
+  [sbl:\s!list:witheditor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:bookeditor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:withbookeditor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:maineditor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:withmaineditor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:translator]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:revdauthor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:revdwithauthor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:revdeditor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:revdwitheditor]
+  [sbl:\s!list]
+
+\definebtx
+  [sbl:\s!list:revdtranslator]
+  [sbl:\s!list]
 
 \definebtx
   [sbl:\s!list:suffix]
@@ -124,37 +184,31 @@
   [sbl:\s!list:numbering:index]
   [sbl:\s!list:numbering]
 
-% Next, we define a namespace for each category
+% Since the title may be italicized or quoted depending on the entry category, 
+% it will help to define a namespace for each category.
+% Note that the namespacing is simply for clarity and convenience;
+% to get ConTeXt to actually use category-dependent styles, we need to use the
+% \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory] ... \btxstopstyleandcolor environment
+% (to activate the style parameter)
+% and the \btxusecommand [sbl:\s!list:title:\currentbtxcategory] command
+% (to invoke the command parameter)
 
-%D In order to be able to get journals expanded (or normalized or abbreviated) you need
-%D to load a list:
-%D
-%D \starttyping
-%D \btxloadjournallist[journals.txt] % the jabref list
-%D \stoptyping
+\starttexdefinition titlequote #1
+  \quotation{\Word{#1}}
+\stoptexdefinition
 
-\definebtx
-  [sbl:\s!list:journal]
-  [sbl:\s!list]
-  [\c!style=\v!italic]
-  %command=\btxexpandedjournal] % btxabbreviatedjournal
-
-% In general, titles should be italicized and capitalized,
-% and if they have been translated from another language, 
-% then this should be handled accordingly.
-% The title field of most entries will inherit this behavior.
-% Exceptions, such as article titles, will be defined with different behavior.
 \definebtx
   [sbl:\s!list:title]
   [sbl:\s!list]
-  [\c!style=\v!italic,
-   \c!command=\Word,
+  [\c!style=\v!italic, % by default, titles should be italicized (exceptions must be made by category)
+   \c!command=\Word, % any title should have its first word capitalized
    \c!translate=\v!yes]
 
 \definebtx
   [sbl:\s!list:title:article]
   [sbl:\s!list:title]
-  [\c!style=\v!quote] % article title is quoted
+  [\c!style=, %disable italics
+  \c!command=\titlequote] % article title is quoted and its first word is capitalized
 
 \definebtx
   [sbl:\s!list:title:magazine]
@@ -173,15 +227,7 @@
   [sbl:\s!list:title]
 
 \definebtx
-  [sbl:\s!list:maintitle:book]
-  [sbl:\s!list:title]
-
-\definebtx
   [sbl:\s!list:title:reference]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:maintitle:reference]
   [sbl:\s!list:title]
 
 \definebtx
@@ -189,23 +235,11 @@
   [sbl:\s!list:title]
 
 \definebtx
-  [sbl:\s!list:maintitle:commentary]
-  [sbl:\s!list:title]
-
-\definebtx
   [sbl:\s!list:title:lexicon]
   [sbl:\s!list:title]
 
 \definebtx
-  [sbl:\s!list:maintitle:lexicon]
-  [sbl:\s!list:title]
-  
-\definebtx
   [sbl:\s!list:title:manual]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:maintitle:manual]
   [sbl:\s!list:title]
 
 \definebtx
@@ -233,114 +267,37 @@
   [sbl:\s!list:title]
 
 \definebtx
-  [sbl:\s!list:maintitle:suppbook]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:suppbook]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:maintitle:inbook]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:inbook]
-  [sbl:\s!list:title]
-
-\definebtx
   [sbl:\s!list:title:inbook]
   [sbl:\s!list:title]
-  [\c!style=\v!quote] % article title is quoted
-
-\definebtx
-  [sbl:\s!list:maintitle:inreference]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:inreference]
-  [sbl:\s!list:title]
+  [\c!style=, %disable italics
+  \c!command=\titlequote] % article title is quoted and its first word is capitalized
 
 \definebtx
   [sbl:\s!list:title:inreference]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % article title is quoted
-
-\definebtx
-  [sbl:\s!list:maintitle:inlexicon]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:inlexicon]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:inlexicon]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % article title is quoted
-
-\definebtx
-  [sbl:\s!list:maintitle:incommentary]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:incommentary]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:incommentary]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % article title is quoted
-
-\definebtx
-  [sbl:\s!list:maintitle:seminarpaper]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:seminarpaper]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:seminarpaper]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % paper title is quoted
-
-\definebtx
-  [sbl:\s!list:maintitle:ancienttext]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:ancienttext]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:ancienttext]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % ancient text title is quoted
-
-\definebtx
-  [sbl:\s!list:maintitle:classictext]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:booktitle:classictext]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:classictext]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % classical text title is quoted
-
-\definebtx
-  [sbl:\s!list:maintitle:collection]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:collection]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:maintitle:incollection]
   [sbl:\s!list:title]
 
 \definebtx
@@ -348,91 +305,86 @@
   [sbl:\s!list:title]
 
 \definebtx
-  [sbl:\s!list:revdtitle:review]
-  [sbl:\s!list:title]
-
-\definebtx
   [sbl:\s!list:title:proceedings]
   [sbl:\s!list:title]
 
 \definebtx
-  [sbl:\s!list:booktitle:inproceedings]
-  [sbl:\s!list:title]
-
-\definebtx
   [sbl:\s!list:title:inproceedings]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % article title is quoted
-
-\definebtx
-  [sbl:\s!list:booktitle:conference]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:conference]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % paper title is quoted
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:conferencepaper]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % paper title is quoted
-
-\definebtx
-  [sbl:\s!list:title:thesis]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % thesis title is quoted
-
-\definebtx
-  [sbl:\s!list:title:mastersthesis]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % thesis title is quoted
-
-\definebtx
-  [sbl:\s!list:title:phdthesis]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % thesis title is quoted
+  [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:unpublished]
   [sbl:\s!list:title]
-  [\c!style=\v!quote] % unpublished titles are quoted
+  [\c!style=, %disable italics
+  \c!command=\titlequote] % unpublished title is quoted and its first word is capitalized
 
 \definebtx
-  [sbl:\s!list:journal:online]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:thesis]
+  [sbl:\s!list:title:unpublished]
+
+\definebtx
+  [sbl:\s!list:title:mastersthesis]
+  [sbl:\s!list:title:thesis]
+
+\definebtx
+  [sbl:\s!list:title:phdthesis]
+  [sbl:\s!list:title:thesis]
 
 \definebtx
   [sbl:\s!list:title:online]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % online resource titles are quoted
-
-\definebtx
-  [sbl:\s!list:journal:electronic]
-  [sbl:\s!list:title]
+  [sbl:\s!list:title:unpublished]
 
 \definebtx
   [sbl:\s!list:title:electronic]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % online resource titles are quoted
+  [sbl:\s!list:title:unpublished]
 
 \definebtx
   [sbl:\s!list:title:misc]
-  [sbl:\s!list:title]
-  [\c!style=\v!quote] % miscellaneous titles are quoted
+  [sbl:\s!list:title:unpublished]
 
 \definebtx
   [sbl:\s!list:title:literal]
+  [sbl:\s!list:title:unpublished]
+
+\definebtx
+  [sbl:\s!list:booktitle]
   [sbl:\s!list:title]
-  [\c!style=\v!quote] % article title is quoted
 
 \definebtx
-  [sbl:\s!list:type:suppbook]
-  [\c!command=\Word] % always capitalize, as this will follow a period in the list entry
+  [sbl:\s!list:maintitle]
+  [sbl:\s!list:title]
 
 \definebtx
-  [sbl:\s!list:type:thesis]
-  [\c!command=\Word] % always capitalize "Master's" or "PhD"
+  [sbl:\s!list:revdtitle]
+  [sbl:\s!list:title]
+
+%D In order to be able to get journals expanded (or normalized or abbreviated) you need
+%D to load a list:
+%D
+%D \starttyping
+%D \btxloadjournallist[journals.txt] % the jabref list
+%D \stoptyping
+
+\definebtx
+  [sbl:\s!list:journal]
+  [sbl:\s!list:title]
+  %[command=\btxexpandedjournal] % btxabbreviatedjournal
+
+\definebtx
+  [sbl:\s!list:type]
+  [\c!command=\Word] % always capitalize, as the type field will follow a period in the list entry
+
+\definebtx
+  [sbl:\s!list:edition]
+  [\c!command=\Word] % always capitalize, as the edition field will follow a period in the list entry
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % In-text citation field styles
@@ -585,7 +537,7 @@
 \definebtx
   [sbl:\s!cite:title:article]
   [sbl:\s!cite:title]
-  [\c!style=\v!quote] % article title is quoted
+  [\c!style=\v!quotation] % article title is quoted
 
 \definebtx
   [sbl:\s!cite:title:magazine]
@@ -750,6 +702,7 @@
   [en]
   [sbl:edition={ed.},
    sbl:editor={ed.},
+   sbl:editionfull={edition},
    sbl:editors={eds.},
    sbl:Page={Page},
    sbl:Pages={Pages},
@@ -774,18 +727,40 @@
    sbl:in={in},
    sbl:In={In},
    sbl:of={of},
-   sbl:of={to},
+   sbl:to={to},
    sbl:released={released},
    sbl:Released={Released}]
 
 % First some helpers:
+
+% I thought \enordinaldaynumber was already defined elsewhere in ConTeXt, 
+% but the engine isn't recognizing it...
+\starttexdefinition enordinal #1
+  #1\ifnum\lasttwodigits{#1}=11
+    th%
+  \else\ifnum\lasttwodigits{#1}=12
+    th%
+  \else\ifnum\lasttwodigits{#1}=13
+    th%
+  \else\ifcase\lastdigit{#1}%
+    th%
+    \or % 1
+      st%
+    \or % 2
+      nd%
+    \or % 3
+      rd%
+  \else
+    th%
+  \fi\fi\fi\fi
+\stoptexdefinition
 
 \starttexdefinition btx:sbl:author
   \btxdoif {author} {
     % Print the author/editor/org name first
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       % Normal order for in-text citations
-      \btxflush{author}
+      \currentbtxciteauthorbyfield
     } {
       % Inverted order for list citations
       % TODO: need to print the first name inverted, with all subsequent names in normal order
@@ -829,7 +804,7 @@
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
-      % If the name ends with a period (as is the case for an initial), 
+      % If the name ends with a period (as is the case for an initial or "et al."), 
       % then remove the preceding period
       \removeunwantedspaces
       \removepunctuation
@@ -838,23 +813,12 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:italictitle
+\starttexdefinition btx:sbl:title
   \btxdoif {title} {
-    \btxstartstyleandcolor[sbl:\s!list:title]
-      \btxflush{title} % set the title
-    \btxstopstyleandcolor
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:quotetitle
-  \btxdoif {title} {
-    \btxstartstyleandcolor[sbl:\s!list:title:article]
-      \btxflush{title} % set the title
+    \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+        \btxflush{title} % set the title according to the current category
+      }
     \btxstopstyleandcolor
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
@@ -870,7 +834,11 @@
     \btxspace
     \btxlabeltext{sbl:of}
     \btxspace
-    \btxflush{revdtitle}
+    \btxstartstyleandcolor[sbl:\s!list:revdtitle]
+      \btxusecommand [sbl:\s!list:revdtitle] {
+        \btxflush{revdtitle}
+      }
+    \btxstopstyleandcolor
     \btxcomma % even in list citations
   }
 \stoptexdefinition
@@ -928,12 +896,24 @@
 
 \starttexdefinition btx:sbl:revdedition
   \btxdoif{revdedition} {
-    % Is the edition a name or a number?
+    % Is the edition a string or a number?
     \doifnumberelse {\btxflush{revdedition}} {
-      \btxflush{revdedition} % TODO: is there a general ordinal conversion macro?
+      % If a number, then convert it to an ordinal
+      \enordinal{\btxflush{revdedition}}
+      \btxspace
       \btxlabeltext{sbl:edition}
     } {
-      \btxflush{revdedition}
+      % If a string, then capitalize its first word if we're in list mode
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+        % For in-text citations, just print the edition string as-is
+        \btxflush{revdedition}
+      } {
+        % For list citations, make sure the first word is capitalized
+        \btxusecommand [sbl:\s!list:edition] {
+          \btxflush{revdedition}
+        }
+      }
+      \btxspace
       \btxlabeltext{sbl:edition}
     }
     \btxcomma % even in list citations
@@ -960,6 +940,10 @@
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
+      % If the name ends with a period (as is the case for an initial or "et al."), 
+      % then remove the preceding period
+      \removeunwantedspaces
+      \removepunctuation
       \btxperiod
     }
   }
@@ -991,11 +975,15 @@
         }
         \btxflush{witheditor}
       }
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+        \btxcomma
+      } {
+        % If the name ends with a period (as is the case for an initial or "et al."), 
+        % then remove the preceding period
+        \removeunwantedspaces
+        \removepunctuation
+        \btxperiod
+      }
     }
   }
 \stoptexdefinition
@@ -1012,6 +1000,7 @@
       % then print it here
       \btxdoif {origlanguage} {
         \btxflush{origlanguage}
+        \btxspace
       }
       \btxlabeltext{sbl:by}
       \btxspace
@@ -1020,6 +1009,10 @@
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
+      % If the name ends with a period (as is the case for an initial or "et al."), 
+      % then remove the preceding period
+      \removeunwantedspaces
+      \removepunctuation
       \btxperiod
     }
   }
@@ -1027,14 +1020,27 @@
 
 \starttexdefinition btx:sbl:partinbook
   % If the current category is suppbook,
-  % print the type (e.g., "introduction", "preface", "foreword")
+  % then print the type (e.g., "introduction", "preface", "foreword")
   \doifelse {\currentbtxcategory} {suppbook} {
-    \btxflush{type} % required field for suppbook
-    \btxlabeltext{sbl:to}
-    \btxspace
+    \btxdoif {type} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+        % For in-text citations, just print the type as-is
+        \btxflush{type} % required field for suppbook
+      } {
+        % For list citations, make sure the type is capitalized
+        \btxusecommand [sbl:\s!list:type] {
+          \btxflush{type}
+        }
+      }
+      \btxspace
+      \btxlabeltext{sbl:to}
+    }
   } {
-    % In the bibliographic list, page numbers for an entry in a book are listed before the book
-    \doifnotinset {\currentbtxcitealternative} {entry, paren} {
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      % For in-text citations, just write "in" before the booktitle or maintitle
+      \btxlabeltext{sbl:in}
+    } {
+      % In the bibliographic list, place the page numbers (if any ae provided) here
       \btxdoifelse {pages} {
         \btxoneorrange {pages} {
           \btxlabeltext{sbl:Page}
@@ -1047,20 +1053,27 @@
       } {
         \btxlabeltext{sbl:In}
       }
-      \btxspace
     }
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:booktitle
   \btxdoif {booktitle} {
-    \btxflush{booktitle}
-    \btxcomma % even in list citations
+    \btxstartstyleandcolor[sbl:\s!list:booktitle]
+      \btxusecommand [sbl:\s!list:booktitle] {
+        \btxflush{booktitle}
+      }
+    \btxstopstyleandcolor
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:bookeditor
-  \btxdoif {editor} {
+  \btxdoif {bookeditor} {
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
       \btxspace
@@ -1070,23 +1083,27 @@
       \btxlabeltext{sbl:by}
       \btxspace
     }
-    \btxflush{editor}
+    \btxflush{bookeditor}
     % Is there an assisting editor?
-    \btxdoif {witheditor} {
+    \btxdoif {withbookeditor} {
       \btxcomma
       % Use the provided text to introduce them, if one is specified
-      \btxdoifelse {witheditortype} {
-        \btxflush{witheditortype}
+      \btxdoifelse {withbookeditortype} {
+        \btxflush{withbookeditortype}
       } {
         \btxlabeltext{sbl:with}
       }
       \btxspace
-      \btxflush{witheditor}
+      \btxflush{withbookeditor}
       \btxcomma
     }
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
+      % If the name ends with a period (as is the case for an initial or "et al."), 
+      % then remove the preceding period
+      \removeunwantedspaces
+      \removepunctuation
       \btxperiod
     }
   }
@@ -1094,39 +1111,95 @@
 
 \starttexdefinition btx:sbl:maintitle
   \btxdoif {maintitle} {
-    % Is there a volume number for the book being cited from this collection?
-    \btxdoifelse {volume} {
-      \btxoneorrange {volume} {
-        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-          \btxlabeltext{sbl:volume}
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      % For in-text citations, only print the volume and part if a booktitle precedes this
+      % (otherwise, save them for the page range)
+      \btxdoif {booktitle} {
+        \btxdoifelse {volume} {
+          \btxoneorrange {volume} {
+            \btxlabeltext{sbl:volume}
+          } {
+            \btxlabeltext{sbl:volumes}
+          }
+          \btxspace
+          \btxflush{volume}
+          % Is there a part number for the book being cited from this collection?
+          \btxdoif {part} {
+            \btxcomma
+            \btxoneorrange {part} {
+              \btxlabeltext{sbl:part}
+            } {
+              \btxlabeltext{sbl:parts}
+            }
+            \btxspace
+            \btxflush{part}
+          }
+          \btxspace
+          \btxlabeltext{sbl:of}
+          \btxspace
         } {
-          \btxlabeltext{sbl:Volume}
+          \btxlabeltext{sbl:in}
+          \btxspace
+        }
+      }
+    } {
+      % In list mode, only capitalize "vol.", "vols.", or "in" if a booktitle is present
+      \btxdoifelse {booktitle} {
+        \btxdoifelse {volume} {
+          \btxoneorrange {volume} {
+            \btxlabeltext{sbl:Volume}
+          } {
+            \btxlabeltext{sbl:Volumes}
+          }
+          \btxspace
+          \btxflush{volume}
+          % Is there a part number for the book being cited from this collection?
+          \btxdoif {part} {
+            \btxcomma
+            \btxoneorrange {part} {
+              \btxlabeltext{sbl:part}
+            } {
+              \btxlabeltext{sbl:parts}
+            }
+            \btxspace
+            \btxflush{part}
+          }
+          \btxspace
+          \btxlabeltext{sbl:of}
+          \btxspace
+        } {
+          \btxlabeltext{sbl:In}
+          \btxspace
         }
       } {
-        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+        \btxoneorrange {volume} {
+          \btxlabeltext{sbl:volume}
+        } {
           \btxlabeltext{sbl:volumes}
-        } {
-          \btxlabeltext{sbl:Volumes}
         }
-      }
-      \btxspace
-      \btxflush{volume}
-      % Is there a part number for the book being cited from this collection?
-      \btxdoifelse {part} {
-        \btxcomma
-        \btxoneorrange {part} {
-          \btxlabeltext{sbl:part}
-        } {
-          \btxlabeltext{sbl:parts}
+        \btxspace
+        \btxflush{volume}
+        % Is there a part number for the book being cited from this collection?
+        \btxdoif {part} {
+          \btxcomma
+          \btxoneorrange {part} {
+            \btxlabeltext{sbl:part}
+          } {
+            \btxlabeltext{sbl:parts}
+          }
+          \btxspace
+          \btxflush{part}
         }
-        \btxflush{part}
+        \btxspace
+        \btxlabeltext{sbl:of}
+        \btxspace
       }
-      \btxlabeltext{sbl:of}
-    } {
-      \btxlabeltext{sbl:in}
     }
-    \btxspace
-    \btxflush{maintitle}
+    \btxstartstyleandcolor[sbl:\s!list:maintitle]
+      \btxusecommand [sbl:\s!list:maintitle] {
+        \btxflush{maintitle}
+      }
+    \btxstopstyleandcolor
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
@@ -1162,6 +1235,10 @@
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
+      % If the name ends with a period (as is the case for an initial or "et al."), 
+      % then remove the preceding period
+      \removeunwantedspaces
+      \removepunctuation
       \btxperiod
     }
   }
@@ -1170,6 +1247,7 @@
 \starttexdefinition btx:sbl:volumes
   \btxdoif {volumes} {
     \btxflush{volumes}
+    \btxspace
     \btxlabeltext{sbl:volumes}
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
@@ -1184,17 +1262,32 @@
 
 \starttexdefinition btx:sbl:edition
   \btxdoif{edition} {
-    % Is the edition a name or a number?
+    % Is the edition a string or a number?
     \doifnumberelse {\btxflush{edition}} {
-      \btxflush{edition} % TODO: is there a general ordinal conversion macro?
+      % If a number, then convert it to an ordinal
+      \enordinal{\btxflush{edition}}
+      \btxspace
       \btxlabeltext{sbl:edition}
     } {
-      \btxflush{edition}
+      % If a string, then capitalize its first word if we're in list mode
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+        % For in-text citations, just print the edition string as-is
+        \btxflush{edition}
+      } {
+        % For list citations, make sure the first word is capitalized
+        \btxusecommand [sbl:\s!list:edition] {
+          \btxflush{edition}
+        }
+      }
+      \btxspace
       \btxlabeltext{sbl:edition}
     }
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
+       % Don't duplicate the period from "ed."
+      \removeunwantedspaces
+      \removepunctuation
       \btxperiod
     }
   }
@@ -1243,15 +1336,21 @@
 
 \starttexdefinition btx:sbl:journal
   \btxdoif {journal} {
-    % Print the journal name (which is required and therefore assumed to be present)
-    \btxflush{journal}
+    % Print the journal name
+    \btxstartstyleandcolor[sbl:\s!list:journal]
+      \btxusecommand [sbl:\s!list:journal] {
+        \btxflush{journal}
+      }
+    \btxstopstyleandcolor
     % Print the volume number(s), if any
     \btxdoif {volume} {
       \btxspace
       \btxflush{volume}
       % If there is an issue number or range, then print it after the volume number, with a period in between
       \btxdoif {number} {
-        {.} % no space after the period
+        \removeunwantedspaces
+        \btxperiod
+        \removeunwantedspaces
         \btxflush{number}
       }
     }
@@ -1428,10 +1527,23 @@
   }
 \stoptexdefinition
 
+\starttexdefinition btx:sbl:ebook
+  \btxdoif {eprint} {
+    % Just print the eprint as an edition (e.g., "Nook edition")
+    \btxflush{eprint}
+    \btxspace
+    \btxlabeltext{sbl:editionfull}
+    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+      \btxcomma
+    } {
+      \btxperiod
+    }
+  }
+\stoptexdefinition
+
 \starttexdefinition btx:sbl:pages
   \btxdoif {pages} {
-    % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
-    \btxflush{pages}
+    \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
     \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
       \btxcomma
     } {
@@ -1444,8 +1556,23 @@
   % Skip this if we're in list mode (book pages get inserted earlier via the btx:sbl:partinbook command)
   \doifinset {\currentbtxcitealternative} {entry, paren} {
     \btxdoif {pages} {
-      % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
-      \btxflush{pages}
+      % If no booktitle was specified, then prefix the page range with the volume and part numbers
+      \btxdoifnot {booktitle} {
+        \btxdoif {volume} {
+          \btxflush{volume}
+          % Is there a part number for the book being cited from this collection?
+          \btxdoif {part} {
+            \removeunwantedspaces
+            \btxperiod
+            \removeunwantedspaces
+            \btxflush{part}
+          }
+          \removeunwantedspaces
+          \btxcolon
+          \removeunwantedspaces
+        }
+      }
+      \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
       \btxcomma
     }
   }
@@ -1454,7 +1581,6 @@
 \starttexdefinition btx:sbl:eprint
   % Is the eprint field present?
   \btxdoifelse {eprint} {
-    % If so, then treat this as an e-print
     % Does it have an eprintclass?
     \btxdoifelse {eprintclass} {
       % If so, then this is a document published only online
@@ -1578,7 +1704,8 @@
     % If the URL is actually a DOI (the preferred case), then indicate this
     \doifelse {\btxfoundname{doi}} {doi} {
       {\sc doi}
-      \btxcolon % no space afterwards
+      \btxcolon
+      \removeunwantedspaces
       \hyphenatedurl{\btxflush{doi}}
     } {
       \hyphenatedurl{\btxflush{doi}}
@@ -1605,7 +1732,7 @@
 % List citation setups
 \startsetups btx:sbl:list:book
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:italictitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:editor}
   \texdefinition{btx:sbl:maintitle}
   \texdefinition{btx:sbl:maineditor}
@@ -1614,6 +1741,7 @@
   \texdefinition{btx:sbl:edition}
   \texdefinition{btx:sbl:bookseries}
   \texdefinition{btx:sbl:publisher}
+  \texdefinition{btx:sbl:ebook}
   \texdefinition{btx:sbl:doi}
   \texdefinition{btx:sbl:note}
   \removeunwantedspaces
@@ -1655,11 +1783,12 @@
 
 \startsetups btx:sbl:list:series
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:italictitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:editor}
   \texdefinition{btx:sbl:translator}
   \texdefinition{btx:sbl:volumes}
   \texdefinition{btx:sbl:publisher}
+  \texdefinition{btx:sbl:ebook}
   \texdefinition{btx:sbl:doi}
   \texdefinition{btx:sbl:note}
   \removeunwantedspaces
@@ -1669,7 +1798,7 @@
 
 \startsetups btx:sbl:list:inbook
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:partinbook} % used for suppbook type or pages in list mode
   \texdefinition{btx:sbl:booktitle}
   \texdefinition{btx:sbl:bookauthor}
@@ -1682,6 +1811,7 @@
   \texdefinition{btx:sbl:bookseries}
   \texdefinition{btx:sbl:publisher}
   \texdefinition{btx:sbl:bookpages} % used for pages when not in list mode
+  \texdefinition{btx:sbl:ebook}
   \texdefinition{btx:sbl:doi}
   \texdefinition{btx:sbl:note}
   \removeunwantedspaces
@@ -1711,7 +1841,7 @@
 
 \startsetups btx:sbl:list:incollection
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:italictitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:editor}
   \texdefinition{btx:sbl:maintitle}
   \texdefinition{btx:sbl:maineditor}
@@ -1720,6 +1850,7 @@
   \texdefinition{btx:sbl:edition}
   \texdefinition{btx:sbl:bookseries}
   \texdefinition{btx:sbl:publisher}
+  \texdefinition{btx:sbl:ebook}
   \texdefinition{btx:sbl:doi}
   \texdefinition{btx:sbl:note}
   \removeunwantedspaces
@@ -1729,7 +1860,7 @@
 
 \startsetups btx:sbl:list:article
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:translator}
   \texdefinition{btx:sbl:journal}
   \texdefinition{btx:sbl:pages}
@@ -1770,7 +1901,7 @@
 
 \startsetups btx:sbl:list:thesis
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:translator}
   \texdefinition{btx:sbl:institution}
   \texdefinition{btx:sbl:doi}
@@ -1790,7 +1921,7 @@
 
 \startsetups btx:sbl:list:online
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:translator}
   \texdefinition{btx:sbl:eprint}
   \texdefinition{btx:sbl:note}
@@ -1801,7 +1932,7 @@
 
 \startsetups btx:sbl:list:misc
   \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:quotetitle}
+  \texdefinition{btx:sbl:title}
   \texdefinition{btx:sbl:editor}
   \texdefinition{btx:sbl:maintitle}
   \texdefinition{btx:sbl:maineditor}

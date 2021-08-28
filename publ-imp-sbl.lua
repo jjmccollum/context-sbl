@@ -43,8 +43,6 @@ local specification = {
         translator          = "author",
         revdauthor          = "author",
         revdwithauthor      = "author",
-        revdbookauthor      = "author",
-        revdwithbookauthor  = "author",
         revdeditor          = "author",
         revdwitheditor      = "author",
         revdtranslator      = "author",
@@ -129,8 +127,8 @@ categories.book = {
         "origpublisher",
         "location",
         "date",
+        "eprint",
         "doi", "note",
-        "abstract",
     },
 }
 
@@ -176,8 +174,8 @@ categories.manual = {
         "origpublisher",
         "location",
         "date",
+        "eprint",
         "doi", "note",
-        "abstract",
     },
 }
 
@@ -207,8 +205,8 @@ categories.mvbook = {
         "origpublisher",
         "location",
         "date",
+        "eprint",
         "doi", "note",
-        "abstract",
     },
 }
 
@@ -247,17 +245,16 @@ categories.series = {
         "publisher",
         "location",
         "date",
+        "eprint",
         "doi", "note",
-        "abstract",
     },
 }
 
 -- an introduction, preface, or foreword to a book written by someone other than the author (§6.2.14)
+-- This category should also contain either a booktitle 
+-- or a maintitle with a volume number (§6.2.22)
 categories.suppbook = {
     sets = {
-        editor = { "editor", "bookeditor" }, -- interchangeable
-        witheditor = { "witheditor", "withbookeditor" }, -- interchangeable
-        witheditortype = { "witheditortype", "withbookeditortype" }, -- interchangeable
         series = generic.series,
         origpublisher = generic.origpublisher,
         location = generic.location,
@@ -267,7 +264,6 @@ categories.suppbook = {
     required = {
         "author", -- author of the introduction/preface/foreword (a set)
         "bookauthor", -- author of the book
-        "booktitle", -- title of the book
         "publisher",
         "type", -- e.g., "introduction", "preface", "foreword"
     },
@@ -277,6 +273,9 @@ categories.suppbook = {
         "editor",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
+        "booktitle",
+        "bookeditor",
+        "withbookeditor", "withbookeditortype",
         "volume",
         "part",
         "maintitle",
@@ -288,17 +287,17 @@ categories.suppbook = {
         "location",
         "date",
         "pages",
+        "eprint",
         "doi", "note",
     },
 }
 
 -- a part of a book, which may be a chapter and/or a range of pages.
 -- article or note in a study Bible (§6.4.9.1)
+-- This category should also contain either a booktitle 
+-- or a maintitle with a volume number (§6.2.22)
 categories.inbook = {
     sets = {
-        editor = { "editor", "bookeditor" }, -- interchangeable
-        witheditor = { "witheditor", "withbookeditor" }, -- interchangeable
-        witheditortype = { "witheditortype", "withbookeditortype" }, -- interchangeable
         series = generic.series,
         origpublisher = generic.origpublisher,
         location = generic.location,
@@ -308,7 +307,6 @@ categories.inbook = {
     required = {
         "author", -- author of the article (or book, if the author also wrote the book)
         "title", -- title of the article
-        "booktitle", -- title of the book
         "publisher",
     },
     optional = {
@@ -316,6 +314,9 @@ categories.inbook = {
         "editor",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
+        "booktitle",
+        "bookeditor",
+        "withbookeditor", "withbookeditortype",
         "volume",
         "part",
         "maintitle",
@@ -327,6 +328,7 @@ categories.inbook = {
         "location",
         "date",
         "pages",
+        "eprint",
         "doi", "note",
     },
 }
@@ -348,9 +350,6 @@ categories.seminarpaper = categories.inbook
 -- this is almost identical to inbook, but no author is required, and rendering for inline citations is slightly different
 categories.ancienttext = {
     sets = {
-        editor = { "editor", "bookeditor" }, -- interchangeable
-        witheditor = { "witheditor", "withbookeditor" }, -- interchangeable
-        witheditortype = { "witheditortype", "withbookeditortype" }, -- interchangeable
         series = generic.series,
         origpublisher = generic.origpublisher,
         location = generic.location,
@@ -359,14 +358,17 @@ categories.ancienttext = {
     },
     required = {
         "title", -- title of the ancient text
-        "booktitle", -- title of the book
         "publisher",
     },
     optional = {
         "author", -- author of the ancient text (if known)
+        "booktitle",
         "editor",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
+        "booktitle",
+        "bookeditor",
+        "withbookeditor", "withbookeditortype",
         "volume",
         "part",
         "maintitle",
@@ -378,6 +380,7 @@ categories.ancienttext = {
         "location",
         "date",
         "pages",
+        "eprint",
         "doi", "note",
     },
 }
@@ -391,10 +394,7 @@ categories.classictext = categories.ancienttext
 categories.incollection = {
     sets = {
         author = { "author", "editor" },
-        title = { "title", "booktitle" }, -- interchangeable
-        editor = { "editor", "bookeditor" }, -- interchangeable
-        witheditor = { "witheditor", "withbookeditor" }, -- interchangeable
-        witheditortype = { "witheditortype", "withbookeditortype" }, -- interchangeable
+        booktitle = { "title" }, -- an alias so that entries are printed correctly
         series = generic.series,
         origpublisher = generic.origpublisher,
         location = generic.location,
@@ -403,7 +403,7 @@ categories.incollection = {
     },
     required = {
         "author", -- a set
-        "title", -- title of this book
+        "title", -- the title of this book
         "volume", -- volume number of this book in the collection
         "maintitle", -- title of the collection
         "publisher",
@@ -413,6 +413,8 @@ categories.incollection = {
         "editor", 
         "witheditor", "witheditortype",
         "translator", "origlanguage",
+        "bookeditor",
+        "withbookeditor", "withbookeditortype",
         "maineditor",
         "withmaineditor", "withmaineditortype",
         "part",
@@ -421,6 +423,7 @@ categories.incollection = {
         "location",
         "date",
         "origpublisher",
+        "eprint",
         "doi", "note",
     },
 }
