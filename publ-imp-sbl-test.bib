@@ -116,25 +116,41 @@
     date = {1982}
 }
 
+@journal{jbl,
+    title = {Journal of Biblical Literature},
+    shorthand = {JBL}
+}
+
 @article{irvine:2014,
     author = {Irvine, Stuart A.},
     title = {Idols [\italic{ktbwnm}]: A note on Hosea 13:2a},
-    journaltitle = {Journal of Biblical Literature},
-    shortjournal = {JBL},
+    journalxref = {jbl},
     volume = {133},
     date = {2014},
     pages = {509--517}
+}
+
+@book{kraft+nickelsburg:1986,
+    title = {Early Judaism and Its Modern Interpreters},
+    editor = {Kraft, Robert A. and Nickelsburg, George W. E.},
+    location = {Philadelphia and Atlanta},
+    publisher = {Fortress and Scholars Press},
+    date = {1986}
 }
 
 @inbook{attridge:1986,
     author = {Attridge, Harold W.},
     title = {Jewish Historiography},
     pages = {311--343},
-    booktitle = {Early Judaism and Its Modern Interpreters},
-    editor = {Kraft, Robert A. and Nickelsburg, George W. E.},
-    location = {Philadelphia and Atlanta},
-    publisher = {Fortress and Scholars Press},
-    date = {1986}
+    bookxref = {kraft+nickelsburg:1986}
+}
+
+@book{kottsieper+etal:1995,
+    title = {“Wer ist wie du, Herr, unter den Göttern?”: Studien zur Theologie und Religionsgeschichte Israels für Otto Kaiser zum~70. Geburtstag},
+    editor = {Kottsieper, Ingo and others},
+    location = {Göttingen},
+    publisher = {Vandenhoeck \& Ruprecht},
+    date = {1995}
 }
 
 @inbook{vanseters:1995,
@@ -142,22 +158,22 @@
     title = {The Theology of the Yahwist: A Preliminary Sketch},
     shorttitle = {Theology of the Yahwist},
     pages = {219--228},
-    booktitle = {“Wer ist wie du, Herr, unter den Göttern?”: Studien zur Theologie und Religionsgeschichte Israels für Otto Kaiser zum~70. Geburtstag},
-    editor = {Kottsieper, Ingo and others},
-    location = {Göttingen},
-    publisher = {Vandenhoeck \& Ruprecht},
-    date = {1995}
+    bookxref = {kottsieper+etal:1995}
+}
+
+@book{egger1996,
+    author = {Egger, Wilhelm},
+    title = {How to Read the New Testament: An Introduction to Linguistic and Historical-Critical Methodology},
+    translator = {Heinegg, Peter},
+    location = {Peabody, MA},
+    publisher = {Hendrickson},
+    date = {1996}
 }
 
 @suppbook{boers:1996,
     author = {Boers, Hendrikus},
     type = {introduction},
-    booktitle = {How to Read the New Testament: An Introduction to Linguistic and Historical-Critical Methodology},
-    bookauthor = {Egger, Wilhelm},
-    translator = {Heinegg, Peter},
-    location = {Peabody, MA},
-    publisher = {Hendrickson},
-    date = {1996}
+    bookxref = {egger1996}
 }
 
 @book{gerhardsson:1961,
@@ -232,29 +248,49 @@
     date = {1896--1905}
 }
 
-@incollection{winter+clarke:1993,
+@collection{winter:1993-1996,
+    title = {The Book of Acts in Its First Century Setting},
+    editor = {Winter, Bruce W.},
+    volumes = {5},
+    location = {Grand Rapids},
+    publisher = {Eerdmans},
+    date = {1993--1996}
+}
+
+@book{winter+clarke:1993,
     editor = {Winter, Bruce W. and Clarke, Andrew D.},
     title = {The Book of Acts in Its Ancient Literary Setting},
     shorttitle = {Book of Acts},
     volume = {1},
-    maintitle = {The Book of Acts in Its First Century Setting},
-    maineditor = {Winter, Bruce W.},
+    collectionxref = {winter:1993-1996},
     location = {Grand Rapids},
     publisher = {Eerdmans},
-    date = {1993}
+    date = {1993}
+}
+
+@collection{saebo:1996-2014,
+    title = {Hebrew Bible/Old Testament: The History of Its Interpretation},
+    editor = {Sæbø, Magne},
+    volumes = {5},
+    location = {Göttingen},
+    publisher = {Vandenhoeck \& Ruprecht},
+    date = {1996--2014}
+}
+
+@incollection{saebo:1996,
+    volume = {1},
+    part = {1},
+    collectionxref = {saebo:1996-2014}
+    location = {Göttingen},
+    publisher = {Vandenhoeck \& Ruprecht},
+    date = {1996}
 }
 
 @inbook{mason:1996,
     author = {Mason, Steve},
     title = {Josephus on Canon and Scriptures},
     pages = {217--235},
-    volume = {1},
-    part = {1},
-    maintitle = {Hebrew Bible/Old Testament: The History of Its Interpretation},
-    maineditor = {Sæbø, Magne},
-    location = {Göttingen},
-    publisher = {Vandenhoeck \& Ruprecht},
-    date = {1996}
+    incollectionxref = {saebo:1996}
 }
 
 @inbook{peterson:1993,
@@ -262,33 +298,34 @@
     title = {The Motif of Fulfilment and the Purpose of Luke-Acts},
     shorttitle = {Motif of Fulfilment},
     pages = {83--104},
-    booktitle = {The Book of Acts in Its Ancient Literary Setting},
-    bookeditor = {Winter, Bruce W. and Clarke, Andrew D.},
-    volume = {1},
-    maintitle = {The Book of Acts in Its First Century Setting},
-    maineditor = {Winter, Bruce W.},
-    location = {Grand Rapids},
-    publisher = {Eerdmans},
-    date = {1993}
+    bookxref = {winter+clarke:1993}
+}
+
+@series{WUNT,
+    title = {Wissenschaftliche Untersuchungen zum Neuen Testament},
+    shorthand = {WUNT}
 }
 
 @book{hofius:1989,
     author = {Hofius, Otfried},
     title = {Paulusstudien},
-    series = {Wissenschaftliche Untersuchungen zum Neuen Testament},
-    shortseries = {WUNT},
+    seriesxref = {WUNT},
     number = {51},
     location = {Tübingen},
     publisher = {Mohr Siebeck},
     date = {1989}
 }
 
+@series{SBT,
+    title = {Studies in Biblical Theology},
+    shorthand = {SBT}
+}
+
 @book{jeremias:1967,
     author = {Jeremias, Joachim},
     title = {The Prayers of Jesus},
     shorttitle = {Prayers},
-    series = {Studies in Biblical Theology},
-    shortseries = {SBT},
+    seriesxref = {SBT},
     seriesseries = {2},
     number = {6},
     location = {Naperville, IL},

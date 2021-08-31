@@ -205,6 +205,10 @@
    \c!translate=\v!yes]
 
 \definebtx
+  [sbl:\s!list:title:journal]
+  [sbl:\s!list:title]
+
+\definebtx
   [sbl:\s!list:title:article]
   [sbl:\s!list:title]
   [\c!style=, %disable italics
@@ -265,6 +269,8 @@
 \definebtx
   [sbl:\s!list:title:series]
   [sbl:\s!list:title]
+  [\c!style=, %disable italics
+  \c!command=,] %disable capitalization
 
 \definebtx
   [sbl:\s!list:title:inbook]
@@ -353,30 +359,6 @@
 \definebtx
   [sbl:\s!list:title:literal]
   [sbl:\s!list:title:unpublished]
-
-\definebtx
-  [sbl:\s!list:booktitle]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:maintitle]
-  [sbl:\s!list:title]
-
-\definebtx
-  [sbl:\s!list:revdtitle]
-  [sbl:\s!list:title]
-
-%D In order to be able to get journals expanded (or normalized or abbreviated) you need
-%D to load a list:
-%D
-%D \starttyping
-%D \btxloadjournallist[journals.txt] % the jabref list
-%D \stoptyping
-
-\definebtx
-  [sbl:\s!list:journal]
-  [sbl:\s!list:title]
-  %[command=\btxexpandedjournal] % btxabbreviatedjournal
 
 \definebtx
   [sbl:\s!list:type]
@@ -521,19 +503,10 @@
    \c!style=\v!italic]
 
 \definebtx
-  [sbl:\s!cite:journal]
+  [sbl:\s!cite:journal] % when specified within an article entry
   [sbl:\s!cite:title]
 
-\definebtx
-  [sbl:\s!cite:journaltitle]
-  [sbl:\s!cite:journal]
-
-\definebtx
-  [sbl:\s!cite:maintitle]
-  [sbl:\s!cite:title]
-
-\definebtx
-  [sbl:\s!cite:booktitle]
+[sbl:\s!cite:title:journal]
   [sbl:\s!cite:title]
 
 % Exceptional cases; these titles are only in quotations, not italicized
@@ -677,6 +650,16 @@
   [sbl:\s!cite:inline]
   [sbl:\s!cite]
 
+% List subcitations are similar to list citations
+\definebtx
+  [sbl:\s!cite:listsubcite]
+  [sbl:\s!cite:entry]
+
+% Inline subcitations are similar to inline citations
+\definebtx
+  [sbl:\s!cite:subcite]
+  [sbl:\s!cite:inline]
+
 % Parenthetical citations should be rendered exactly like inline citations, 
 % but the whole citation should be surrounded by parentheses, 
 % and brackets should be used where parentheses are within the citation 
@@ -696,6 +679,11 @@
 \definebtx
   [sbl:\s!cite:default]
   [sbl:\s!cite:inline]
+
+% Volume (and part) number citations
+\definebtx
+  [sbl:\s!cite:volume]
+  [sbl:\s!cite:page]
 
 % Now we setup for the details of the renderings
 
@@ -757,6 +745,7 @@
 \def\btxrootwitheditor{}
 \def\btxroottranslator{}
 \def\btxrootwithtranslator{}
+\def\btxcurrentsubcitetype{}
 
 % I thought \enordinaldaynumber was already defined elsewhere in ConTeXt, 
 % but the engine isn't recognizing it...
@@ -832,7 +821,7 @@
   \btxdoif {author} {
     % If the author and withauthor match the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxflush{author}\btxflush{withauthor}} {\btxrootauthor{}\btxrootwithauthor{}} {
+    \doifnot {\btxflush{author}\btxflush{withauthor}} {\btxrootauthor\btxrootwithauthor} {
       % If this is a proper author (and not an editor), then replace the period after the title with a comma 
       % and print the author in normal order
       \doif {\btxfoundname{author}} {author} {
@@ -911,7 +900,7 @@
   \btxdoif {author} {
     % If the author and withauthor match the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxflush{author}\btxflush{withauthor}} {\btxrootauthor{}\btxrootwithauthor{}} {
+    \doifnot {\btxflush{author}\btxflush{withauthor}} {\btxrootauthor\btxrootwithauthor} {
       % If this is a proper author (and not an editor), then print the author in normal order
       \doif {\btxfoundname{author}} {author} {
         \btxlabeltext{sbl:by}
@@ -957,160 +946,25 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:revdtitle
-  \btxdoif {revdtitle} {
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxlabeltext{sbl:review}
-    } {
-      \btxlabeltext{sbl:Review}
-    }
-    \btxspace
-    \btxlabeltext{sbl:of}
-    \btxspace
-    \btxstartstyleandcolor[sbl:\s!list:revdtitle]
-      \btxusecommand [sbl:\s!list:revdtitle] {
-        \btxflush{revdtitle}
+\starttexdefinition btx:sbl:list:short
+  \btxdoif {short} {
+    \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+        \btxflush{short} % set the shorthand according to the current category
       }
     \btxstopstyleandcolor
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:revdauthor
-  \btxdoif {revdauthor} {
-    \removeunwantedspaces
-    \removepunctuation
-    \btxcomma
-    \btxlabeltext{sbl:by}
-    \btxspace
-    \btxflush{revdauthor}
-    % Is there an assisting author?
-    \btxdoif {revdwithauthor} {
-      \btxcomma
-      % Use the provided text to introduce them, if one is specified
-      \btxdoifelse {revdwithauthortype} {
-        \btxflush{revdwithauthortype}
-      } {
-        \btxlabeltext{sbl:with}
-        \btxspace
+\starttexdefinition btx:sbl:cite:short
+  \btxdoif {short} {
+    \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+        \btxflush{short} % set the shorthand according to the current category
       }
-      \btxflush{withauthor}
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:revdeditor
-  \btxdoif {revdeditor} {
-    \removeunwantedspaces
-    \removepunctuation
+    \btxstopstyleandcolor
     \btxcomma
-    \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
-    \btxspace
-    \btxflush{revdeditor}
-    % Is there an assisting editor?
-    \btxdoif {revdwitheditor} {
-      \btxcomma
-      % Use the provided text to introduce them, if one is specified
-      \btxdoifelse {revdwitheditortype} {
-        \btxflush{revdwitheditortype}
-      } {
-        \btxlabeltext{sbl:with}
-        \btxspace
-      }
-      \btxflush{revdwitheditor} % even in list citations
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:revdtranslator
-  \btxdoif {revdtranslator} {
-    \removeunwantedspaces
-    \removepunctuation
-    \btxcomma
-    \btxlabeltext{sbl:translator}
-    \btxspace
-    \btxflush{revdtranslator}
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:revdedition
-  \btxdoif{revdedition} {
-    \removeunwantedspaces
-    \removepunctuation
-    \btxcomma
-    % Is the edition a string or a number?
-    \doifnumberelse {\btxflush{revdedition}} {
-      % If a number, then convert it to an ordinal
-      \texdefinition{btx:sbl:enordinal}{\btxflush{revdedition}}
-      \btxspace
-      \btxlabeltext{sbl:edition}
-    } {
-      % If a string, then capitalize its first word if we're in list mode
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        % For in-text citations, just print the edition string as-is
-        \btxflush{revdedition}
-      } {
-        % For list citations, make sure the first word is capitalized
-        \btxusecommand [sbl:\s!list:edition] {
-          \btxflush{revdedition}
-        }
-      }
-      \btxspace
-      \btxlabeltext{sbl:edition}
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:bookauthor
-  \btxdoif {bookauthor} {
-    \btxlabeltext{sbl:by}
-    \btxspace
-    \btxflush{bookauthor}
-    % Is there an assisting author?
-    \btxdoif {withbookauthor} {
-      \btxcomma
-      % Use the provided text to introduce them, if one is specified
-      \btxdoifelse {withbookauthortype} {
-        \btxflush{withbookauthortype}
-      } {
-        \btxlabeltext{sbl:with}
-        \btxspace
-      }
-      \btxflush{withbookauthor}
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      % If the name ends with a period (as is the case for an initial or "et al."), 
-      % then remove the preceding period
-      \removeunwantedspaces
-      \removepunctuation
-      \btxperiod
-    }
   }
 \stoptexdefinition
 
@@ -1131,8 +985,8 @@
           \btxflush{witheditortype}
         } {
           \btxlabeltext{sbl:with}
-          \btxspace
         }
+        \btxspace
         \btxflush{witheditor}
       }
       % If the name ends with a period (as is the case for "et al."), 
@@ -1162,8 +1016,8 @@
           \btxflush{witheditortype}
         } {
           \btxlabeltext{sbl:with}
-          \btxspace
         }
+        \btxspace
         \btxflush{witheditor}
       }
       % If the name ends with a period (as is the case for "et al."), 
@@ -1190,8 +1044,8 @@
           \btxflush{witheditortype}
         } {
           \btxlabeltext{sbl:with}
-          \btxspace
         }
+        \btxspace
         \btxflush{witheditor}
       }
       \btxcomma
@@ -1215,8 +1069,8 @@
           \btxflush{witheditortype}
         } {
           \btxlabeltext{sbl:with}
-          \btxspace
         }
+        \btxspace
         \btxflush{witheditor}
       }
       \btxcomma
@@ -1224,7 +1078,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:translator:list
+\starttexdefinition btx:sbl:list:translator
   \btxdoif {translator} {
     \btxlabeltext{sbl:Translated}
     \btxspace
@@ -1245,8 +1099,8 @@
         \btxflush{withtranslatortype}
       } {
         \btxlabeltext{sbl:with}
-        \btxspace
       }
+      \btxspace
       \btxflush{withtranslator}
     }
     % If the name ends with a period (as is the case for "et al."), 
@@ -1257,7 +1111,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:translator:listsubcite
+\starttexdefinition btx:sbl:listsubcite:translator
   \btxdoif {translator} {
     % If the translator and withtranslator match the corresponding fields in the root citation, 
     % then skip this
@@ -1275,8 +1129,8 @@
           \btxflush{withtranslatortype}
         } {
           \btxlabeltext{sbl:with}
-          \btxspace
         }
+        \btxspace
         \btxflush{withtranslator}
       }
       % If the name ends with a period (as is the case for "et al."), 
@@ -1288,7 +1142,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:translator:cite
+\starttexdefinition btx:sbl:cite:translator
   \btxdoif {translator} {
     \btxlabeltext{sbl:translator}
     \btxspace
@@ -1301,15 +1155,15 @@
         \btxflush{withtranslatortype}
       } {
         \btxlabeltext{sbl:with}
-        \btxspace
       }
+      \btxspace
       \btxflush{withtranslator}
     }
     \btxcomma
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:translator:subcite
+\starttexdefinition btx:sbl:subcite:translator
   \btxdoif {translator} {
     % If the translator and withranslator match the corresponding fields in the root citation, 
     % then skip this
@@ -1325,8 +1179,8 @@
           \btxflush{withtranslatortype}
         } {
           \btxlabeltext{sbl:with}
-          \btxspace
         }
+        \btxspace
         \btxflush{withtranslator}
       }
       \btxcomma
@@ -1334,177 +1188,11 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:list:suppbooktype
-  \btxdoif {type} {
-    % For list citations, make sure the type is capitalized
-    \btxusecommand [sbl:\s!list:type] {
-      \btxflush{type}
-    }
-    \btxspace
-    \btxlabeltext{sbl:to}
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:cite:suppbooktype
-  \btxdoif {type} {
-    % For in-text citations, just print the type as-is
-    \btxflush{type}
-    \btxspace
-    \btxlabeltext{sbl:to}
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:list:bookpages
-  \btxdoif {pages} {
-    \btxoneorrange {pages} {
-      \btxlabeltext{sbl:Page}
-    } {
-      \btxlabeltext{sbl:Pages}
-    }
-    \btxspace
-    \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
-    \btxspace
-    \btxlabeltext{sbl:in}
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:list:volume
-  \btxdoif {volume} {
-    \btxoneorrange {volume} {
-      \btxlabeltext{sbl:Volume}
-    } {
-      \btxlabeltext{sbl:Volumes}
-    }
-    \btxspace
-    \btxflush{volume}
-    % Is there a part number subdividing the volume?
-    \btxdoif {part} {
-      \btxcomma
-      \btxoneorrange {part} {
-        \btxlabeltext{sbl:part}
-      } {
-        \btxlabeltext{sbl:parts}
-      }
-      \btxspace
-      \btxflush{part}
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:listsubcite:volume
-  \texdefinition{btx:sbl:cite:volume}
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:cite:volume
-  \btxdoif {volume} {
-    \btxoneorrange {volume} {
-      \btxlabeltext{sbl:volume}
-    } {
-      \btxlabeltext{sbl:volumes}
-    }
-    \btxspace
-    \btxflush{volume}
-    % Is there a part number subdividing the volume?
-    \btxdoif {part} {
-      \btxcomma
-      \btxoneorrange {part} {
-        \btxlabeltext{sbl:part}
-      } {
-        \btxlabeltext{sbl:parts}
-      }
-      \btxspace
-      \btxflush{part}
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:subcite:volume
-  \texdefinition{btx:sbl:cite:volume}
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:list:collectionxref
-  \btxdoif{collectionxref} {
-    % If there is a volume number, then print it here
-    \btxdoifelse {volume} {
-      \texdefinition{btx:sbl:list:volume}
-      \btxspace
-      \btxlabeltext{sbl:of}
-    } {
-      \btxlabeltext{sbl:In}
-    }
-    \btxspace
-    % Recursively cite the collection
-    \cite[listsubcite][\btxflush{collectionxref}]
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:listsubcite:collectionxref
-  \btxdoif{collectionxref} {
-    % If there is a volume number, then print it here
-    \btxdoif {volume} {
-      \texdefinition{btx:sbl:listsubcite:volume}
-      \btxspace
-      \btxlabeltext{sbl:of}
-    }
-    \btxspace
-    % Recursively cite the collection
-    \cite[listsubcite][\btxflush{collectionxref}]
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:cite:collectionxref
-  \btxdoif{collectionxref} {
-    % If there is a volume number, then print it here
-    \btxdoifelse {volume} {
-      \texdefinition{btx:sbl:cite:volume}
-      \btxspace
-      \btxlabeltext{sbl:of}
-    } {
-      \btxlabeltext{sbl:in}
-    }
-    \btxspace
-    % Recursively cite the collection
-    \cite[listsubcite][\btxflush{collectionxref}]
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:subcite:collectionxref
-  \btxdoif{collectionxref} {
-    % If there is a volume number, then print it here
-    \btxdoif {volume} {
-      \texdefinition{btx:sbl:subcite:volume}
-      \btxspace
-      \btxlabeltext{sbl:of}
-    }
-    \btxspace
-    % Recursively cite the collection
-    \cite[subcite][\btxflush{collectionxref}]
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:list:partinbook
-  % If the current category is suppbook,
-  % then print the type (e.g., "introduction", "preface", "foreword")
-  \doifelse {\currentbtxcategory} {suppbook} {
-    \btxdoif {type} {
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        % For in-text citations, just print the type as-is
-        \btxflush{type} % required field for suppbook
-      } {
-        % For list citations, make sure the type is capitalized
-        \btxusecommand [sbl:\s!list:type] {
-          \btxflush{type}
-        }
-      }
-      \btxspace
-      \btxlabeltext{sbl:to}
-    }
-  } {
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      % For in-text citations, just write "in" before the booktitle or maintitle
-      \btxlabeltext{sbl:in}
-    } {
-      % In the bibliographic list, place the page numbers (if any are provided) here
+\starttexdefinition btx:sbl:list:bookxref
+  \btxdoif{bookxref} {
+    % Proceed by the category of the current entry
+    \doifnotinset {\currentbtxcategory} {suppbook, review} {
+      % Print page numbers here, if there are any
       \btxdoifelse {pages} {
         \btxoneorrange {pages} {
           \btxlabeltext{sbl:Page}
@@ -1513,129 +1201,184 @@
         }
         \btxspace
         \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
+        \btxspace
         \btxlabeltext{sbl:in}
       } {
         \btxlabeltext{sbl:In}
       }
     }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:booktitle
-  \btxdoif {booktitle} {
-    \btxstartstyleandcolor[sbl:\s!list:booktitle]
-      \btxusecommand [sbl:\s!list:booktitle] {
-        \btxflush{booktitle}
-      }
-    \btxstopstyleandcolor
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:bookeditor
-  \btxdoif {bookeditor} {
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
-      \btxspace
-    } {
-      \btxlabeltext{sbl:Edited}
-      \btxspace
-      \btxlabeltext{sbl:by}
-      \btxspace
-    }
-    \btxflush{bookeditor}
-    % Is there an assisting editor?
-    \btxdoif {withbookeditor} {
-      \btxcomma
-      % Use the provided text to introduce them, if one is specified
-      \btxdoifelse {withbookeditortype} {
-        \btxflush{withbookeditortype}
+    \doifinset {\currentbtxcategory} {suppbook} {
+      % Print the section of the book
+      \btxdoifelse {type} {
+        % For list citations, make sure the type is capitalized
+        \btxusecommand [sbl:\s!list:type] {
+          \btxflush{type}
+        }
+        \btxspace
+        \btxlabeltext{sbl:to}
       } {
-        \btxlabeltext{sbl:with}
+        \btxlabeltext{sbl:In}
       }
-      \btxspace
-      \btxflush{withbookeditor}
-      \btxcomma
     }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
+    \doifinset {\currentbtxcategory} {review} {
+      % Precede the subcitation with "Review of"
+      \btxlabeltext{sbl:Review}
+      \btxspace
+      \btxlabeltext{sbl:of}
+    }
+    \btxspace
+    % Recursively cite the collection, but do not add it to the list
+    \begingroup
+    \doifelse {\currentbtxcategory} {review} {
+      \edef\btxcurrentsubcitetype{review}
     } {
-      % If the name ends with a period (as is the case for an initial or "et al."), 
-      % then remove the preceding period
-      \removeunwantedspaces
-      \removepunctuation
-      \btxperiod
+      \edef\btxcurrentsubcitetype{inbook}
+    }
+    \textcite[listsubcite][\btxflush{bookxref}]
+    \endgroup
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:bookxref
+  \btxdoif{bookxref} {
+    % Proceed by the category of the current entry
+    \doifnotinset {\currentbtxcategory} {suppbook, review} {
+      \btxlabeltext{sbl:in}
+    }
+    \doifinset {\currentbtxcategory} {suppbook} {
+      % Print the section of the book
+      \btxdoifelse {type} {
+        % For inline citations, the type need not be capitalized
+        \btxflush{type}
+        \btxspace
+        \btxlabeltext{sbl:to}
+      } {
+        \btxlabeltext{sbl:in}
+      }
+    }
+    \doifinset {\currentbtxcategory} {review} {
+      % Precede the subcitation with "review of"
+      \btxlabeltext{sbl:review}
+      \btxspace
+      \btxlabeltext{sbl:of}
+    }
+    \btxspace
+    % Recursively cite the collection, but do not add it to the list
+    \begingroup
+    \doifelse {\currentbtxcategory} {review} {
+      \edef\btxcurrentsubcitetype{review}
+    } {
+      \edef\btxcurrentsubcitetype{inbook}
+    }
+    \textcite[subcite][\btxflush{bookxref}]
+    \endgroup
+    % Cite the pages afterwards
+    \btxcomma
+    \btxdoif {pages} {
+      % If the book cited is an untitled volume in a collection, 
+      % then prefix the page number(s) with the volume (and part)
+      \doif {\btxfoundname{bookxref}} {incollectionxref} {
+        \textcite[volume][\btxflush{bookxref}]
+        \btxcolon
+        \removeunwantedspaces
+      }
+      \btxflush{pages}
+      \btxcomma
     }
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:maintitle
-  \btxdoif {maintitle} {
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      % For in-text citations, only print the volume and part if a booktitle precedes this
-      % (otherwise, save them for the page range)
-      \btxdoif {booktitle} {
-        \btxdoifelse {volume} {
-          \btxoneorrange {volume} {
-            \btxlabeltext{sbl:volume}
-          } {
-            \btxlabeltext{sbl:volumes}
-          }
-          \btxspace
-          \btxflush{volume}
-          % Is there a part number for the book being cited from this collection?
-          \btxdoif {part} {
-            \btxcomma
-            \btxoneorrange {part} {
-              \btxlabeltext{sbl:part}
-            } {
-              \btxlabeltext{sbl:parts}
-            }
-            \btxspace
-            \btxflush{part}
-          }
-          \btxspace
-          \btxlabeltext{sbl:of}
-          \btxspace
+\starttexdefinition btx:sbl:list:collectionxref
+  \btxdoif{collectionxref} {
+    % If there is a volume number, then print it here
+    \btxdoifelse {volume} {
+      \btxoneorrange {volume} {
+        \btxlabeltext{sbl:Volume}
+      } {
+        \btxlabeltext{sbl:Volumes}
+      }
+      \btxspace
+      \btxflush{volume}
+      % Is there a part number subdividing the volume?
+      \btxdoif {part} {
+        \btxcomma
+        \btxoneorrange {part} {
+          \btxlabeltext{sbl:part}
         } {
-          \btxlabeltext{sbl:in}
-          \btxspace
+          \btxlabeltext{sbl:parts}
+        }
+        \btxspace
+        \btxflush{part}
+      }
+      \btxspace
+      \btxlabeltext{sbl:of}
+    } {
+      \btxlabeltext{sbl:In}
+    }
+    \btxspace
+    % Recursively cite the collection, but do not add it to the list
+    \begingroup
+    \edef\btxcurrentsubcitetype{incollection}
+    \textcite[listsubcite][\btxflush{collectionxref}]
+    \endgroup
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:listsubcite:collectionxref
+  \btxdoif{collectionxref} {
+    % If there is a volume number, then print it here
+    \btxdoif {volume} {
+      \btxoneorrange {volume} {
+        % If the entry is not in the incollection category, then we start a sentence with the volume (and part) here;
+        % otherwise, it is in the middle of a sentence
+        \doifelse {\currentbtxcategory} {incollection} {
+          \btxlabeltext{sbl:volume}
+        } {
+          \btxlabeltext{sbl:Volume}
+        }   
+      } {
+        % If the entry is not in the incollection category, then we start a sentence with the volume (and part) here;
+        % otherwise, it is in the middle of a sentence
+        \doifelse {\currentbtxcategory} {incollection} {
+          \btxlabeltext{sbl:volumes}
+        } {
+          \btxlabeltext{sbl:Volumes}
         }
       }
-    } {
-      % In list mode, only capitalize "vol.", "vols.", or "in" if a booktitle is present
-      \btxdoifelse {booktitle} {
-        \btxdoifelse {volume} {
-          \btxoneorrange {volume} {
-            \btxlabeltext{sbl:Volume}
-          } {
-            \btxlabeltext{sbl:Volumes}
-          }
-          \btxspace
-          \btxflush{volume}
-          % Is there a part number for the book being cited from this collection?
-          \btxdoif {part} {
-            \btxcomma
-            \btxoneorrange {part} {
-              \btxlabeltext{sbl:part}
-            } {
-              \btxlabeltext{sbl:parts}
-            }
-            \btxspace
-            \btxflush{part}
-          }
-          \btxspace
-          \btxlabeltext{sbl:of}
-          \btxspace
+      \btxspace
+      \btxflush{volume}
+      % Is there a part number subdividing the volume?
+      \btxdoif {part} {
+        \btxcomma
+        \btxoneorrange {part} {
+          \btxlabeltext{sbl:part}
         } {
-          \btxlabeltext{sbl:In}
-          \btxspace
+          \btxlabeltext{sbl:parts}
         }
-      } {
+        \btxspace
+        \btxflush{part}
+      }
+      \btxspace
+      \btxlabeltext{sbl:of}
+      \btxspace
+    }
+    % Recursively cite the collection, but do not add it to the list
+    \begingroup
+    \edef\btxcurrentsubcitetype{incollection}
+    \textcite[listsubcite][\btxflush{collectionxref}]
+    \endgroup
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:collectionxref
+  \btxdoif{collectionxref} {
+    % If the entry is not in the incollection category, then we cite the volume (and part) here;
+    % otherwise, it will be cited with the page numbers
+    \doifnot {\currentbtxcategory} {incollection} {
+      \btxdoif {volume} {
         \btxoneorrange {volume} {
           \btxlabeltext{sbl:volume}
         } {
@@ -1643,7 +1386,7 @@
         }
         \btxspace
         \btxflush{volume}
-        % Is there a part number for the book being cited from this collection?
+        % Is there a part number subdividing the volume?
         \btxdoif {part} {
           \btxcomma
           \btxoneorrange {part} {
@@ -1659,53 +1402,17 @@
         \btxspace
       }
     }
-    \btxstartstyleandcolor[sbl:\s!list:maintitle]
-      \btxusecommand [sbl:\s!list:maintitle] {
-        \btxflush{maintitle}
-      }
-    \btxstopstyleandcolor
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    % Recursively cite the collection, but do not add it to the list
+    \begingroup
+    \edef\btxcurrentsubcitetype{incollection}
+    \textcite[subcite][\btxflush{collectionxref}]
+    \endgroup
+    \btxcomma
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:maineditor
-  \btxdoif {maineditor} {
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
-      \btxspace
-    } {
-      \btxlabeltext{sbl:Edited}
-      \btxspace
-      \btxlabeltext{sbl:by}
-      \btxspace
-    }
-    \btxflush{maineditor}
-    % Is there an assisting editor?
-    \btxdoif {withmaineditor} {
-      \btxcomma
-      % Use the provided text to introduce them, if one is specified
-      \btxdoifelse {withmaineditortype} {
-        \btxflush{withmaineditortype}
-      } {
-        \btxlabeltext{sbl:with}
-      }
-      \btxspace
-      \btxflush{withmaineditor}
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      % If the name ends with a period (as is the case for an initial or "et al."), 
-      % then remove the preceding period
-      \removeunwantedspaces
-      \removepunctuation
-      \btxperiod
-    }
-  }
+\starttexdefinition btx:sbl:subcite:collectionxref
+  \texdefinition{btx:sbl:cite:collectionxref}
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:list:volumes
@@ -1780,8 +1487,21 @@
 
 \starttexdefinition btx:sbl:list:seriesxref
   \btxdoif {seriesxref} {
-    % Recursively cite the series
-    \cite[listsubcite][\btxflush{seriesxref}]
+    % Is this a cross-reference to a separate entry for the series?
+    \doifelse {\btxfoundname{series}} {seriesxref} {
+      % If so, then recursively cite the series, but do not add it to the list
+      \begingroup
+      \edef\btxcurrentsubcitetype{series}
+      \textcite[listsubcite][\btxflush{series}]
+      \endgroup
+    } {
+      % Otherwise, this field just contains the series name; print it with the appropriate formatting
+      \btxstartstyleandcolor[sbl:\s!list:title:series]
+        \btxusecommand [sbl:\s!list:title:series] {
+          \btxflush{series}
+        }
+      \btxstopstyleandcolor
+    }
     % If the series itself has a series number (e.g., "WUNT 2", the second series of WUNT),
     % then print that number before the series entry number, with a forward slash in between
     \btxdoifelse {seriesseries} {
@@ -1805,8 +1525,21 @@
 
 \starttexdefinition btx:sbl:cite:seriesxref
   \btxdoif {seriesxref} {
-    % Recursively cite the series
-    \cite[subcite][\btxflush{seriesxref}]
+    % Is this a cross-reference to a separate entry for the series?
+    \doifelse {\btxfoundname{series}} {seriesxref} {
+      % If so, then recursively cite the series, but do not add it to the list
+      \begingroup
+      \edef\btxcurrentsubcitetype{series}
+      \textcite[subcite][\btxflush{series}]
+      \endgroup
+    } {
+      % Otherwise, this field just contains the series name; print it with the appropriate formatting
+      \btxstartstyleandcolor[sbl:\s!list:title:series]
+        \btxusecommand [sbl:\s!list:title:series] {
+          \btxflush{series}
+        }
+      \btxstopstyleandcolor
+    }
     % If the series itself has a series number (e.g., "WUNT 2", the second series of WUNT),
     % then print that number before the series entry number, with a forward slash in between
     \btxdoifelse {seriesseries} {
@@ -1844,15 +1577,25 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:journal
+\starttexdefinition btx:sbl:list:journalxref
   \btxdoif {journal} {
-    % Print the journal name
-    \btxstartstyleandcolor[sbl:\s!list:journal]
-      \btxusecommand [sbl:\s!list:journal] {
-        \btxflush{journal}
-      }
-    \btxstopstyleandcolor
+    % Is this a cross-reference to a separate entry for the journal?
+    \doifelse {\btxfoundname{journal}} {journalxref} {
+      % If so, then recursively cite the journal, but do not add it to the list
+      \begingroup
+      \edef\btxcurrentsubcitetype{journal}
+      \textcite[listsubcite][\btxflush{journal}]
+      \endgroup
+    } {
+      % Otherwise, this field just contains the journal name; print it with the appropriate formatting
+      \btxstartstyleandcolor[sbl:\s!list:title:journal]
+        \btxusecommand [sbl:\s!list:title:journal] {
+          \btxflush{journal}
+        }
+      \btxstopstyleandcolor
+    }
     % Print the volume number(s), if any
+    % TODO: Need to handle the case of multiple volumes/numbers, dates, and page numbers separated by "and"
     \btxdoif {volume} {
       \btxspace
       \btxflush{volume}
@@ -1874,6 +1617,59 @@
       \btxrightparenthesisorbracket
     }
     \btxcolon
+    % Print the page numbers
+    \btxdoif {pages} {
+      \btxflush{pages}
+    }
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:journalxref
+  \btxdoif {journal} {
+    % Is this a cross-reference to a separate entry for the journal?
+    \doifelse {\btxfoundname{journal}} {journalxref} {
+      % If so, then recursively cite the journal, but do not add it to the list
+      \begingroup
+      \edef\btxcurrentsubcitetype{journal}
+      \textcite[subcite][\btxflush{journal}]
+      \endgroup
+    } {
+      % Otherwise, this field just contains the journal name; print it with the appropriate formatting
+      \btxstartstyleandcolor[sbl:\s!list:title:journal]
+        \btxusecommand [sbl:\s!list:title:journal] {
+          \btxflush{journal}
+        }
+      \btxstopstyleandcolor
+    }
+    % Print the volume number(s), if any
+    % TODO: Need to handle the case of multiple volumes/numbers, dates, and page numbers separated by "and"
+    \btxdoif {volume} {
+      \btxspace
+      \btxflush{volume}
+      % If there is an issue number or range, then print it after the volume number, with a period in between
+      \btxdoif {number} {
+        \removeunwantedspaces
+        \btxperiod
+        \removeunwantedspaces
+        \btxflush{number}
+      }
+    }
+    % Print the date
+    % TODO: If date is in "YYYY-MM-DD" format, 
+    % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
+    % otherwise, it should be printed as a year in parentheses followed by a colon.
+    \btxdoif {date} {
+      \btxleftparenthesisorbracket
+      \btxflush{date}
+      \btxrightparenthesisorbracket
+    }
+    \btxcolon
+    % Print the page numbers
+    \btxdoif {pages} {
+      \btxflush{pages}
+    }
+    \btxcomma
   }
 \stoptexdefinition
 
@@ -2180,8 +1976,17 @@
       \btxlabeltext{sbl:Translationof}
       \btxspace
     }
-    % Recursively cite the reprinted/translated version
-    \cite[listsubcite][\btxflush{reprxref}]
+    % Recursively cite the reprinted/translated version, but do not add it to the list
+    \begingroup
+    \doif {\btxfoundname{reprxref}} {reprxref} {
+      \edef\btxcurrentsubcitetype{reprint}
+    }
+    \doif {\btxfoundname{reprxref}} {transxref} {
+      \edef\btxcurrentsubcitetype{translation}
+    }
+    \textcite[listsubcite][\btxflush{reprxref}]
+    \endgroup
+    \btxperiod
   }
 \stoptexdefinition
 
@@ -2206,11 +2011,19 @@
       \btxlabeltext{sbl:of}
       \btxspace
     }
-    % Recursively cite the reprinted/translated version
-    \cite[subcite][\btxflush{reprxref}]
+    % Recursively cite the reprinted/translated version, but do not add it to the list
+    \begingroup
+    \doif {\btxfoundname{reprxref}} {reprxref} {
+      \edef\btxcurrentsubcitetype{reprint}
+    }
+    \doif {\btxfoundname{reprxref}} {transxref} {
+      \edef\btxcurrentsubcitetype{translation}
+    }
+    \textcite[subcite][\btxflush{reprxref}]
+    \endgroup
+    \btxcomma
   }
 \stoptexdefinition
-
 
 \starttexdefinition btx:sbl:list:eprint
   % Is the eprint field present?
@@ -2417,12 +2230,13 @@
 \stoptexdefinition
 
 % List citation setups
+
 \startsetups btx:sbl:list:book
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:collectionxref}
   \texdefinition{btx:sbl:list:editor}
   \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:collectionxref}
   \texdefinition{btx:sbl:list:edition}
   \texdefinition{btx:sbl:list:seriesxref}
   \texdefinition{btx:sbl:list:publisher}
@@ -2452,74 +2266,77 @@
 \stopsetups
 
 \startsetups btx:sbl:list:mvbook
-  \fastsetup{btx:sbl:list:book}
+  \texdefinition{btx:sbl:list:author}
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:list:editor}
+  \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:volumes}
+  \texdefinition{btx:sbl:list:edition}
+  \texdefinition{btx:sbl:list:seriesxref}
+  \texdefinition{btx:sbl:list:publisher}
+  \texdefinition{btx:sbl:list:ebook}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:reprxref}
+  \texdefinition{btx:sbl:list:note}
+  \removeunwantedspaces
+  \removepunctuation
+  \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:mvreference
-  \fastsetup{btx:sbl:list:book}
+  \fastsetup{btx:sbl:list:mvbook}
 \stopsetups
 
 \startsetups btx:sbl:list:mvcommentary
-  \fastsetup{btx:sbl:list:book}
+  \fastsetup{btx:sbl:list:mvbook}
 \stopsetups
 
 \startsetups btx:sbl:list:mvlexicon
-  \fastsetup{btx:sbl:list:book}
+  \fastsetup{btx:sbl:list:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:list:collection
+  \fastsetup{btx:sbl:list:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:list:incollection % this should really only be subcited, but we'll allow it
+  \texdefinition{btx:sbl:list:collectionxref}
+  \texdefinition{btx:sbl:list:bookseries}
+  \texdefinition{btx:sbl:list:publisher}
+  \texdefinition{btx:sbl:list:ebook}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:note}
+  \removeunwantedspaces
+  \removepunctuation
+  \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:series
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:title}
-  \texdefinition{btx:sbl:editor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:ebook}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:list:editor}
+  \texdefinition{btx:sbl:list:volumes}
+  \texdefinition{btx:sbl:list:publisher}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:inbook
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:title}
-  \texdefinition{btx:sbl:partinbook} % used for suppbook type or pages in list mode
-  \texdefinition{btx:sbl:booktitle}
-  \texdefinition{btx:sbl:bookauthor}
-  \texdefinition{btx:sbl:bookeditor}
-  \texdefinition{btx:sbl:maintitle}
-  \texdefinition{btx:sbl:maineditor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:edition}
-  \texdefinition{btx:sbl:bookseries}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:bookpages} % used for pages when not in list mode
-  \texdefinition{btx:sbl:ebook}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
+  \texdefinition{btx:sbl:list:author}
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:bookxref}
+  \texdefinition{btx:sbl:list:reprxref}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:suppbook
-  \texdefinition{btx:sbl:list:author}
-  \btxdoif {type} {
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        % For in-text citations, just print the type as-is
-        \btxflush{type} % required field for suppbook
-      } {
-        % For list citations, make sure the type is capitalized
-        \btxusecommand [sbl:\s!list:type] {
-          \btxflush{type}
-        }
-      }
-      \btxspace
-      \btxlabeltext{sbl:to}
-    }
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
@@ -2543,33 +2360,17 @@
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
-\startsetups btx:sbl:list:incollection
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:title}
-  \texdefinition{btx:sbl:editor}
-  \texdefinition{btx:sbl:maintitle}
-  \texdefinition{btx:sbl:maineditor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:edition}
-  \texdefinition{btx:sbl:bookseries}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:ebook}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
-  \removeunwantedspaces
-  \removepunctuation
-  \btxperiod
+\startsetups btx:sbl:list:journal
+  \fastsetup{btx:sbl:list:series}
 \stopsetups
 
 \startsetups btx:sbl:list:article
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:title}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:journal}
-  \texdefinition{btx:sbl:pages}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
+  \texdefinition{btx:sbl:list:author}
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:journalxref}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
@@ -2594,8 +2395,7 @@
   \texdefinition{btx:sbl:revdeditor}
   \texdefinition{btx:sbl:revdtranslator}
   \texdefinition{btx:sbl:revdedition}
-  \texdefinition{btx:sbl:journal}
-  \texdefinition{btx:sbl:pages}
+  \texdefinition{btx:sbl:journalxref}
   \texdefinition{btx:sbl:doi}
   \texdefinition{btx:sbl:note}
   \removeunwantedspaces
@@ -2666,30 +2466,173 @@
 
 % List subcitation setups
 \startsetups btx:sbl:listsubcite:book
-  \texdefinition{btx:sbl:listsubcite:title}
+  \texdefinition{btx:sbl:list:title}
   \texdefinition{btx:sbl:listsubcite:author}
-  \texdefinition{btx:sbl:listsubcite:collectionxref}
   \texdefinition{btx:sbl:listsubcite:editor}
   \texdefinition{btx:sbl:listsubcite:translator}
-  \texdefinition{btx:sbl:list:edition}
-  \texdefinition{btx:sbl:list:seriesxref}
-  \texdefinition{btx:sbl:list:publisher}
-  \texdefinition{btx:sbl:list:ebook}
-  \texdefinition{btx:sbl:list:doi}
-  \texdefinition{btx:sbl:list:reprxref}
-  \texdefinition{btx:sbl:list:note}
+  % Only recursively cite collection data if this subcitation is for a reprint, translation, or inbook citation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook} {
+    \texdefinition{btx:sbl:listsubcite:collectionxref}
+  }
+  % Only recursively cite publication data if this subcitation is for a reprint, translation, or inbook citation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook} {
+    \texdefinition{btx:sbl:list:edition}
+    \texdefinition{btx:sbl:list:seriesxref}
+    \texdefinition{btx:sbl:list:publisher}
+    \texdefinition{btx:sbl:list:ebook}
+    \texdefinition{btx:sbl:list:doi}
+    \texdefinition{btx:sbl:list:reprxref}
+  }
   \removeunwantedspaces
   \removepunctuation
-  \btxperiod
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:reference
+  \fastsetup{btx:sbl:listsubcite:book}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:commentary
+  \fastsetup{btx:sbl:listsubcite:book}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:lexicon
+  \fastsetup{btx:sbl:listsubcite:book}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:manual
+  \fastsetup{btx:sbl:listsubcite:book}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:mvbook
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:listsubcite:author}
+  \texdefinition{btx:sbl:listsubcite:editor}
+  \texdefinition{btx:sbl:listsubcite:translator}
+  % Only recursively cite publication data if this subcitation is for a reprint or translation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+    \texdefinition{btx:sbl:list:volumes}
+    \texdefinition{btx:sbl:list:edition}
+    \texdefinition{btx:sbl:list:seriesxref}
+    \texdefinition{btx:sbl:list:publisher}
+    \texdefinition{btx:sbl:list:ebook}
+    \texdefinition{btx:sbl:list:doi}
+    \texdefinition{btx:sbl:list:reprxref}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:mvreference
+  \fastsetup{btx:sbl:listsubcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:mvcommentary
+  \fastsetup{btx:sbl:listsubcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:mvlexicon
+  \fastsetup{btx:sbl:listsubcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:collection
+  \fastsetup{btx:sbl:listsubcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:incollection
+  \texdefinition{btx:sbl:listsubcite:collectionxref}
+  \texdefinition{btx:sbl:list:bookseries}
+  % Only recursively cite publication data if this subcitation is for a reprint, translation or inbook citation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook} {
+    \texdefinition{btx:sbl:list:publisher}
+    \texdefinition{btx:sbl:list:ebook}
+    \texdefinition{btx:sbl:list:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:series
+  % Always use the short form in subcites, if available
+  \btxdoifelse {short} {
+    \texdefinition{btx:sbl:list:short}
+  } {
+    \texdefinition{btx:sbl:list:title}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:inbook
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:listsubcite:author}
+  \texdefinition{btx:sbl:list:bookxref}
+  \texdefinition{btx:sbl:listsubcite:translator}
+  % Only recursively cite publication data if this subcitation is for a reprint or translation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+    \texdefinition{btx:sbl:list:reprxref}
+    \texdefinition{btx:sbl:list:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:suppbook
+  \fastsetup{btx:sbl:listsubcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:inreference
+  \fastsetup{btx:sbl:listsubcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:inlexicon
+  \fastsetup{btx:sbl:listsubcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:incommentary
+  \fastsetup{btx:sbl:listsubcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:seminarpaper
+  \fastsetup{btx:sbl:listsubcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:inproceedings
+  \fastsetup{btx:sbl:listsubcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:journal
+  \fastsetup{btx:sbl:listsubcite:series}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:article
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:listsubcite:author}
+  \texdefinition{btx:sbl:listsubcite:translator}
+  \texdefinition{btx:sbl:list:journalxref}
+  \texdefinition{btx:sbl:list:doi}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:magazine
+  \fastsetup{btx:sbl:listsubcite:article}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:newspaper
+  \fastsetup{btx:sbl:listsubcite:article}
+\stopsetups
+
+\startsetups btx:sbl:listsubcite:periodical
+  \fastsetup{btx:sbl:listsubcite:article}
 \stopsetups
 
 % Inline citation setups
 \startsetups btx:sbl:cite:book
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:collectionxref}
   \texdefinition{btx:sbl:cite:editor}
   \texdefinition{btx:sbl:cite:translator}
+  \texdefinition{btx:sbl:cite:collectionxref}
   \texdefinition{btx:sbl:cite:edition}
   \texdefinition{btx:sbl:cite:seriesxref}
   \texdefinition{btx:sbl:cite:publisher}
@@ -2701,23 +2644,303 @@
   \removepunctuation
 \stopsetups
 
-% Inline subcitation setups
-\startsetups btx:sbl:subcite:book
-  \texdefinition{btx:sbl:subcite:title}
-  \texdefinition{btx:sbl:subcite:author}
-  \texdefinition{btx:sbl:subcite:collectionxref}
-  \texdefinition{btx:sbl:subcite:editor}
-  \texdefinition{btx:sbl:subcite:translator}
+\startsetups btx:sbl:cite:reference
+  \fastsetup{btx:sbl:cite:book}
+\stopsetups
+
+\startsetups btx:sbl:cite:commentary
+  \fastsetup{btx:sbl:cite:book}
+\stopsetups
+
+\startsetups btx:sbl:cite:lexicon
+  \fastsetup{btx:sbl:cite:book}
+\stopsetups
+
+\startsetups btx:sbl:cite:manual
+  \fastsetup{btx:sbl:cite:book}
+\stopsetups
+
+\startsetups btx:sbl:cite:mvbook
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:editor}
+  \texdefinition{btx:sbl:cite:translator}
+  \texdefinition{btx:sbl:cite:volumes}
   \texdefinition{btx:sbl:cite:edition}
   \texdefinition{btx:sbl:cite:seriesxref}
   \texdefinition{btx:sbl:cite:publisher}
   \texdefinition{btx:sbl:cite:ebook}
   \texdefinition{btx:sbl:cite:doi}
   \texdefinition{btx:sbl:cite:reprxref}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:cite:mvreference
+  \fastsetup{btx:sbl:cite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:mvcommentary
+  \fastsetup{btx:sbl:cite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:mvlexicon
+  \fastsetup{btx:sbl:cite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:collection
+  \fastsetup{btx:sbl:cite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:incollection % this should really only be subcited, but we'll allow it
+  \texdefinition{btx:sbl:cite:collectionxref}
+  \texdefinition{btx:sbl:cite:bookseries}
+  \texdefinition{btx:sbl:cite:publisher}
+  \texdefinition{btx:sbl:cite:ebook}
+  \texdefinition{btx:sbl:cite:doi}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:cite:series
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:editor}
+  \texdefinition{btx:sbl:cite:volumes}
+  \texdefinition{btx:sbl:cite:publisher}
+  \texdefinition{btx:sbl:cite:doi}
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
+
+\startsetups btx:sbl:cite:inbook
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:translator}
+  \texdefinition{btx:sbl:cite:bookxref}
+  \texdefinition{btx:sbl:cite:reprxref}
+  \texdefinition{btx:sbl:cite:doi}
+  \texdefinition{btx:sbl:cite:note}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:cite:suppbook
+  \fastsetup{btx:sbl:cite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:inreference
+  \fastsetup{btx:sbl:cite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:inlexicon
+  \fastsetup{btx:sbl:cite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:incommentary
+  \fastsetup{btx:sbl:cite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:seminarpaper
+  \fastsetup{btx:sbl:cite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:inproceedings
+  \fastsetup{btx:sbl:cite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:journal
+  \fastsetup{btx:sbl:cite:series}
+\stopsetups
+
+\startsetups btx:sbl:cite:article
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:translator}
+  \texdefinition{btx:sbl:cite:journalxref}
+  \texdefinition{btx:sbl:cite:doi}
+  \texdefinition{btx:sbl:cite:note}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:cite:magazine
+  \fastsetup{btx:sbl:cite:article}
+\stopsetups
+
+\startsetups btx:sbl:cite:newspaper
+  \fastsetup{btx:sbl:cite:article}
+\stopsetups
+
+\startsetups btx:sbl:cite:periodical
+  \fastsetup{btx:sbl:cite:article}
+\stopsetups
+
+% Inline subcitation setups
+\startsetups btx:sbl:subcite:book
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:subcite:editor}
+  \texdefinition{btx:sbl:subcite:translator}
+  % Only recursively cite collection data if this subcitation is for a reprint, translation, or inbook citation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook} {
+    \texdefinition{btx:sbl:subcite:collectionxref}
+  }
+  % Only recursively cite publication data if this subcitation is for a reprint, translation, or inbook citation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook} {
+    \texdefinition{btx:sbl:cite:edition}
+    \texdefinition{btx:sbl:cite:seriesxref}
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:ebook}
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:subcite:reference
+  \fastsetup{btx:sbl:subcite:book}
+\stopsetups
+
+\startsetups btx:sbl:subcite:commentary
+  \fastsetup{btx:sbl:subcite:book}
+\stopsetups
+
+\startsetups btx:sbl:subcite:lexicon
+  \fastsetup{btx:sbl:subcite:book}
+\stopsetups
+
+\startsetups btx:sbl:subcite:manual
+  \fastsetup{btx:sbl:subcite:book}
+\stopsetups
+
+\startsetups btx:sbl:subcite:mvbook
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:subcite:editor}
+  \texdefinition{btx:sbl:subcite:translator}
+  % Only recursively cite publication data if this subcitation is for a reprint or translation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+    \texdefinition{btx:sbl:cite:volumes}
+    \texdefinition{btx:sbl:cite:edition}
+    \texdefinition{btx:sbl:cite:seriesxref}
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:ebook}
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:subcite:mvreference
+  \fastsetup{btx:sbl:subcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:mvcommentary
+  \fastsetup{btx:sbl:subcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:mvlexicon
+  \fastsetup{btx:sbl:subcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:collection
+  \fastsetup{btx:sbl:subcite:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:incollection
+  \texdefinition{btx:sbl:subcite:collectionxref}
+  \texdefinition{btx:sbl:cite:bookseries}
+  % Only recursively cite publication data if this subcitation is for a reprint, translation or inbook citation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook} {
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:ebook}
+    \texdefinition{btx:sbl:cite:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:subcite:series
+  % Always use the short form in subcites, if available
+  \btxdoifelse {short} {
+    \texdefinition{btx:sbl:cite:short}
+  } {
+    \texdefinition{btx:sbl:cite:title}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:subcite:inbook
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:subcite:translator}
+  \texdefinition{btx:sbl:cite:bookxref}
+  % Only recursively cite publication data if this subcitation is for a reprint or translation
+  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+    \texdefinition{btx:sbl:cite:reprxref}
+    \texdefinition{btx:sbl:cite:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:subcite:suppbook
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:inreference
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:inlexicon
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:incommentary
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:seminarpaper
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:inproceedings
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:journal
+  \fastsetup{btx:sbl:subcite:series}
+\stopsetups
+
+\startsetups btx:sbl:subcite:article
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:subcite:translator}
+  \texdefinition{btx:sbl:cite:journalxref}
+  \texdefinition{btx:sbl:cite:doi}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:subcite:magazine
+  \fastsetup{btx:sbl:subcite:article}
+\stopsetups
+
+\startsetups btx:sbl:subcite:newspaper
+  \fastsetup{btx:sbl:subcite:article}
+\stopsetups
+
+\startsetups btx:sbl:subcite:periodical
+  \fastsetup{btx:sbl:subcite:article}
+\stopsetups
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cite alternative setups
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % List citation setup
 \startsetups btx:sbl:\s!cite:entry
@@ -2774,11 +2997,6 @@
   \begingroup
   % Invoke the appropriate setup
   \edef\currentbtxcategory{\btxfield{category}}
-  \blank
-  \btxflush{author}
-  \blank
-  \btxrootauthor{}
-  \blank
   \fastsetup{btx:sbl:subcite:\currentbtxcategory}
   \endgroup
 \stopsetups
@@ -2789,15 +3007,29 @@
   \begingroup
   \let\btxleftparenthesisorbracket\btxleftbracket
   \let\btxrightparenthesisorbracket\btxrightbracket
-  \fastsetup{btx:sbl:cite:inline}
+  \fastsetup{btx:sbl:\s!cite:inline}
   \endgroup
 \stopsetups
 
 % Footnote citation setup
 \startsetups btx:sbl:cite:footnote
   \startfootnote
-    \fastsetup{btx:sbl:cite:inline}
+    \fastsetup{btx:sbl:\s!cite:inline}
   \stopfootnote
+\stopsetups
+
+% Volume (and part) number citation setup
+\startsetups btx:sbl:cite:volume
+  \btxdoif{volume} {
+    \btxflush{volume}
+    \removeunwantedspaces
+    \btxdoif{part} {
+      \btxperiod
+      \removeunwantedspaces
+      \btxflush{part}
+    }
+    \removeunwantedspaces
+  }
 \stopsetups
 
 \stopbtxrenderingdefinitions

@@ -11,7 +11,7 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 - [x] 6.2.2 A Book by Two or Three Authors
 - [x] 6.2.3 A Book by More than Three Authors
 - [x] 6.2.4 A Translated Volume
-- [ ] 6.2.5 The Full History of a Translated Volume
+- [x] 6.2.5 The Full History of a Translated Volume
 - [x] 6.2.6 A Book with One Editor
 - [x] 6.2.7 A Book with Two or Three Editors
 - [x] 6.2.8 A Book with Four or More Editors
