@@ -75,7 +75,6 @@ local generic = {
     -- allows the substitution of an alternate field.
     --
     -- note that anything can get assigned a doi or be available online. 
-    series = { "shortseries", "series" }, -- prefer shorthand to long form
     journal = { "shortjournal", "journal", "journaltitle" }, -- prefer shorthand to long form
     location = { "location", "address" }, -- interchangeable
     institution = { "institution", "school" }, -- interchangeable
@@ -100,10 +99,11 @@ local categories = specification.categories
 categories.book = {
     sets = {
         author = { "author", "editor" }, -- a book may have an editor instead of an author
-        series = generic.series,
+
         origpublisher = generic.origpublisher,
         location = generic.location,
         date = generic.date,
+        reprxref = { "reprxref", "transxref" },
         doi = generic.doi,
     },
     required = { 
@@ -113,22 +113,21 @@ categories.book = {
     },
     optional = {
         "withauthor", "withauthortype",
+        "collectionxref", "volume", "part",
         "editor",
         "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "volumes",
-        "volume",
-        "part",
-        "maintitle",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "edition",
-        "series", "seriesseries", "number",
+        "seriesxref", "seriesseries", "number",
         "origpublisher",
         "location",
         "date",
+        "reprxref",
+        "transxref",
         "eprint",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
@@ -146,11 +145,11 @@ categories.lexicon = categories.book
 -- but otherwise identical to a book)
 categories.manual = {
     sets = {
-        author = { "author", "editor", "organization" }, -- a manual may have an editor instead of an author
-        series = generic.series,
+        author = { "author", "editor", "organization" },
         origpublisher = generic.origpublisher,
         location = generic.location,
         date = generic.date,
+        reprxref = { "reprxref", "transxref" },
         doi = generic.doi,
     },
     required = { 
@@ -160,183 +159,201 @@ categories.manual = {
     optional = {
         "author",
         "withauthor", "withauthortype",
+        "collectionxref", "volume", "part",
         "editor",
         "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "volumes",
-        "volume",
-        "part",
-        "maintitle",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "edition",
-        "series", "seriesseries", "number",
+        "seriesxref", "seriesseries", "number",
         "origpublisher",
         "location",
         "date",
+        "reprxref",
+        "transxref",
         "eprint",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
--- a multi-volume work (§6.2.20; "volumes" field is required, but otherwise identical to book)
-categories.mvbook = {
+-- an untitled volume in a multivolume collection.
+-- (nearly identical to book, but a volume number and collection reference are required instead of a title)
+-- note that this differs from the @incollection category used by biblatex-sbl,
+-- which refers to a chapter or article in an untitled multivolume work.
+categories.incollection = {
     sets = {
-        author = { "author", "editor" }, -- a book may have an editor instead of an author
-        series = generic.series,
-        origpublisher = generic.origpublisher,
-        location = generic.location,
-        date = generic.date,
-        doi = generic.doi,
-    },
-    required = { 
-        "author", -- a set
-        "title",
-        "volumes",
-        "publisher",
-    },
-    optional = {
-        "withauthor", "withauthortype",
-        "editor",
-        "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "edition",
-        "series", "seriesseries", "number",
-        "origpublisher",
-        "location",
-        "date",
-        "eprint",
-        "doi", "note",
-    },
-}
-
--- a multi-volume encyclopedia or dictionary (§6.3.6.2; interchangeable with a multi-volume book)
-categories.mvreference = categories.mvbook
-
--- a multi-volume collection (§6.4.1; interchangeable with a multi-volume book)
-categories.mvcollection = categories.mvbook
-
--- a multi-volume commentary (§6.4.10; interchangeable with a multi-volume book)
-categories.mvcommentary = categories.mvbook
-
--- a multi-volume lexicon (§7.2; interchangeable with a multi-volume book)
-categories.mvlexicon = categories.mvbook
-
--- a multi-volume series published by the author or editor (such as Migne's Patrologia Graeca or Patrologia Latina; see §6.4.6)
-categories.series = {
-    sets = {
-        author = { "author", "editor" }, -- a series may have an editor instead of an author
-        origpublisher = generic.origpublisher,
-        location = generic.location,
-        date = generic.date,
-        doi = generic.doi,
-    },
-    required = { 
-        "author", -- a set
-        "title",
-        "volumes",
-    },
-    optional = {
-        "withauthor", "withauthortype",
-        "editor",
-        "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "origpublisher",
-        "publisher",
-        "location",
-        "date",
-        "eprint",
-        "doi", "note",
-    },
-}
-
--- an introduction, preface, or foreword to a book written by someone other than the author (§6.2.14)
--- This category should also contain either a booktitle 
--- or a maintitle with a volume number (§6.2.22)
-categories.suppbook = {
-    sets = {
-        series = generic.series,
-        origpublisher = generic.origpublisher,
-        location = generic.location,
-        date = generic.date,
-        doi = generic.doi,
+        categories.book.sets
     },
     required = {
-        "author", -- author of the introduction/preface/foreword (a set)
-        "bookauthor", -- author of the book
+        "author", -- a set
+        "collectionxref", -- reference to the collection
+        "volume", -- volume number of this book in the collection
         "publisher",
-        "type", -- e.g., "introduction", "preface", "foreword"
     },
     optional = {
         "withauthor", "withauthortype",
-        "withbookauthor", "withbookauthortype",
+        "part",
         "editor",
         "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "booktitle",
-        "bookeditor",
-        "withbookeditor", "withbookeditortype",
-        "volume",
-        "part",
-        "maintitle",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "edition",
-        "series", "seriesseries", "number",
+        "seriesxref", "seriesseries", "number",
         "origpublisher",
         "location",
         "date",
-        "pages",
         "eprint",
-        "doi", "note",
+        "doi", 
+        "note",
+    },
+}
+
+-- a multivolume collection with an editor
+categories.collection = {
+    sets = {
+        origpublisher = generic.origpublisher,
+        location = generic.location,
+        date = generic.date,
+        doi = generic.doi,
+    },
+    required = { 
+        "editor",
+        "title",
+        "publisher",
+    },
+    optional = {
+        "shorthand", -- to abbreviate in subcites
+        "witheditor", "witheditortype",
+        "volumes",
+        "seriesxref", "seriesseries", "number",
+        "origpublisher",
+        "location",
+        "date",
+        "doi",
+        "note",
+    },
+}
+
+-- a multivolume work (§6.2.20)
+categories.mvbook = {
+    sets = {
+        categories.book.sets
+    },
+    required = { 
+        "author", -- a set
+        "title",
+        "volumes",
+        "publisher",
+    },
+    optional = {
+        "shorthand", -- to abbreviate in subcites
+        "withauthor", "withauthortype",
+        "editor",
+        "witheditor", "witheditortype",
+        "translator", "origlanguage",
+        "withtranslator", "withtranslatortype",
+        "edition",
+        "seriesxref", "seriesseries", "number",
+        "origpublisher",
+        "location",
+        "date",
+        "reprxref",
+        "transxref",
+        "eprint",
+        "doi", 
+        "note",
+    },
+}
+
+-- a multivolume encyclopedia or dictionary (§6.3.6.2)
+categories.mvreference = categories.mvbook
+
+-- a multivolume collection (§6.4.1)
+categories.mvcollection = categories.mvbook
+
+-- a multivolume commentary (§6.4.10)
+categories.mvcommentary = categories.mvbook
+
+-- a multivolume lexicon (§7.2)
+categories.mvlexicon = categories.mvbook
+
+-- a series
+-- this can include multivolume collections published by the editor,
+-- such as Migne's Patrologia Graeca or Patrologia Latina (§6.4.6)
+categories.series = {
+    sets = {
+        origpublisher = generic.origpublisher,
+        location = generic.location,
+        date = generic.date,
+        doi = generic.doi,
+    },
+    required = { 
+        "title",
+    },
+    optional = {
+        "shorthand", -- to abbreviate in subcites
+        "editor",
+        "witheditor", "witheditortype",
+        "volumes",
+        "origpublisher",
+        "location",
+        "publisher",
+        "date",
+        "eprint",
+        "doi",
+        "note",
     },
 }
 
 -- a part of a book, which may be a chapter and/or a range of pages.
 -- article or note in a study Bible (§6.4.9.1)
--- This category should also contain either a booktitle 
--- or a maintitle with a volume number (§6.2.22)
+-- This category should also contain a reference to either a titled book 
+-- or an untitled volume in a collection (§6.2.22)
 categories.inbook = {
     sets = {
-        series = generic.series,
-        origpublisher = generic.origpublisher,
-        location = generic.location,
-        date = generic.date,
+        bookxref = { "bookxref", "incollectionxref" },
         doi = generic.doi,
     },
     required = {
         "author", -- author of the article (or book, if the author also wrote the book)
         "title", -- title of the article
-        "publisher",
+        "bookxref", -- a set
     },
     optional = {
         "withauthor", "withauthortype",
-        "editor",
-        "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "booktitle",
-        "bookeditor",
-        "withbookeditor", "withbookeditortype",
-        "volume",
-        "part",
-        "maintitle",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
-        "edition",
-        "series", "seriesseries", "number",
-        "origpublisher",
-        "location",
-        "date",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "pages",
-        "eprint",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
--- an article in an encyclopaedia or a dictionary (§6.3.6; same fields as inbook)
+-- an introduction, preface, or foreword to a book written by someone other than the author (§6.2.14)
+-- This category should also contain a reference to either a book or a volume in a collection (§6.2.22)
+categories.suppbook = {
+    sets = {
+        categories.inbook.sets,
+    },
+    required = {
+        "author", -- author of the introduction/preface/foreword (a set)
+        "type", -- e.g., "introduction", "preface", "foreword"
+        "bookxref", -- a set
+    },
+    optional = {
+        "withauthor", "withauthortype",
+        "translator", "origlanguage",
+        "withtranslator", "withtranslatortype",
+        "doi",
+        "note",
+    },
+}
+
+-- an article in an encyclopaedia or a dictionary (§6.3.6)
 categories.inreference = categories.inbook
 
--- an article in a lexicon (§6.3.7; same fields as inbook, although only the lexicon should be cited in the list)
+-- an article in a lexicon (§6.3.7)
 categories.inlexicon = categories.inbook
 
 -- an article in a single-volume commentary on the entire Bible (§6.4.9.2)
@@ -347,89 +364,28 @@ categories.seminarpaper = categories.inbook
 
 -- a text from the Ancient Near East (or anywhere, really; see §6.4.1)
 -- a papyrus or ostracon (§6.4.3)
--- this is almost identical to inbook, but no author is required, and rendering for inline citations is slightly different
+-- almost identical to inbook, but no author is required
 categories.ancienttext = {
     sets = {
-        series = generic.series,
-        origpublisher = generic.origpublisher,
-        location = generic.location,
-        date = generic.date,
-        doi = generic.doi,
+        categories.inbook.sets,
     },
     required = {
         "title", -- title of the ancient text
-        "publisher",
+        "bookxref", -- a set
     },
     optional = {
         "author", -- author of the ancient text (if known)
-        "booktitle",
-        "editor",
-        "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "booktitle",
-        "bookeditor",
-        "withbookeditor", "withbookeditortype",
-        "volume",
-        "part",
-        "maintitle",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
-        "edition",
-        "series", "seriesseries", "number",
-        "origpublisher",
-        "location",
-        "date",
+        "withauthor", "withauthortype",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "pages",
-        "eprint",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
--- a classical text (§6.4.2; same fields as ancienttext, although rendering for inline and list citations is slightly different)
+-- a classical text (§6.4.2)
 categories.classictext = categories.ancienttext
-
--- a book that is itself part of a collection.
--- (like inbook, but the entry in question is one or more volumes of a multi-volume work )
--- note that biblatex-sbl uses @collection to refer to this entry type.
-categories.incollection = {
-    sets = {
-        author = { "author", "editor" },
-        booktitle = { "title" }, -- an alias so that entries are printed correctly
-        series = generic.series,
-        origpublisher = generic.origpublisher,
-        location = generic.location,
-        date = generic.date,
-        doi = generic.doi,
-    },
-    required = {
-        "author", -- a set
-        "title", -- the title of this book
-        "volume", -- volume number of this book in the collection
-        "maintitle", -- title of the collection
-        "publisher",
-    },
-    optional = {
-        "withauthor", "withauthortype", 
-        "editor", 
-        "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "bookeditor",
-        "withbookeditor", "withbookeditortype",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
-        "part",
-        "edition",
-        "series", "seriesseries", "number",
-        "location",
-        "date",
-        "origpublisher",
-        "eprint",
-        "doi", "note",
-    },
-}
-
--- a volume in a collection (§6.4.1; interchangeable with a book in a collection)
-categories.collection = categories.incollection
 
 -- an article from a journal (§6.3)
 
@@ -446,10 +402,11 @@ categories.article = {
     },
     optional = {
         "withauthor", "withauthortype", 
-        "translator", "origlanguage",
-        "date",
-        "volume", "number", "pages",
-        "doi", "note",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
+        "volume", "number", "date", "pages",
+        "doi", 
+        "note",
     },
 }
 
@@ -465,26 +422,22 @@ categories.periodical = categories.article
 -- a book review (§6.3.4)
 categories.review = {
     sets = {
-        revdtitle = { "revdtitle", "revdbooktitle", }, -- interchangeable
-        journal = generic.journal,
-        date = generic.date,
-        doi = generic.doi,
+        categories.article.sets
     },
     required = {
         "author",
-        "revdtitle", -- a set
+        "revdxref", -- a reference to the reviewed book
         "journal", -- a set
     },
     optional = {
-        "withauthor", "withauthortype", -- for the review
-        "translator", "origlanguage", -- for the review
-        "revdauthor", "revdwithauthor", "revdwithauthortype", -- for the book
-        "revdeditor", "revdwitheditor", "revdwitheditortype", -- for the book
-        "revdtranslator", "revdoriglanguage", -- for the book
-        "revdedition", -- for the book
-        "date", -- for the journal
-        "volume", "number", "pages", -- for the journal
-        "doi", "note",
+        "withauthor", "withauthortype",
+        "title",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
+        "date",
+        "volume", "number", "pages",
+        "doi", 
+        "note",
     },
 }
 
@@ -506,16 +459,18 @@ categories.proceedings = {
     },
     optional = {
         "witheditor", "witheditortype",
-        "translator", "origlanguage",
-        "series", "seriesseries", "number",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
+        "seriesxref", "seriesseries", "number",
         "location",
         "date",
-        "origpublisher",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
--- an article in a conference proceedings.
+-- an article in a conference proceedings
+-- not covered by SBL, but treated as interchangeable with an article in a published book
 categories.inproceedings = categories.inbook
 
 -- not covered by SBL, but treated as interchangeable with inproceedings in other ConTeXt citation .lua files
@@ -535,10 +490,12 @@ categories.conferencepaper = {
     },
     optional = {
         "withauthor", "withauthortype",
-        "translator", "origlanguage",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "location",
         "date",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
@@ -559,9 +516,11 @@ categories.thesis = {
     },
     optional = {
         "withauthor", "withauthortype",
-        "translator", "origlanguage",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "location",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
@@ -576,9 +535,11 @@ categories.mastersthesis = {
     },
     optional = {
         "withauthor", "withauthortype",
-        "translator", "origlanguage",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "location",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
@@ -598,8 +559,8 @@ categories.unpublished = {
     },
     optional = {
         "withauthor", "withauthortype",
-        "translator", "origlanguage",
-        "file",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "date",
         "doi",
     },
@@ -622,11 +583,13 @@ categories.online = {
     optional = {
         "author", 
         "withauthor", "withauthortype",
-        "translator", "origlanguage",
-        "journal",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
+        "journal", -- can also refer to a blog
         "eprint", "eprintdate", "eprintclass", "eprinttype",
         "date",
-        "doi", "note",
+        "doi", 
+        "note",
     },
 }
 
@@ -638,9 +601,12 @@ categories.electronic = categories.online
 categories.misc = {
     sets = {
         author = { "author", "editor", "organization" },
+        bookxref = { "bookxref", "incollectionxref" },
+        origpublisher = generic.origpublisher,
+        institution = generic.institution,
         location = generic.location,
         date = generic.date,
-        doi  = generic.doi,
+        doi = generic.doi,
     },
     required = {
         -- nothing is really important here
@@ -649,20 +615,23 @@ categories.misc = {
         "author", 
         "withauthor", "withauthortype",
         "title",
+        "xref", "volume", "part",
+        "editor",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
-        "edition", 
+        "withtranslator", "withtranslatortype",
+        "edition",
         "volumes",
-        "volume",
-        "maintitle",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
-        "series", "seriesseries", "number",
+        "seriesxref", "seriesseries", "number",
         "howpublished",
+        "institution",
+        "origpublisher",
         "location",
         "publisher",
         "date",
-        "doi", "note",
+        "eprint",
+        "doi", 
+        "note",
     },
 }
 
@@ -671,7 +640,8 @@ categories.misc = {
 categories.literal = {
     sets = {
         author = { "key" },
-        doi    = generic.doi,
+        bookxref = { "bookxref", "incollectionxref" },
+        doi = generic.doi,
     },
     required = {
         "author",
@@ -679,20 +649,24 @@ categories.literal = {
     },
     optional = {
         "withauthor", "withauthortype",
+        "title",
+        "bookxref", "volume", "part",
+        "editor",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
-        "edition", 
+        "withtranslator", "withtranslatortype",
+        "edition",
         "volumes",
-        "volume",
-        "maintitle",
-        "maineditor",
-        "withmaineditor", "withmaineditortype",
-        "series", "seriesseries", "number",
+        "seriesxref", "seriesseries", "number",
         "howpublished",
+        "institution",
+        "origpublisher",
         "location",
         "publisher",
         "date",
-        "doi", "note",
+        "eprint",
+        "doi", 
+        "note",
     },
     virtual = false,
 }

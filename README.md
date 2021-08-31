@@ -76,6 +76,7 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 - [ ] Refactor code around xrefs and recursive citations, if possible
 - [ ] Introduce methods for parsing multiple publishers and multiple journal volumes and pages
 - [ ] Introduce helper methods for identifying (for the purpose of conditional formatting) and rendering dates of various forms that can be provided in the `date` field (e.g., YYYY and YYYY--YYYY can be printed as-is, but YYYY-MM-DD should be parsed as DD Month YYYY)
+- [ ] Add an authorconversion that prints the first of multiple authors in inverted order, but the rest in normal order
 - [ ] Combine helper methods for editors and translators and add handling for when the editor and translator are the same (the introduction should be "ed. and trans." or "Edited and translated by")
-- [ ] Add a cite alternative for short author-title citations, per the SBL guidelines reproduced at https://github.com/dcpurton/biblatex-sbl/blob/master/test/biblatex-sbl-examples.ref.txt.
+- [ ] Add a cite alternative for short author-title citations, per the SBL guidelines reproduced at https://github.com/dcpurton/biblatex-sbl/blob/master/test/biblatex-sbl-examples.ref.txt
 - [ ] Add a final pass over the entry to move commas and periods that are after right quotes to positions before them, in accordance with American style?

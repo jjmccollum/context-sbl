@@ -386,6 +386,10 @@
   [sbl:\s!list:edition]
   [\c!command=\Word] % always capitalize, as the edition field will follow a period in the list entry
 
+\definebtx
+  [sbl:\s!list:note]
+  [\c!command=\Word] % always capitalize, as the note field will follow a period in the list entry
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % In-text citation field styles
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -394,7 +398,7 @@
 \definebtx
   [sbl:\s!cite]
   [sbl]
-  [\c!alternative=entry, % by default, SBL cites the entire entry
+  [\c!alternative=inline, % by default, SBL uses inline citation format (defined below)
    \c!otherstext={\btxspace\btxlabeltext{others}}, % use et al. for truncated author / editor list
    \c!etallimit=3, % don't use et al. for 3 or fewer authors
    \c!etaldisplay=1, % but if there are > 3, then only list the first explicitly
@@ -657,38 +661,41 @@
    \c!separator:3={\btxspace\btxlabeltext{and}\space}, % between last 2 reference numbers if > 2
    \c!separator:4={\btxspace\btxlabeltext{and}\space}] % between only 2 reference numbers
 
-% Define default settings for citations in the text
+% Define default settings for citations that replicate list entries
 \definebtx
   [sbl:\s!cite:entry]
   [sbl:\s!cite]
   [\c!left=, % by default, do not typeset anything to the left of the citation
    \c!right=, % by default, do not typeset anything to the right of the citation
-   \c!etallimit=3, % don't use et al. for 3 or fewer authors
-   \c!etaldisplay=1, % but if there are > 3, then only list the first explicitly
-   \c!authorconversion=\v!normal, % by default, use normal name order for in-text citations
    \c!separator:2={\btxsemicolon}, % between subsequent citations except for last 2
    \c!separator:3={\btxsemicolon\btxlabeltext{and}\space}, % between last 2 citations if > 2
    \c!separator:4={\btxspace\btxlabeltext{and}\space}] % between only 2 citations
 
-% Parenthetical citations should be rendered exactly like citations in the text, 
+% Inline citations are similar to list entry citations, 
+% but they have slightly different rules for punctuation and capitalization for fields
+\definebtx
+  [sbl:\s!cite:inline]
+  [sbl:\s!cite]
+
+% Parenthetical citations should be rendered exactly like inline citations, 
 % but the whole citation should be surrounded by parentheses, 
 % and brackets should be used where parentheses are within the citation 
 % (e.g., journal years and publication and institution blocks) 
 \definebtx
   [sbl:\s!cite:paren]
-  [sbl:\s!cite:entry]
+  [sbl:\s!cite:inline]
   [\c!left={(},
    \c!right={)}]
 
 % Citations in footnotes should be rendered exactly like citations in the text
 \definebtx
   [sbl:\s!cite:footnote]
-  [sbl:\s!cite:entry]
+  [sbl:\s!cite:inline]
 
-% By default, SBL cites the entire entry
+% By default, SBL uses inline format for in-text citations
 \definebtx
   [sbl:\s!cite:default]
-  [sbl:\s!cite:entry]
+  [sbl:\s!cite:inline]
 
 % Now we setup for the details of the renderings
 
@@ -731,13 +738,29 @@
    sbl:of={of},
    sbl:to={to},
    sbl:released={released},
-   sbl:Released={Released}]
+   sbl:Released={Released},
+   sbl:Translationof={Translation of},
+   sbl:Reprintof={Reprint of}]
 
 % First some helpers:
 
+% By default, parenthesized elements are placed in proper parentheses,
+% but for citations made with the paren alternative,
+% brackets should be used instead
+\let\btxleftparenthesisorbracket\btxleftparenthesis
+\let\btxrightparenthesisorbracket\btxrightparenthesis
+
+% Define some helper functions for subcitations
+\def\btxrootauthor{}
+\def\btxrootwithauthor{}
+\def\btxrooteditor{}
+\def\btxrootwitheditor{}
+\def\btxroottranslator{}
+\def\btxrootwithtranslator{}
+
 % I thought \enordinaldaynumber was already defined elsewhere in ConTeXt, 
 % but the engine isn't recognizing it...
-\starttexdefinition enordinal #1
+\starttexdefinition btx:sbl:enordinal #1
   #1\ifnum\lasttwodigits{#1}=11
     th%
   \else\ifnum\lasttwodigits{#1}=12
@@ -757,17 +780,94 @@
   \fi\fi\fi\fi
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:author
+\starttexdefinition btx:sbl:list:author
   \btxdoif {author} {
-    % Print the author/editor/org name first
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      % Normal order for in-text citations
-      \currentbtxciteauthorbyfield
+    % Print the author/editor/org name in inverted order
+    % TODO: need to print the first name inverted, with all subsequent names in normal order
+    \btxflush{author}
+    % If this is an instance of an editor, then there is no author; 
+    % indicate that this is an editor
+    \doifelse {\btxfoundname{author}} {editor} {
+      \btxcomma
+      \btxsingularorplural {editor} {
+        \btxlabeltext{sbl:editor}
+      } {
+        \btxlabeltext{sbl:editors}
+      }
+      % Is there an assisting editor?
+      \btxdoif {witheditor} {
+        \btxcomma
+        % Use the provided text to introduce them, if one is specified
+        \btxdoifelse {witheditortype} {
+          \btxflush{witheditortype}
+        } {
+          \btxlabeltext{sbl:with}
+        }
+        \btxspace
+        \btxflush{witheditor}
+      }
     } {
-      % Inverted order for list citations
-      % TODO: need to print the first name inverted, with all subsequent names in normal order
-      \btxflush{author}
+      % If this is an author, is there an assisting author?
+      \btxdoif {withauthor} {
+        \btxcomma
+        % Use the provided text to introduce them, if one is specified
+        \btxdoifelse {withauthortype} {
+          \btxflush{withauthortype}
+        } {
+          \btxlabeltext{sbl:with}
+        }
+        \btxspace
+        \btxflush{withauthor}
+      }
     }
+    % If the name ends with a period (as is the case for an initial or "et al."), 
+    % then remove the preceding period
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:listsubcite:author
+  \btxdoif {author} {
+    % If the author and withauthor match the corresponding fields in the root citation, 
+    % then skip this
+    \doifnot {\btxflush{author}\btxflush{withauthor}} {\btxrootauthor{}\btxrootwithauthor{}} {
+      % If this is a proper author (and not an editor), then replace the period after the title with a comma 
+      % and print the author in normal order
+      \doif {\btxfoundname{author}} {author} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxcomma
+        \btxlabeltext{sbl:by}
+        \btxspace
+        \currentbtxciteauthorbyfield
+        % Is there an assisting author?
+        \btxdoif {withauthor} {
+          \btxcomma
+          % Use the provided text to introduce them, if one is specified
+          \btxdoifelse {withauthortype} {
+            \btxflush{withauthortype}
+          } {
+            \btxlabeltext{sbl:with}
+          }
+          \btxspace
+          \btxflush{withauthor}
+        }
+        % If the name ends with a period (as is the case for "et al."), 
+        % then remove the preceding period
+        \removeunwantedspaces
+        \removepunctuation
+        \btxperiod
+      }
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:author
+  \btxdoif {author} {
+    % Print the author/editor/org name first in normal order
+    \currentbtxciteauthorbyfield
     % If this is an instance of an editor, then there is no author; 
     % indicate that this is an editor
     \doifelse {\btxfoundname{author}} {editor} {
@@ -803,30 +903,57 @@
         \btxflush{withauthor}
       }
     }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      % If the name ends with a period (as is the case for an initial or "et al."), 
-      % then remove the preceding period
-      \removeunwantedspaces
-      \removepunctuation
-      \btxperiod
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:subcite:author
+  \btxdoif {author} {
+    % If the author and withauthor match the corresponding fields in the root citation, 
+    % then skip this
+    \doifnot {\btxflush{author}\btxflush{withauthor}} {\btxrootauthor{}\btxrootwithauthor{}} {
+      % If this is a proper author (and not an editor), then print the author in normal order
+      \doif {\btxfoundname{author}} {author} {
+        \btxlabeltext{sbl:by}
+        \btxspace
+        \currentbtxciteauthorbyfield
+        % Is there an assisting author?
+        \btxdoif {withauthor} {
+          \btxcomma
+          % Use the provided text to introduce them, if one is specified
+          \btxdoifelse {withauthortype} {
+            \btxflush{withauthortype}
+          } {
+            \btxlabeltext{sbl:with}
+          }
+          \btxspace
+          \btxflush{withauthor}
+        }
+        \btxcomma
+      }
     }
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:title
+\starttexdefinition btx:sbl:list:title
   \btxdoif {title} {
     \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
       \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
         \btxflush{title} % set the title according to the current category
       }
     \btxstopstyleandcolor
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:title
+  \btxdoif {title} {
+    \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+        \btxflush{title} % set the title according to the current category
+      }
+    \btxstopstyleandcolor
+    \btxcomma
   }
 \stoptexdefinition
 
@@ -933,7 +1060,7 @@
     % Is the edition a string or a number?
     \doifnumberelse {\btxflush{revdedition}} {
       % If a number, then convert it to an ordinal
-      \enordinal{\btxflush{revdedition}}
+      \texdefinition{btx:sbl:enordinal}{\btxflush{revdedition}}
       \btxspace
       \btxlabeltext{sbl:edition}
     } {
@@ -987,19 +1114,14 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:editor
+\starttexdefinition btx:sbl:list:editor
   \btxdoif {editor} {
     % If editor(s) not already listed in the author position, then list here
     \doifnot {\btxfoundname{author}} {editor} {
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
-        \btxspace
-      } {
-        \btxlabeltext{sbl:Edited}
-        \btxspace
-        \btxlabeltext{sbl:by}
-        \btxspace
-      }
+      \btxlabeltext{sbl:Edited}
+      \btxspace
+      \btxlabeltext{sbl:by}
+      \btxspace
       \btxflush{editor}
       % Is there an assisting editor?
       \btxdoif {witheditor} {
@@ -1013,41 +1135,7 @@
         }
         \btxflush{witheditor}
       }
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxcomma
-      } {
-        % If the name ends with a period (as is the case for an initial or "et al."), 
-        % then remove the preceding period
-        \removeunwantedspaces
-        \removepunctuation
-        \btxperiod
-      }
-    }
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:translator
-  \btxdoif {translator} {
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxlabeltext{sbl:translator}
-      \btxspace
-    } {
-      \btxlabeltext{sbl:Translated}
-      \btxspace
-      % If there is a note on the work in the original language (e.g., "from the 3rd German ed."),
-      % then print it here
-      \btxdoif {origlanguage} {
-        \btxflush{origlanguage}
-        \btxspace
-      }
-      \btxlabeltext{sbl:by}
-      \btxspace
-    }
-    \btxflush{translator}
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      % If the name ends with a period (as is the case for an initial or "et al."), 
+      % If the name ends with a period (as is the case for "et al."), 
       % then remove the preceding period
       \removeunwantedspaces
       \removepunctuation
@@ -1056,7 +1144,345 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:partinbook
+\starttexdefinition btx:sbl:listsubcite:editor
+  \btxdoif {editor} {
+    % If the editor and witheditor match the corresponding fields in the root citation, 
+    % then skip this
+    \doifnot {\btxflush{editor}\btxflush{witheditor}} {\btxrooteditor{}\btxrootwitheditor{}} {
+      \btxlabeltext{sbl:Edited}
+      \btxspace
+      \btxlabeltext{sbl:by}
+      \btxspace
+      \btxflush{editor}
+      % Is there an assisting editor?
+      \btxdoif {witheditor} {
+        \btxcomma
+        % Use the provided text to introduce them, if one is specified
+        \btxdoifelse {witheditortype} {
+          \btxflush{witheditortype}
+        } {
+          \btxlabeltext{sbl:with}
+          \btxspace
+        }
+        \btxflush{witheditor}
+      }
+      % If the name ends with a period (as is the case for "et al."), 
+      % then remove the preceding period
+      \removeunwantedspaces
+      \removepunctuation
+      \btxperiod
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:editor
+  \btxdoif {editor} {
+    % If editor(s) not already listed in the author position, then list here
+    \doifnot {\btxfoundname{author}} {editor} {
+      \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
+      \btxspace
+      \btxflush{editor}
+      % Is there an assisting editor?
+      \btxdoif {witheditor} {
+        \btxcomma
+        % Use the provided text to introduce them, if one is specified
+        \btxdoifelse {witheditortype} {
+          \btxflush{witheditortype}
+        } {
+          \btxlabeltext{sbl:with}
+          \btxspace
+        }
+        \btxflush{witheditor}
+      }
+      \btxcomma
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:subcite:editor
+  \btxdoif {editor} {
+    % If the editor and witheditor matches the corresponding fields in the root citation, 
+    % then skip this
+    \doifnot {\btxflush{editor}\btxflush{witheditor}} {\btxrooteditor{}\btxrootwitheditor{}} {
+      \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
+      \btxspace
+      \btxflush{editor}
+      % Is there an assisting editor?
+      \btxdoif {witheditor} {
+        \btxcomma
+        % Use the provided text to introduce them, if one is specified
+        \btxdoifelse {witheditortype} {
+          \btxflush{witheditortype}
+        } {
+          \btxlabeltext{sbl:with}
+          \btxspace
+        }
+        \btxflush{witheditor}
+      }
+      \btxcomma
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:translator:list
+  \btxdoif {translator} {
+    \btxlabeltext{sbl:Translated}
+    \btxspace
+    % If there is a note on the work in the original language (e.g., "from the 3rd German ed."),
+    % then print it here
+    \btxdoif {origlanguage} {
+      \btxflush{origlanguage}
+      \btxspace
+    }
+    \btxlabeltext{sbl:by}
+    \btxspace
+    \btxflush{translator}
+    % Is there an assisting translator?
+    \btxdoif {withtranslator} {
+      \btxcomma
+      % Use the provided text to introduce them, if one is specified
+      \btxdoifelse {withtranslatortype} {
+        \btxflush{withtranslatortype}
+      } {
+        \btxlabeltext{sbl:with}
+        \btxspace
+      }
+      \btxflush{withtranslator}
+    }
+    % If the name ends with a period (as is the case for "et al."), 
+    % then remove the preceding period
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:translator:listsubcite
+  \btxdoif {translator} {
+    % If the translator and withtranslator match the corresponding fields in the root citation, 
+    % then skip this
+    \doifnot {\btxflush{translator}\btxflush{withtranslator}} {\btxroottranslator{}\btxrootwithtranslator{}} {
+      \btxlabeltext{sbl:Translated}
+      \btxspace
+      \btxlabeltext{sbl:by}
+      \btxspace
+      \btxflush{translator}
+      % Is there an assisting translator?
+      \btxdoif {withtranslator} {
+        \btxcomma
+        % Use the provided text to introduce them, if one is specified
+        \btxdoifelse {withtranslatortype} {
+          \btxflush{withtranslatortype}
+        } {
+          \btxlabeltext{sbl:with}
+          \btxspace
+        }
+        \btxflush{withtranslator}
+      }
+      % If the name ends with a period (as is the case for "et al."), 
+      % then remove the preceding period
+      \removeunwantedspaces
+      \removepunctuation
+      \btxperiod
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:translator:cite
+  \btxdoif {translator} {
+    \btxlabeltext{sbl:translator}
+    \btxspace
+    \btxflush{translator}
+    % Is there an assisting translator?
+    \btxdoif {withtranslator} {
+      \btxcomma
+      % Use the provided text to introduce them, if one is specified
+      \btxdoifelse {withtranslatortype} {
+        \btxflush{withtranslatortype}
+      } {
+        \btxlabeltext{sbl:with}
+        \btxspace
+      }
+      \btxflush{withtranslator}
+    }
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:translator:subcite
+  \btxdoif {translator} {
+    % If the translator and withranslator match the corresponding fields in the root citation, 
+    % then skip this
+    \doifnot {\btxflush{translator}\btxflush{withtranslator}} {\btxroottranslator{}\btxrootwithtranslator{}} {
+      \btxlabeltext{sbl:translator}
+      \btxspace
+      \btxflush{translator}
+      % Is there an assisting translator?
+      \btxdoif {withtranslator} {
+        \btxcomma
+        % Use the provided text to introduce them, if one is specified
+        \btxdoifelse {withtranslatortype} {
+          \btxflush{withtranslatortype}
+        } {
+          \btxlabeltext{sbl:with}
+          \btxspace
+        }
+        \btxflush{withtranslator}
+      }
+      \btxcomma
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:suppbooktype
+  \btxdoif {type} {
+    % For list citations, make sure the type is capitalized
+    \btxusecommand [sbl:\s!list:type] {
+      \btxflush{type}
+    }
+    \btxspace
+    \btxlabeltext{sbl:to}
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:suppbooktype
+  \btxdoif {type} {
+    % For in-text citations, just print the type as-is
+    \btxflush{type}
+    \btxspace
+    \btxlabeltext{sbl:to}
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:bookpages
+  \btxdoif {pages} {
+    \btxoneorrange {pages} {
+      \btxlabeltext{sbl:Page}
+    } {
+      \btxlabeltext{sbl:Pages}
+    }
+    \btxspace
+    \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
+    \btxspace
+    \btxlabeltext{sbl:in}
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:volume
+  \btxdoif {volume} {
+    \btxoneorrange {volume} {
+      \btxlabeltext{sbl:Volume}
+    } {
+      \btxlabeltext{sbl:Volumes}
+    }
+    \btxspace
+    \btxflush{volume}
+    % Is there a part number subdividing the volume?
+    \btxdoif {part} {
+      \btxcomma
+      \btxoneorrange {part} {
+        \btxlabeltext{sbl:part}
+      } {
+        \btxlabeltext{sbl:parts}
+      }
+      \btxspace
+      \btxflush{part}
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:listsubcite:volume
+  \texdefinition{btx:sbl:cite:volume}
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:volume
+  \btxdoif {volume} {
+    \btxoneorrange {volume} {
+      \btxlabeltext{sbl:volume}
+    } {
+      \btxlabeltext{sbl:volumes}
+    }
+    \btxspace
+    \btxflush{volume}
+    % Is there a part number subdividing the volume?
+    \btxdoif {part} {
+      \btxcomma
+      \btxoneorrange {part} {
+        \btxlabeltext{sbl:part}
+      } {
+        \btxlabeltext{sbl:parts}
+      }
+      \btxspace
+      \btxflush{part}
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:subcite:volume
+  \texdefinition{btx:sbl:cite:volume}
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:collectionxref
+  \btxdoif{collectionxref} {
+    % If there is a volume number, then print it here
+    \btxdoifelse {volume} {
+      \texdefinition{btx:sbl:list:volume}
+      \btxspace
+      \btxlabeltext{sbl:of}
+    } {
+      \btxlabeltext{sbl:In}
+    }
+    \btxspace
+    % Recursively cite the collection
+    \cite[listsubcite][\btxflush{collectionxref}]
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:listsubcite:collectionxref
+  \btxdoif{collectionxref} {
+    % If there is a volume number, then print it here
+    \btxdoif {volume} {
+      \texdefinition{btx:sbl:listsubcite:volume}
+      \btxspace
+      \btxlabeltext{sbl:of}
+    }
+    \btxspace
+    % Recursively cite the collection
+    \cite[listsubcite][\btxflush{collectionxref}]
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:collectionxref
+  \btxdoif{collectionxref} {
+    % If there is a volume number, then print it here
+    \btxdoifelse {volume} {
+      \texdefinition{btx:sbl:cite:volume}
+      \btxspace
+      \btxlabeltext{sbl:of}
+    } {
+      \btxlabeltext{sbl:in}
+    }
+    \btxspace
+    % Recursively cite the collection
+    \cite[listsubcite][\btxflush{collectionxref}]
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:subcite:collectionxref
+  \btxdoif{collectionxref} {
+    % If there is a volume number, then print it here
+    \btxdoif {volume} {
+      \texdefinition{btx:sbl:subcite:volume}
+      \btxspace
+      \btxlabeltext{sbl:of}
+    }
+    \btxspace
+    % Recursively cite the collection
+    \cite[subcite][\btxflush{collectionxref}]
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:partinbook
   % If the current category is suppbook,
   % then print the type (e.g., "introduction", "preface", "foreword")
   \doifelse {\currentbtxcategory} {suppbook} {
@@ -1078,7 +1504,7 @@
       % For in-text citations, just write "in" before the booktitle or maintitle
       \btxlabeltext{sbl:in}
     } {
-      % In the bibliographic list, place the page numbers (if any ae provided) here
+      % In the bibliographic list, place the page numbers (if any are provided) here
       \btxdoifelse {pages} {
         \btxoneorrange {pages} {
           \btxlabeltext{sbl:Page}
@@ -1282,59 +1708,80 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:volumes
+\starttexdefinition btx:sbl:list:volumes
   \btxdoif {volumes} {
     \btxflush{volumes}
     \btxspace
-    \btxlabeltext{sbl:volumes}
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
+    \doifelse {\btxflush{volumes}} {1} {
+      \btxlabeltext{sbl:volume}
     } {
-      % Don't duplicate the period from "vol." or "vols."
-      \removeunwantedspaces
-      \removepunctuation
-      \btxperiod
+      \btxlabeltext{sbl:volumes}
     }
+    % Don't duplicate the period from "vol." or "vols."
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:edition
+\starttexdefinition btx:sbl:cite:volumes
+  \btxdoif {volumes} {
+    \btxflush{volumes}
+    \btxspace
+    \doifelse {\btxflush{volumes}} {1} {
+      \btxlabeltext{sbl:volume}
+    } {
+      \btxlabeltext{sbl:volumes}
+    }
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:edition
   \btxdoif{edition} {
     % Is the edition a string or a number?
     \doifnumberelse {\btxflush{edition}} {
       % If a number, then convert it to an ordinal
-      \enordinal{\btxflush{edition}}
+      \texdefinition{btx:sbl:enordinal}{\btxflush{edition}}
       \btxspace
       \btxlabeltext{sbl:edition}
     } {
-      % If a string, then capitalize its first word if we're in list mode
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        % For in-text citations, just print the edition string as-is
+      % If a string, then capitalize its first word
+      \btxusecommand [sbl:\s!list:edition] {
         \btxflush{edition}
-      } {
-        % For list citations, make sure the first word is capitalized
-        \btxusecommand [sbl:\s!list:edition] {
-          \btxflush{edition}
-        }
       }
       \btxspace
       \btxlabeltext{sbl:edition}
     }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-       % Don't duplicate the period from "ed."
-      \removeunwantedspaces
-      \removepunctuation
-      \btxperiod
-    }
+    % Don't duplicate the period from "ed."
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:bookseries
-  \btxdoif {series} {
-    % Print the series abbreviation/name first
-    \btxflush{series}
+\starttexdefinition btx:sbl:cite:edition
+  \btxdoif{edition} {
+    % Is the edition a string or a number?
+    \doifnumberelse {\btxflush{edition}} {
+      % If a number, then convert it to an ordinal
+      \texdefinition{btx:sbl:enordinal}{\btxflush{edition}}
+      \btxspace
+      \btxlabeltext{sbl:edition}
+    } {
+      % If a string, then print it as-is
+      \btxflush{edition}
+      \btxspace
+      \btxlabeltext{sbl:edition}
+    }
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:seriesxref
+  \btxdoif {seriesxref} {
+    % Recursively cite the series
+    \cite[listsubcite][\btxflush{seriesxref}]
     % If the series itself has a series number (e.g., "WUNT 2", the second series of WUNT),
     % then print that number before the series entry number, with a forward slash in between
     \btxdoifelse {seriesseries} {
@@ -1352,23 +1799,48 @@
         \btxflush{number}
       }
     }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:howpublished
+\starttexdefinition btx:sbl:cite:seriesxref
+  \btxdoif {seriesxref} {
+    % Recursively cite the series
+    \cite[subcite][\btxflush{seriesxref}]
+    % If the series itself has a series number (e.g., "WUNT 2", the second series of WUNT),
+    % then print that number before the series entry number, with a forward slash in between
+    \btxdoifelse {seriesseries} {
+      \btxspace
+      \btxflush{seriesseries}
+      \btxdoif {number} {
+        \removeunwantedspaces
+        {/}
+        \btxflush{number}
+      }
+    } {
+      % Otherwise, just print the series entry number, if there is one
+      \btxdoif {number} {
+        \btxspace
+        \btxflush{number}
+      }
+    }
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:howpublished
   \btxdoif {howpublished} {
     % Print the how-published statement
     \btxflush{howpublished}
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:howpublished
+  \btxdoif {howpublished} {
+    % Print the how-published statement
+    \btxflush{howpublished}
+    \btxcomma
   }
 \stoptexdefinition
 
@@ -1397,35 +1869,16 @@
     % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
     % otherwise, it should be printed as a year in parentheses followed by a colon.
     \btxdoif {date} {
-      % If this citation is already in parentheses, then use brackets
-      \doifelse {\currentbtxcitealternative} {paren} {
-        \btxleftbracket
-        \btxflush{date}
-        \btxrightbracket
-      } {
-        \btxleftparenthesis
-        \btxflush{date}
-        \btxrightparenthesis
-      }
+      \btxleftparenthesisorbracket
+      \btxflush{date}
+      \btxrightparenthesisorbracket
     }
     \btxcolon
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:publisher
+\starttexdefinition btx:sbl:list:publisher
   \btxdoif {publisher} {
-    \doif {\currentbtxcitealternative} {paren} {
-      % Remove all preceding punctuation and spaces and use a bracket
-      \removeunwantedspaces
-      \removepunctuation
-      \btxleftbracket
-    }
-    \doif {\currentbtxcitealternative} {entry} {
-      % Remove all preceding punctuation and spaces and use a parenthesis
-      \removeunwantedspaces
-      \removepunctuation
-      \btxleftparenthesis
-    }
     % Is this a reprint?
     \btxdoif {origpublisher} {
       % Is there an original publication location?
@@ -1443,17 +1896,12 @@
         \btxflush{origdate}
         \btxcomma
       }
-      % Remove the last punctuation token and replace it with a semicolon (or period for list citations),
+      % Remove the last punctuation token and replace it with a period,
       % followed by the reprint notation
       \removeunwantedspaces
       \removepunctuation
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxsemicolon
-        \btxlabeltext{sbl:reprint}
-      } {
-        \btxperiod
-        \btxlabeltext{sbl:Reprint}
-      }
+      \btxperiod
+      \btxlabeltext{sbl:Reprint}
       \btxcomma
     }
     % Is there a location?
@@ -1475,40 +1923,117 @@
     % Close the publication block
     \removeunwantedspaces
     \removepunctuation
-    \doif {\currentbtxcitealternative} {paren} {
-      % If this citation is already in parentheses, then use a bracket
-      \btxrightbracket
-    }
-    \doif {\currentbtxcitealternative} {entry} {
-      % Otherwise, if it is an in-text citation, then use a parenthesis
-      \btxrightparenthesis
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:institution
+\starttexdefinition btx:sbl:cite:publisher
+  \btxdoif {publisher} {
+    % Remove all preceding punctuation and spaces and use a parenthesis or bracket
+    \removeunwantedspaces
+    \removepunctuation
+    \btxleftparenthesisorbracket
+    % Is this a reprint?
+    \btxdoif {origpublisher} {
+      % Is there an original publication location?
+      \btxdoif {origlocation} {
+        \btxflush{origlocation}
+        \btxcolon
+      }
+      % Is there an original publisher?
+      \doif {\btxfoundname{origpublisher}} {origpublisher} {
+        \btxflush{origpublisher}
+        \btxcomma
+      }
+      % Is there an original publication date?
+      \btxdoif {origdate} {
+        \btxflush{origdate}
+        \btxcomma
+      }
+      % Remove the last punctuation token and replace it with a semicolon,
+      % followed by the reprint notation
+      \removeunwantedspaces
+      \removepunctuation
+      \btxsemicolon
+      \btxlabeltext{sbl:reprint}
+      \btxcomma
+    }
+    % Is there a location?
+    \btxdoif {location} {
+      \btxflush{location}
+      \btxcolon
+    }
+    % Is there a publisher?
+    \btxdoif {publisher} {
+      \btxflush{publisher}
+      \btxcomma
+    }
+    
+    % Is there a publication date?
+    \btxdoif{date} {
+      \btxflush{date}
+      \btxcomma
+    }
+    % Close the publication block
+    \removeunwantedspaces
+    \removepunctuation
+    \btxrightparenthesisorbracket
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:institution
   \btxdoif {institution} {
-    % Open the institution block
-    \doif {\currentbtxcitealternative} {paren} {
-      % Remove all preceding punctuation and spaces and use a bracket
-      \removeunwantedspaces
-      \removepunctuation
-      \btxleftbracket
-    }
-    \doif {\currentbtxcitealternative} {entry} {
-      % Remove all preceding punctuation and spaces and use a parenthesis
-      \removeunwantedspaces
-      \removepunctuation
-      \btxleftparenthesis
-    }
     % Print which type of thesis is being cited
-    % TODO: Could we just temporarily reset \currentbtxcategory
-    % and recite the whole thing based on its type field?
+    \doifelse {\currentbtxcategory} {phdthesis} {
+      \btxlabeltext{sbl:phd}
+      \btxspace
+      \btxlabeltext{sbl:diss}
+      \btxcomma
+    } {
+      \doifelse {\currentbtxcategory} {mastersthesis} {
+        \btxlabeltext{sbl:masters}
+        \btxspace
+        \btxlabeltext{sbl:diss}
+        \btxcomma
+      } {
+        \btxdoif {type} {
+          \doif {\btxfield{type}} {phdthesis} {
+            \btxlabeltext{sbl:phd}
+            \btxspace
+            \btxlabeltext{sbl:diss}
+            \btxcomma
+          }
+          \doif {\btxfield{type}} {mastersthesis} {
+            \btxlabeltext{sbl:masters}
+            \btxspace
+            \btxlabeltext{sbl:diss}
+            \btxcomma
+          }
+        }
+      }
+    }
+    % Print the institution name:
+    \btxflush{institution}
+    \btxcomma
+    % Print the date:
+    \btxdoif {date} {
+      \btxflush{date}
+      \btxcomma
+    }
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:institution
+  \btxdoif {institution} {
+    % Remove all preceding punctuation and spaces and use a parenthesis or bracket
+    \removeunwantedspaces
+    \removepunctuation
+    \btxleftparenthesisorbracket
+    % Print which type of thesis is being cited
     \doifelse {\currentbtxcategory} {phdthesis} {
       \btxlabeltext{sbl:phd}
       \btxspace
@@ -1548,42 +2073,15 @@
     % Close the institution block
     \removeunwantedspaces
     \removepunctuation
-    \doif {\currentbtxcitealternative} {paren} {
-      % If this citation is already in parentheses, then use a bracket
-      \btxrightbracket
-    }
-    \doif {\currentbtxcitealternative} {entry} {
-      % Otherwise, if it is an in-text citation, then use a parenthesis
-      \btxrightparenthesis
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxrightparenthesisorbracket
+    \btxcomma
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:presentedat
+\starttexdefinition btx:sbl:list:presentedat
   \btxdoif {eventtitle} {
-    \doif {\currentbtxcitealternative} {paren} {
-      % Remove all preceding punctuation and spaces and use a bracket
-      \removeunwantedspaces
-      \removepunctuation
-      \btxleftbracket
-    }
-    \doif {\currentbtxcitealternative} {entry} {
-      % Remove all preceding punctuation and spaces and use a parenthesis
-      \removeunwantedspaces
-      \removepunctuation
-      \btxleftparenthesis
-    }
     % Print the "paper presented at" preamble
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxlabeltext{sbl:paperpresentedat}
-    } {
-      \btxlabeltext{sbl:Paperpresentedat}
-    }
+    \btxlabeltext{sbl:Paperpresentedat}
     \btxspace
     \btxflush{eventtitle}
     \btxcomma
@@ -1602,74 +2100,119 @@
     % Close the block
     \removeunwantedspaces
     \removepunctuation
-    \doif {\currentbtxcitealternative} {paren} {
-      % If this citation is already in parentheses, then use a bracket
-      \btxrightbracket
-    }
-    \doif {\currentbtxcitealternative} {entry} {
-      % Otherwise, if it is an in-text citation, then use a parenthesis
-      \btxrightparenthesis
-    }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:ebook
+\starttexdefinition btx:sbl:cite:presentedat
+  \btxdoif {eventtitle} {
+    % Remove all preceding punctuation and spaces and use a parenthesis
+    \removeunwantedspaces
+    \removepunctuation
+    \btxleftparenthesisorbracket
+    % Print the "paper presented at" preamble
+    \btxlabeltext{sbl:paperpresentedat}
+    \btxspace
+    \btxflush{eventtitle}
+    \btxcomma
+    % Is there a location?
+    \btxdoif {location} {
+      \btxflush{location}
+      \btxcomma
+    }
+    % Is there an event date?
+    % TODO: If date is in "YYYY-MM-DD" format, 
+    % then it should be printed in "DD Month YYYY" format
+    \btxdoif {date} {
+      \btxflush{date} % 
+      \btxcomma
+    }
+    % Close the block
+    \removeunwantedspaces
+    \removepunctuation
+    \btxrightparenthesisorbracket
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:ebook
   \btxdoif {eprint} {
     % Just print the eprint as an edition (e.g., "Nook edition")
     \btxflush{eprint}
     \btxspace
     \btxlabeltext{sbl:editionfull}
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:pages
+\starttexdefinition btx:sbl:cite:ebook
+  \btxdoif {eprint} {
+    % Just print the eprint as an edition (e.g., "Nook edition")
+    \btxflush{eprint}
+    \btxspace
+    \btxlabeltext{sbl:editionfull}
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:pages
   \btxdoif {pages} {
     \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:bookpages
-  % Skip this if we're in list mode (book pages get inserted earlier via the btx:sbl:partinbook command)
-  \doifinset {\currentbtxcitealternative} {entry, paren} {
-    \btxdoif {pages} {
-      % If no booktitle was specified, then prefix the page range with the volume and part numbers
-      \btxdoifnot {booktitle} {
-        \btxdoif {volume} {
-          \btxflush{volume}
-          % Is there a part number for the book being cited from this collection?
-          \btxdoif {part} {
-            \removeunwantedspaces
-            \btxperiod
-            \removeunwantedspaces
-            \btxflush{part}
-          }
-          \removeunwantedspaces
-          \btxcolon
-          \removeunwantedspaces
-        }
-      }
-      \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
-      \btxcomma
-    }
+\starttexdefinition btx:sbl:cite:pages
+  \btxdoif {pages} {
+    \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
+    \btxcomma
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:eprint
+\starttexdefinition btx:sbl:list:reprxref
+  \btxdoif{reprxref} {
+    % Is this reprint a reprint in the same lanugage, or a translation?
+    \doif {\btxfoundname{reprxref}} {reprxref} {
+      \btxlabeltext{sbl:Reprintof}
+      \btxspace
+    }
+    \doif {\btxfoundname{reprxref}} {transxref} {
+      \btxlabeltext{sbl:Translationof}
+      \btxspace
+    }
+    % Recursively cite the reprinted/translated version
+    \cite[listsubcite][\btxflush{reprxref}]
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:reprxref
+  \btxdoif{reprxref} {
+    % Is this reprint a reprint in the same lanugage, or a translation?
+    \doif {\btxfoundname{reprxref}} {reprxref} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxsemicolon
+      \btxlabeltext{sbl:reprint}
+      \btxspace
+      \btxlabeltext{sbl:of}
+      \btxspace
+    }
+    \doif {\btxfoundname{reprxref}} {transxref} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxsemicolon
+      \btxlabeltext{sbl:translator}
+      \btxspace
+      \btxlabeltext{sbl:of}
+      \btxspace
+    }
+    % Recursively cite the reprinted/translated version
+    \cite[subcite][\btxflush{reprxref}]
+  }
+\stoptexdefinition
+
+
+\starttexdefinition btx:sbl:list:eprint
   % Is the eprint field present?
   \btxdoifelse {eprint} {
     % Does it have an eprintclass?
@@ -1677,120 +2220,156 @@
       % If so, then this is a document published only online
       % Print the release date first, if there is one:
       \btxdoif {eprintdate} {
-        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-          \btxlabeltext{sbl:released}
-          \btxspace
-          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-          \btxcomma
-        } {
-          \btxlabeltext{sbl:Released}
-          \btxspace
-          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-          \btxperiod
-        }
+        \btxlabeltext{sbl:Released}
+        \btxspace
+        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \btxperiod
       }
       % If it has an eprinttype, then produce a DOI using it
       \btxdoif {eprinttype} {
         {\sc doi}
-        {:} % no space afterwards
+        \btxcolon
+        \removeunwantedspaces
         \btxflush{eprinttype}
         \btxcolon
       }
       % Then print the eprint identifier
       \btxflush{eprint}
-      \btxspace
-      % Finally, print its eprintclass in parentheses (or brackets, if we are already in paren mode)
-      \doifelse {\currentbtxcitealternative} {paren} {
-        \btxleftbracket
-        \btxflush{eprintclass}
-        \btxrightbracket
-      } {
-        \btxleftparenthesis
-        \btxflush{eprintclass}
-        \btxrightparenthesis
-      }
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxcomma
-      } {
-        \btxperiod
-      }
+      % Finally, print its eprintclass in parentheses or brackets
+      \btxleftparenthesisorbracket
+      \btxflush{eprintclass}
+      \btxrightparenthesisorbracket
+      \btxperiod
     } {
       % If not, then this is an online database or website with eprint fields
       % Print its eprinttype first, if there is one
       \btxdoif {eprinttype} {
         \btxflush{eprinttype}
-        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-          \btxcomma
-        } {
-          \btxperiod
-        }
+        \btxperiod
       }
       % Print the release date next, if there is one:
       \btxdoif {eprintdate} {
-        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-          \btxlabeltext{sbl:released}
-          \btxspace
-          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-          \btxcomma
-        } {
-          \btxlabeltext{sbl:Released}
-          \btxspace
-          \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-          \btxperiod
-        }
+        \btxlabeltext{sbl:Released}
+        \btxspace
+        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \btxperiod
       }
       % Then print the eprint identifier
       \btxflush{eprint}
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxcomma
-      } {
-        \btxperiod
-      }
+      \btxperiod
       % If a DOI was specified, then use it here
       \btxdoif {doi} {
         {\sc doi}
-        {:} % no space afterwards
+        \btxcolon
+        \removeunwantedspaces
         \btxflush{doi}
-        \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-          \btxcomma
-        } {
-          \btxperiod
-        }
+        \btxperiod
       }
     }
   } {
     % If not, then treat this as a website or blog post
     % Does it have a blog title?
     \btxdoif {journal} {
-      \btxflush{journal}
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxcomma
-      } {
-        \btxperiod
-      }
+      \btxstartstyleandcolor[sbl:\s!list:journal]
+        \btxusecommand [sbl:\s!list:journal] {
+          \btxflush{journal}
+        }
+      \btxstopstyleandcolor
+      \btxperiod
     }
     % Then print the date of the post, if specified
     \btxdoif {date} {
       \btxflush{date} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxcomma
-      } {
-        \btxperiod
-      }
+      \btxperiod
     }
     % Then print the URL, if specified
     \btxdoif {doi} {
       \hyphenatedurl{\btxflush{doi}}
-      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-        \btxcomma
-      } {
-        \btxperiod
-      }
+      \btxperiod
     }
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:doi
+\starttexdefinition btx:sbl:cite:eprint
+  % Is the eprint field present?
+  \btxdoifelse {eprint} {
+    % Does it have an eprintclass?
+    \btxdoifelse {eprintclass} {
+      % If so, then this is a document published only online
+      % Print the release date first, if there is one:
+      \btxdoif {eprintdate} {
+        \btxlabeltext{sbl:released}
+        \btxspace
+        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \btxcomma
+      }
+      % If it has an eprinttype, then produce a DOI using it
+      \btxdoif {eprinttype} {
+        {\sc doi}
+        \btxcolon
+        \removeunwantedspaces
+        \btxflush{eprinttype}
+        \btxcolon
+      }
+      % Then print the eprint identifier
+      \btxflush{eprint}
+      \btxspace
+      % Finally, print its eprintclass in parentheses or brackets
+      \btxleftparenthesisorbracket
+      \btxflush{eprintclass}
+      \btxrightparenthesisorbracket
+      \btxcomma
+    } {
+      % If not, then this is an online database or website with eprint fields
+      % Print its eprinttype first, if there is one
+      \btxdoif {eprinttype} {
+        \btxflush{eprinttype}
+        \btxcomma
+      }
+      % Print the release date next, if there is one:
+      \btxdoif {eprintdate} {
+        \btxlabeltext{sbl:released}
+        \btxspace
+        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \btxcomma
+      }
+      % Then print the eprint identifier
+      \btxflush{eprint}
+      \btxcomma
+      % If a DOI was specified, then use it here
+      \btxdoif {doi} {
+        {\sc doi}
+        \btxcolon
+        \removeunwantedspaces
+        \btxflush{doi}
+        \btxcomma
+      }
+    }
+  } {
+    % If not, then treat this as a website or blog post
+    % Does it have a blog title?
+    \btxdoif {journal} {
+      \btxstartstyleandcolor[sbl:\s!list:journal]
+        \btxusecommand [sbl:\s!list:journal] {
+          \btxflush{journal}
+        }
+      \btxstopstyleandcolor
+      \btxcomma
+    }
+    % Then print the date of the post, if specified
+    \btxdoif {date} {
+      \btxflush{date} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+      \btxcomma
+    }
+    % Then print the URL, if specified
+    \btxdoif {doi} {
+      \hyphenatedurl{\btxflush{doi}}
+      \btxcomma
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:doi
   \btxdoif {doi} {
     % If the URL is actually a DOI (the preferred case), then indicate this
     \doifelse {\btxfoundname{doi}} {doi} {
@@ -1801,40 +2380,56 @@
     } {
       \hyphenatedurl{\btxflush{doi}}
     }
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:note
+\starttexdefinition btx:sbl:cite:doi
+  \btxdoif {doi} {
+    % If the URL is actually a DOI (the preferred case), then indicate this
+    \doifelse {\btxfoundname{doi}} {doi} {
+      {\sc doi}
+      \btxcolon
+      \removeunwantedspaces
+      \hyphenatedurl{\btxflush{doi}}
+    } {
+      \hyphenatedurl{\btxflush{doi}}
+    }
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:list:note
+  \btxdoif {note} {
+    % Make sure the first word is capitalized
+    \btxusecommand [sbl:\s!list:note] {
+      \btxflush{note}
+    }
+    \btxperiod
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:note
   \btxdoif {note} {
     \btxflush{note}
-    \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
-      \btxcomma
-    } {
-      \btxperiod
-    }
+    \btxcomma
   }
 \stoptexdefinition
 
 % List citation setups
 \startsetups btx:sbl:list:book
-  \texdefinition{btx:sbl:author}
-  \texdefinition{btx:sbl:title}
-  \texdefinition{btx:sbl:editor}
-  \texdefinition{btx:sbl:maintitle}
-  \texdefinition{btx:sbl:maineditor}
-  \texdefinition{btx:sbl:translator}
-  \texdefinition{btx:sbl:volumes}
-  \texdefinition{btx:sbl:edition}
-  \texdefinition{btx:sbl:bookseries}
-  \texdefinition{btx:sbl:publisher}
-  \texdefinition{btx:sbl:ebook}
-  \texdefinition{btx:sbl:doi}
-  \texdefinition{btx:sbl:note}
+  \texdefinition{btx:sbl:list:author}
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:list:collectionxref}
+  \texdefinition{btx:sbl:list:editor}
+  \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:edition}
+  \texdefinition{btx:sbl:list:seriesxref}
+  \texdefinition{btx:sbl:list:publisher}
+  \texdefinition{btx:sbl:list:ebook}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:reprxref}
+  \texdefinition{btx:sbl:list:note}
   \removeunwantedspaces
   \removepunctuation
   \btxperiod
@@ -1911,6 +2506,20 @@
 \stopsetups
 
 \startsetups btx:sbl:list:suppbook
+  \texdefinition{btx:sbl:list:author}
+  \btxdoif {type} {
+      \doifinsetelse {\currentbtxcitealternative} {entry, paren} {
+        % For in-text citations, just print the type as-is
+        \btxflush{type} % required field for suppbook
+      } {
+        % For list citations, make sure the type is capitalized
+        \btxusecommand [sbl:\s!list:type] {
+          \btxflush{type}
+        }
+      }
+      \btxspace
+      \btxlabeltext{sbl:to}
+    }
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
@@ -2055,30 +2664,139 @@
   \btxperiod
 \stopsetups
 
-% Long-form in-text citation setup
+% List subcitation setups
+\startsetups btx:sbl:listsubcite:book
+  \texdefinition{btx:sbl:listsubcite:title}
+  \texdefinition{btx:sbl:listsubcite:author}
+  \texdefinition{btx:sbl:listsubcite:collectionxref}
+  \texdefinition{btx:sbl:listsubcite:editor}
+  \texdefinition{btx:sbl:listsubcite:translator}
+  \texdefinition{btx:sbl:list:edition}
+  \texdefinition{btx:sbl:list:seriesxref}
+  \texdefinition{btx:sbl:list:publisher}
+  \texdefinition{btx:sbl:list:ebook}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:reprxref}
+  \texdefinition{btx:sbl:list:note}
+  \removeunwantedspaces
+  \removepunctuation
+  \btxperiod
+\stopsetups
+
+% Inline citation setups
+\startsetups btx:sbl:cite:book
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:collectionxref}
+  \texdefinition{btx:sbl:cite:editor}
+  \texdefinition{btx:sbl:cite:translator}
+  \texdefinition{btx:sbl:cite:edition}
+  \texdefinition{btx:sbl:cite:seriesxref}
+  \texdefinition{btx:sbl:cite:publisher}
+  \texdefinition{btx:sbl:cite:ebook}
+  \texdefinition{btx:sbl:cite:doi}
+  \texdefinition{btx:sbl:cite:reprxref}
+  \texdefinition{btx:sbl:cite:note}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+% Inline subcitation setups
+\startsetups btx:sbl:subcite:book
+  \texdefinition{btx:sbl:subcite:title}
+  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:subcite:collectionxref}
+  \texdefinition{btx:sbl:subcite:editor}
+  \texdefinition{btx:sbl:subcite:translator}
+  \texdefinition{btx:sbl:cite:edition}
+  \texdefinition{btx:sbl:cite:seriesxref}
+  \texdefinition{btx:sbl:cite:publisher}
+  \texdefinition{btx:sbl:cite:ebook}
+  \texdefinition{btx:sbl:cite:doi}
+  \texdefinition{btx:sbl:cite:reprxref}
+  \texdefinition{btx:sbl:cite:note}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+% List citation setup
 \startsetups btx:sbl:\s!cite:entry
   \fastsetup{\s!btx:\s!cite:concat}
   \fastsetup{\s!btx:\s!cite:lefttext}
   \begingroup
+  % Tag the current entry as cited
   \dotagpublication\currentbtxdataset\currentbtxtag
-  \edef\currentbtxcategory{\btxfield{category}}
-  \fastsetup{btx:sbl:list:\currentbtxcategory}
+  % Keep track of all relevant fields for this citation
+  \edef\btxrootauthor{\btxflush{author}}
+  \edef\btxrootwithauthor{\btxflush{withauthor}}
+  \edef\btxrooteditor{\btxflush{editor}}
+  \edef\btxrootwitheditor{\btxflush{witheditor}}
+  \edef\btxroottranslator{\btxflush{translator}}
+  \edef\btxrootwithtranslator{\btxflush{withtranslator}}
+  % Then cite the list entry
+  \btxhandleciteentry
   \endgroup
-  % Remove the punctuation left at the end of the citation
-  \removeunwantedspaces
-  \removepunctuation
   \fastsetup{\s!btx:\s!cite:righttext}
+\stopsetups
+
+% List subcitation setup
+\startsetups btx:sbl:\s!cite:listsubcite
+  \begingroup
+  % Invoke the appropriate setup
+  \edef\currentbtxcategory{\btxfield{category}}
+  \fastsetup{btx:sbl:listsubcite:\currentbtxcategory}
+  \endgroup
+\stopsetups
+
+% Inline citation setup
+\startsetups btx:sbl:\s!cite:inline
+  \fastsetup{\s!btx:\s!cite:concat}
+  \fastsetup{\s!btx:\s!cite:lefttext}
+  \begingroup
+  % Tag the current entry as cited
+  \dotagpublication\currentbtxdataset\currentbtxtag
+  % Keep track of all relevant fields for this citation
+  \edef\btxrootauthor{\btxflush{author}}
+  \edef\btxrootwithauthor{\btxflush{withauthor}}
+  \edef\btxrooteditor{\btxflush{editor}}
+  \edef\btxrootwitheditor{\btxflush{witheditor}}
+  \edef\btxroottranslator{\btxflush{translator}}
+  \edef\btxrootwithtranslator{\btxflush{withtranslator}}
+  % Then invoke the appropriate setup
+  \edef\currentbtxcategory{\btxfield{category}}
+  \fastsetup{btx:sbl:cite:\currentbtxcategory}
+  \endgroup
+  \fastsetup{\s!btx:\s!cite:righttext}
+\stopsetups
+
+% Inline subcitation setup
+\startsetups btx:sbl:\s!cite:subcite
+  \begingroup
+  % Invoke the appropriate setup
+  \edef\currentbtxcategory{\btxfield{category}}
+  \blank
+  \btxflush{author}
+  \blank
+  \btxrootauthor{}
+  \blank
+  \fastsetup{btx:sbl:subcite:\currentbtxcategory}
+  \endgroup
 \stopsetups
 
 % In-text parenthetical citation setup
 \startsetups btx:sbl:cite:paren
-  \fastsetup{btx:sbl:cite:entry}
+  % Make sure we use brackets instead of parentheses
+  \begingroup
+  \let\btxleftparenthesisorbracket\btxleftbracket
+  \let\btxrightparenthesisorbracket\btxrightbracket
+  \fastsetup{btx:sbl:cite:inline}
+  \endgroup
 \stopsetups
 
 % Footnote citation setup
 \startsetups btx:sbl:cite:footnote
   \startfootnote
-    \fastsetup{btx:sbl:cite:entry}
+    \fastsetup{btx:sbl:cite:inline}
   \stopfootnote
 \stopsetups
 
