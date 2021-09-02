@@ -32,20 +32,10 @@ local specification = {
         --
         author              = "author", -- interpreted as name(s)
         withauthor          = "author",
-        bookauthor          = "author",
-        withbookauthor      = "author",
         editor              = "author",
         witheditor          = "author",
-        bookeditor          = "author",
-        withbookeditor      = "author",
-        maineditor          = "author",
-        withmaineditor      = "author",
         translator          = "author",
-        revdauthor          = "author",
-        revdwithauthor      = "author",
-        revdeditor          = "author",
-        revdwitheditor      = "author",
-        revdtranslator      = "author",
+        withtranslator      = "author",
         volumes             = "number",
         volume              = "range",
         part                = "range",
@@ -75,7 +65,6 @@ local generic = {
     -- allows the substitution of an alternate field.
     --
     -- note that anything can get assigned a doi or be available online. 
-    short = { "shorthand", "shorttitle" }, -- interchangeable
     journal = { "journalxref", "shortjournal", "journal" }, -- cross-references to separate entries are preferred, then shorthand, then long forms
     series = { "seriesxref", "shortseries", "series" }, -- cross-references to separate entries are preferred, then shorthand, then long form
     location = { "location", "address" }, -- interchangeable
@@ -116,6 +105,8 @@ categories.book = {
         "publisher",
     },
     optional = {
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "collectionxref", "volume", "part",
         "editor",
@@ -162,6 +153,8 @@ categories.manual = {
         "publisher",
     },
     optional = {
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "author",
         "withauthor", "withauthortype",
         "collectionxref", "volume", "part",
@@ -196,6 +189,7 @@ categories.incollection = {
         "publisher",
     },
     optional = {
+        "short", -- shorthand for the parent collection, to abbreviate in subcites
         "part",
         "series", "seriesseries", "number",
         "origpublisher",
@@ -224,6 +218,7 @@ categories.collection = {
     },
     optional = {
         "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "witheditor", "witheditortype",
         "series", "seriesseries", "number",
         "origpublisher",
@@ -247,6 +242,7 @@ categories.mvbook = {
     },
     optional = {
         "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "editor",
         "witheditor", "witheditortype",
@@ -282,7 +278,6 @@ categories.mvlexicon = categories.mvbook
 -- such as Migne's Patrologia Graeca or Patrologia Latina (§6.4.6)
 categories.series = {
     sets = {
-        short = generic.short,
         location = generic.location,
         date = generic.date,
         doi = generic.doi,
@@ -291,7 +286,8 @@ categories.series = {
         "title",
     },
     optional = {
-        "short", -- to abbreviate in subcites
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "editor",
         "witheditor", "witheditortype",
         "volumes",
@@ -320,6 +316,7 @@ categories.inbook = {
         "pages",
     },
     optional = {
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",
@@ -373,6 +370,7 @@ categories.ancienttext = {
         "bookxref", -- a set
     },
     optional = {
+        "shorttitle", -- for short citations
         "author", -- author of the ancient text (if known)
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
@@ -402,6 +400,7 @@ categories.article = {
         "journal", -- a set
     },
     optional = {
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype", 
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -436,6 +435,7 @@ categories.review = {
     optional = {
         "withauthor", "withauthortype",
         "title",
+        "shorttitle", -- for short citations
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
         "date",
@@ -462,6 +462,8 @@ categories.proceedings = {
         "publisher",
     },
     optional = {
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -493,6 +495,7 @@ categories.conferencepaper = {
         "eventtitle", -- e.g., "the Annual Meeting of the New England Region of the Society of Biblical Literature"
     },
     optional = {
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -519,6 +522,7 @@ categories.thesis = {
         "type", -- typically a category name, like "mastersthesis" or "phdthesis"
     },
     optional = {
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -538,6 +542,7 @@ categories.mastersthesis = {
         "date", -- a set
     },
     optional = {
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -562,6 +567,7 @@ categories.unpublished = {
         "note",
     },
     optional = {
+        "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -572,7 +578,7 @@ categories.unpublished = {
 
 -- a document published online with no print counterpart (§6.4.13),
 -- an online database (§6.4.14), or
--- a website or blog (§6.4.15)
+-- a website or blog entry (§6.4.15)
 categories.online = {
     sets = {
         author = { "author", "organization", "editor", },
@@ -585,6 +591,7 @@ categories.online = {
         "title",
     },
     optional = {
+        "shorttitle", -- for short citations
         "author", 
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
@@ -622,6 +629,8 @@ categories.misc = {
         "author", 
         "withauthor", "withauthortype",
         "title",
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "xref", "volume", "part",
         "editor",
         "witheditor", "witheditortype",
@@ -666,6 +675,8 @@ categories.literal = {
     optional = {
         "withauthor", "withauthortype",
         "title",
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
         "bookxref", "volume", "part",
         "editor",
         "witheditor", "witheditortype",

@@ -6,6 +6,7 @@
 @book{talbert:1992,
     author = {Talbert, Charles H.},
     title = {Reading John: A Literary and Theological Commentary on the Fourth Gospel and the Johannine Epistles},
+    shorttitle = {Reading John},
     location = {New York},
     publisher = {Crossroad},
     date = {1992}
@@ -74,23 +75,33 @@
     date = {1985}
 }
 
+@series{rbs,
+    title = {Resources for Biblical Study},
+    shorthand = {RBS}
+}
+
 @book{kaltner+mckenzie:2002,
     editor = {Kaltner, John and McKenzie, Steven L.},
     title = {Beyond Babel: A Handbook for Biblical Hebrew and Related Languages},
-    series = {Resources for Biblical Study},
-    shortseries = {RBS},
+    shorttitle = {Beyond Babel},
+    seriesxref = {rbs},
     number = {42},
     location = {Atlanta},
     publisher = {Society of Biblical Literature},
     date = {2002}
 }
 
+@series{baspsup,
+    title = {Bulletin of the American Society of Papyrologists, Supplements},
+    shorthand = {BASPSup}
+}
+
 @book{oates+etal:2001,
     editor = {Oates, John F. and Willis, William H. and Bagnall, Roger S. and Worp, Klass A.},
     title = {Checklist of Editions of Greek and Latin Papyri, Ostraca, and Tablets},
+    shorttitle = {Checklist},
     edition = {5},
-    series = {Bulletin of the American Society of Papyrologists, Supplements},
-    shortseries = {BASPSup},
+    seriesxref = {baspsup},
     number = {9},
     location = {Oakville, CT},
     publisher = {American Society of Papyrologists},
@@ -100,6 +111,7 @@
 @book{schillebeeckx:1986,
     author = {Schillebeeckx, Edward},
     title = {The Schillebeeckx Reader},
+    shorttitle = {Schillebeeckx Reader},
     editor = {Schreiter, Robert J.},
     location = {Edinburgh},
     publisher = {T\&T Clark},
@@ -124,6 +136,7 @@
 @article{irvine:2014,
     author = {Irvine, Stuart A.},
     title = {Idols [\italic{ktbwnm}]: A note on Hosea 13:2a},
+    shorttitle = {Idols [\italic{ktbwnm}]},
     journalxref = {jbl},
     volume = {133},
     date = {2014},
@@ -161,26 +174,22 @@
     bookxref = {kottsieper+etal:1995}
 }
 
-@book{egger1996,
-    author = {Egger, Wilhelm},
-    title = {How to Read the New Testament: An Introduction to Linguistic and Historical-Critical Methodology},
-    translator = {Heinegg, Peter},
-    location = {Peabody, MA},
-    publisher = {Hendrickson},
-    date = {1996}
-}
-
 @suppbook{boers:1996,
     author = {Boers, Hendrikus},
     type = {introduction},
-    bookxref = {egger1996}
+    bookxref = {egger:1996}
+}
+
+@series{asnu,
+    title = {Acta Seminarii Neotestamentici Upsaliensis},
+    shorthand = {ASNU}
 }
 
 @book{gerhardsson:1961,
     author = {Gerhardsson, Birger},
     title = {Memory and Manuscript: Oral Tradition and Written Transmission in Rabbinic Judaism and Early Christianity},
-    series = {Acta Seminarii Neotestamentici Upsaliensis},
-    shortseries = {ASNU},
+    shorttitle = {Memory and Manuscript},
+    seriesxref = {asnu},
     number = {22},
     location = {Lund and Copenhagen},
     publisher = {Gleerup and Munksgaard},
@@ -190,6 +199,7 @@
 @book{pritchard:1969,
     editor = {Pritchard, James B.},
     title = {Ancient Near Eastern Texts Relating to the Old Testament},
+    shorttitle = {Ancient Near Eastern Texts},
     edition = {3},
     location = {Princeton},
     publisher = {Princeton University Press},
@@ -208,6 +218,7 @@
 @book{vanseters:1997,
     author = {Van Seters, John},
     title = {In Search of History: Histeriography in the Ancient World and the Origins of Biblical History},
+    shorttitle = {In Search of History},
     origlocation = {New Haven},
     origpublisher = {Yale University Press},
     origdate = {1983},
@@ -219,6 +230,7 @@
 @book{deissmann:1995,
     author = {Deissmann, Gustav Adolf},
     title = {Light from the Ancient East: The New Testament Illustrated by Recently Discovered Texts of the Graeco-Roman World},
+    shorttitle = {Light from the Ancient East},
     translator = {Strachan, Lionel R. M.},
     origdate = {1927},
     location = {Peabody, MA},
@@ -226,12 +238,16 @@
     date = {1995}
 }
 
+@series{wgrwsup,
+    title = {Writings from the Greco-Roman World Supplement Series},
+    shorthand = {WGRWSup}
+}
+
 @book{harrison+welborn:forthcoming,
     editor = {Harrison, James R. and Welborn, L. L.},
     title = {The First Urban Churches 2: Roman Corinth},
     shorttitle = {Roman Corinth},
-    series = {Writings from the Greco-Roman World Supplement Series},
-    shortseries = {WGRWSup},
+    seriesxref = {wgrwsup},
     location = {Atlanta},
     publisher = {SBL Press},
     pubstate = {forthcoming}
@@ -333,11 +349,21 @@
     date = {1967}
 }
 
+@mvbook{reventlow:2009-2010,
+    author = {Reventlow, Henning Graf},
+    title = {History of Biblical Interpretation},
+    translator = {Perdue, Leo G. and Duke, James O.},
+    volumes = {4},
+    location = {Atlanta},
+    publisher = {Society of Biblical Literature},
+    date = {2009--2010}
+}
+
 @book{reventlow:2009,
     author = {Reventlow, Henning Graf},
     title = {From the Old Testament to Origen},
     volume = {1},
-    maintitle = {History of Biblical Interpretation},
+    collectionxref = {reventlow:2009-2010},
     translator = {Perdue, Leo G.},
     location = {Atlanta},
     publisher = {Society of Biblical Literature},
@@ -370,6 +396,7 @@
 @book{kaufman:1974,
     author = {Kaufman, Stephen},
     title = {The Akkadian Influences on Aramaic},
+    shorttitle = {Akkadian Influences},
     series = {Assyriological Studies},
     shortseries = {AS},
     number = {19},
@@ -379,32 +406,46 @@
     url = {http://oi.uchicago.edu/pdf/as19.pdf}
 }
 
+@journal{jecs,
+    title = {Journal of Early Christian Studies},
+    shorthand = {JECS}
+}
+
 @article{leyerle:1993,
     author = {Leyerle, Blake},
     title = {John Chrysostom on the Gaze},
     shorttitle = {Chrysostom},
-    journaltitle = {Journal of Early Christian Studies},
-    shortjournal = {JECS},
+    journalxref = {jecs},
     volume = {1},
     date = {1993},
     pages = {159--174}
 }
 
+@journal{tz,
+    title = {Theologische Zeitschrift},
+    shorthand = {TZ}
+}
+
 @article{wildberger:1965,
     author = {Wildberger, Hans},
     title = {Das Abbild Gottes: Gen 1:26--30},
-    journaltitle = {Theologische Zeitschrift},
-    shortjournal = {TZ},
+    shorttitle = {Das Abbild Gottes},
+    journalxref = {tz},
     volume = {21},
     date = {1965},
     pages = {245--259, 481--501}
 }
 
+@journal{jdt,
+    title = {Jahrbuch für deutsche Theologie},
+    shorthand = {JDT}
+}
+
 @article{wellhausen:1876-1877,
     author = {Wellhausen, Julius},
     title = {Die Composition des Hexateuchs},
-    journaltitle = {Jahrbuch für deutsche Theologie},
-    shortjournal = {JDT},
+    shorttitle = {Composition},
+    journalxref = {jdt},
     volume = {21 and 22},
     date = {1876 and 1877},
     pages = {392--450 and 407--479}
@@ -413,49 +454,84 @@
 @article{freedman:1977,
     author = {Freedman, David Noel},
     title = {Pottery, Poetry, and Prophecy: An Essay on Biblical Poetry},
-    journaltitle = {Journal of Biblical Literature},
-    shortjournal = {JBL},
+    shorttitle = {Pottery, Poetry, and Prophecy},
+    journalxref = {jbl},
     volume = {96},
     date = {1977},
     pages = {5--26}
 }
 
+@book{freedman:pottery-poetry-prophecy-book,
+    author = {Freedman, David Noel},
+    title = {Pottery, Poetry, and Prophecy: Studies in Early Hebrew Poetry},
+    shorttitle = {Pottery, Poetry, and Prophecy},
+    location = {Winona Lake, IN},
+    publisher = {Eisenbrauns},
+    date = {1980}
+}
+
 @inbook{freedman:1980,
     author = {Freedman, David Noel},
     title = {Pottery, Poetry, and Prophecy: An Essay on Biblical Poetry},
-    booktitle = {Pottery, Poetry, and Prophecy: Studies in Early Hebrew Poetry},
-    location = {Winona Lake, IN},
-    publisher = {Eisenbrauns},
-    date = {1980},
+    shorttitle = {Pottery, Poetry, and Prophecy},
+    bookxref = {freedman:pottery-poetry-prophecy-book},
     pages = {1--22}
+}
+
+@journal{jbr,
+    title = {Journal of Bible and Religion},
+    shorthand = {JBR}
+}
+
+@book{robert+feuillet:1965,
+    author = {Robert, André and Feuillet, André},
+    title = {Introduction to the New Testament},
+    location = {New York},
+    publisher = {Desclée},
+    date = {1965}
 }
 
 @review{teeple:1966,
     author = {Teeple, Howard M.},
-    revdauthor = {Robert, André and Feuillet, André},
-    revdtitle = {Introduction to the New Testament},
-    journaltitle = {Journal of Bible and Religion},
-    shortjournal = {JBR},
+    bookxref = {robert+feuillet:1965},
+    journalxref = {jbr},
     volume = {34},
     date = {1966},
     pages = {368--370}
 }
 
+@journal{nytrb,
+    title = {New York Times Review of Books}
+}
+
+@mvreference{abd,
+    editor = {Freedman, David Noel},
+    title = {The Anchor Bible Dictionary},
+    volumes = {6},
+    location = {New York},
+    publisher = {Doubleday},
+    date = {1992}
+}
+
 @review{pelikan:1992,
     author = {Pelikan, Jaroslav},
     title = {The Things That You're Liable to Read in the Bible},
-    revdeditor = {Freedman, David Noel},
-    revdtitle = {The Anchor Bible Dictionary},
-    journaltitle = {New York Times Review of Books},
+    bookxref = {abd},
+    journalxref = {nytrb},
     date = {1992-12-20},
     pages = {3}
+}
+
+@journal{crbr,
+    title = {Critical Review of Books in Religion},
+    shorthand = {CRBR}
 }
 
 @article{petersen:1988,
     author = {Petersen, David L.},
     title = {Hebrew Bible Textbooks: A Review Article},
-    journaltitle = {Critical Review of Books in Religion},
-    shortjournal = {CRBR},
+    shorttitle = {Hebrew Bible Textbooks},
+    journalxref = {crbr},
     volume = {1},
     date = {1988},
     pages = {1--18}
@@ -472,7 +548,7 @@
 @mvreference{IDB,
     editor = {Buttrick, George A.},
     title = {The Interpreter's Dictionary of the Bible},
-    shorttitle = {IDB},
+    shorttitle = {IDB},
     volumes = {4},
     location = {New York},
     publisher = {Abingdon},
@@ -480,13 +556,17 @@
     shorthand = {IDB}
 }
 
+@incollection{IDB-1,
+    volume = {1},
+    collectionxref = {IDB}
+}
+
 @inreference{stendahl:1962,
     author = {Stendahl, Krister},
     title = {Biblical Theology, Contemporary},
     shorttitle = {Biblical Theology},
-    volume = {1},
     pages = {418--432},
-    xref = {IDB}
+    incollectionxref = {IDB-1}
 }
 
 @reference{DOTP,
@@ -504,7 +584,7 @@
     title = {Numbers, Book of},
     shorttitle = {Numbers},
     pages = {611--618},
-    xref = {DOTP}
+    bookxref = {DOTP}
 }
 
 @mvlexicon{NIDNTT,
@@ -518,20 +598,23 @@
     shorthand = {NIDNTT}
 }
 
+@incollection{NIDNTT-3,
+    volume = {3},
+    collectionxref = {NIDNTT}
+}
+
 @inlexicon{dahn+liefeld:see+vision+eye,
     author = {Dahn, Karl and Liefeld, Walter L.},
     title = {See, Vision, Eye},
-    volume = {3},
     pages = {511--521},
-    xref = {NIDNTT}
+    incollectionxref = {NIDNTT-3}
 }
 
 @inlexicon{dahn:horao,
     author = {Dahn, Karl},
     title = {ὁράω},
-    volume = {3},
     pages = {511--518},
-    xref = {NIDNTT}
+    incollectionxref = {NIDNTT-3}
 }
 
 @mvlexicon{TDNT,
@@ -546,20 +629,23 @@
     shorthand = {TDNT}
 }
 
+@incollection{TDNT-2,
+    volume = {2},
+    collectionxref = {TDNT}
+}
+
 @inlexicon{beyer:diakoneo,
     author = {Beyer, Hermann W.},
     title = {διακονέω},
-    volume = {2},
     pages = {81--87},
-    xref = {TDNT}
+    incollectionxref = {TDNT-2}
 }
 
 @inlexicon{beyer:diakoneo+diakonia+ktl,
     author = {Beyer, Hermann W.},
     title = {διακονέω, διακονία, κτλ},
-    volume = {2},
     pages = {81--93},
-    xref = {TDNT}
+    incollectionxref = {TDNT-2}
 }
 
 @mvlexicon{TLNT,
@@ -575,20 +661,23 @@
     shorthand = {TLNT}
 }
 
+@incollection{TLNT-1,
+    volume = {1},
+    collectionxref = {TLNT}
+}
+
 @inlexicon{spicq:amoibe,
     author = {Spicq, Ceslas},
     title = {ἀμοιβή},
-    volume = {1},
     pages = {95--96},
-    xref = {TLNT}
+    incollectionxref = {TLNT-1}
 }
 
 @inlexicon{spicq:atakteo+ataktos+ataktos,
     author = {Spicq, Ceslas},
     title = {ἀτακτέω, ἄτακτος, ἀτάκτως},
-    volume = {1},
     pages = {223--224},
-    xref = {TLNT}
+    incollectionxref = {TLNT-1}
 }
 
 @conferencepaper{niditch:1994,
