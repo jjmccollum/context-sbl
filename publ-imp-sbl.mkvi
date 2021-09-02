@@ -150,7 +150,7 @@
 % to get ConTeXt to actually use category-dependent styles, we need to use the
 % \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory] ... \btxstopstyleandcolor environment
 % (to activate the style parameter)
-% and the \btxusecommand [sbl:\s!list:title:\currentbtxcategory] command
+% and the \btxusecommand[sbl:\s!list:title:\currentbtxcategory] command
 % (to invoke the command parameter)
 
 \starttexdefinition titlequote #1
@@ -663,8 +663,10 @@
    sbl:editors={eds.},
    sbl:Page={Page},
    sbl:Pages={Pages},
+   sbl:edited={edited},
    sbl:Edited={Edited},
    sbl:translator={trans.},
+   sbl:translated={translated},
    sbl:Translated={Translated},
    sbl:volume={vol.},
    sbl:volumes={vols.},
@@ -701,8 +703,29 @@
 \let\btxrightparenthesisorbracket\btxrightparenthesis
 
 % Define some helper functions for subcitations
-\let\btxroottag\empty
-\let\btxcurrentsubcitetype\empty
+\let\btxroottag\empty % the tag of the initially cited entry
+\def\btxprintpubl{yes} % yes/no indicating whether publication information should be specified for the current citation or subcitation
+\let\btxcurrentsubcitetype\empty % the type of subcitation we're invoking
+
+% Define handlers for same-author entries in the list
+\startsetups sbl:list:sameauthor
+  \fastsetup{sbl:list:sameauthor:rule} % by default, just use a long line (defined below)
+\stopsetups
+
+\startsetups sbl:list:sameauthor:rule
+  \blackrule
+    [\c!width=6em,
+    \c!height=1ex,
+    \c!depth=\dimexpr\linewidth-1ex\relax] % to lift it off the baseline (we're not underlining anything!)
+\stopsetups
+
+\startsetups [sbl:list:sameauthor:\v!empty]
+  \kern\dimexpr\listparameter\c!margin-\interwordspace\relax% just indent by the margin, minus a space for the next word
+\stopsetups
+
+\startsetups sbl:list:sameauthor:ditto
+  {Ibid.}
+\stopsetups
 
 % I thought \enordinaldaynumber was already defined elsewhere in ConTeXt, 
 % but the engine isn't recognizing it...
@@ -728,9 +751,20 @@
 
 \starttexdefinition btx:sbl:list:author
   \btxdoif {author} {
-    % Print the author/editor/org name in inverted order
-    % TODO: need to print the first name inverted, with all subsequent names in normal order
-    \btxflush{author}
+    % If this entry's author is the same as that of the previous entry, then use samauthor settings (if they're set):
+    \doifelsesetups{sbl:list:sameauthor} {
+      \btxdoifelsesameasprevious {author} {
+        \fastsetup{sbl:list:sameauthor}
+      } {
+        % Print the author/editor/org name in inverted order
+        % TODO: need to print the first name inverted, with all subsequent names in normal order
+        \btxflush{author}
+      }
+    } {
+      % Print the author/editor/org name in inverted order
+      % TODO: need to print the first name inverted, with all subsequent names in normal order
+      \btxflush{author}
+    }
     % If this is an instance of an editor, then there is no author; 
     % indicate that this is an editor
     \doifelse {\btxfoundname{author}} {editor} {
@@ -884,7 +918,7 @@
 \starttexdefinition btx:sbl:list:title
   \btxdoif {title} {
     \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
-      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+      \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
         \btxflush{title}% set the title according to the current category
       }
     \btxstopstyleandcolor
@@ -895,7 +929,7 @@
 \starttexdefinition btx:sbl:cite:title
   \btxdoif {title} {
     \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
-      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+      \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
         \btxflush{title}% set the title according to the current category
       }
     \btxstopstyleandcolor
@@ -906,7 +940,7 @@
 \starttexdefinition btx:sbl:list:shorthand
   \btxdoif {shorthand} {
     \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
-      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+      \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
         \btxflush{shorthand}% set the shorthand according to the current category
       }
     \btxstopstyleandcolor
@@ -917,7 +951,7 @@
 \starttexdefinition btx:sbl:cite:shorthand
   \btxdoif {shorthand} {
     \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
-      \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+      \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
         \btxflush{shorthand}% set the shorthand according to the current category
       }
     \btxstopstyleandcolor
@@ -1145,6 +1179,266 @@
   }
 \stoptexdefinition
 
+\starttexdefinition btx:sbl:list:editortranslator
+  % Is there an editor?
+  \btxdoifelse {editor} {
+    % If so, is there also a translator?
+    \btxdoifelse {translator} {
+      % If so, is the editor the same as the author?
+      \doifelse {\btxfoundname{author}} {editor} {
+        % If so, then just handle the translator
+        \texdefinition{btx:sbl:list:translator}
+      } {
+        % If not, are the editor and translator (and their corresponding "with" fields) the same?
+        \doifelse {\btxdirect{editor}\btxdirect{witheditor}} {\btxdirect{translator}\btxdirect{withtranslator}} {
+          % If so, then typeset them together
+          \btxlabeltext{sbl:Translated}
+          \btxspace
+          \btxlabeltext{and}
+          \btxspace
+          \btxlabeltext{sbl:edited}
+          \btxspace
+          % If there is a note on the work in the original language (e.g., "from the 3rd German ed."),
+          % then print it here
+          \btxdoif {origlanguage} {
+            \btxflush{origlanguage}
+            \btxspace
+          }
+          \btxlabeltext{sbl:by}
+          \btxspace
+          \btxflush{editor}
+          % Is there an assisting editor/translator?
+          \btxdoif {witheditor} {
+            \btxcomma
+            % Use the provided text(s) to introduce them, if specified
+            \btxdoifelse {witheditortype} {
+              \btxflush{witheditortype}
+              \btxdoif {withtranslatortype} {
+                \btxspace
+                \btxlabeltext{and}
+                \btxspace
+                \btxflush{withtranslatortype}
+              }
+            } {
+              \btxdoif {withtranslatortype} {
+                \btxflush{withtranslatortype}
+              }
+            }
+            \btxspace
+            \btxflush{witheditor}
+          }
+          % If the name ends with a period (as is the case for "et al."), 
+          % then remove the preceding period
+          \removeunwantedspaces
+          \removepunctuation
+          \btxperiod
+        } {
+          % If not, then handle them separately
+          \texdefinition{btx:sbl:list:editor}
+          \texdefinition{btx:sbl:list:translator}
+        }
+      }
+    } {
+      % If not, then just handle the editor
+      \texdefinition{btx:sbl:list:editor}
+    }
+  } {
+    % If not, then just handle the translator
+    \texdefinition{btx:sbl:list:translator} 
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:listsubcite:editortranslator
+  % Is there an editor?
+  \btxdoifelse {editor} {
+    % If so, is there also a translator?
+    \btxdoifelse {translator} {
+      % If so, is the editor the same as the author?
+      \doifelse {\btxfoundname{author}} {editor} {
+        % If so, then just handle the translator
+        \texdefinition{btx:sbl:listsubcite:translator}
+      } {
+        % If not, are the editor and translator (and their corresponding "with" fields) the same?
+        \doifelse {\btxdirect{editor}\btxdirect{witheditor}} {\btxdirect{translator}\btxdirect{withtranslator}} {
+          % If so, then typeset them together
+          \btxlabeltext{sbl:Translated}
+          \btxspace
+          \btxlabeltext{and}
+          \btxspace
+          \btxlabeltext{sbl:edited}
+          \btxspace
+          % If there is a note on the work in the original language (e.g., "from the 3rd German ed."),
+          % then print it here
+          \btxdoif {origlanguage} {
+            \btxflush{origlanguage}
+            \btxspace
+          }
+          \btxlabeltext{sbl:by}
+          \btxspace
+          \btxflush{editor}
+          % Is there an assisting editor/translator?
+          \btxdoif {witheditor} {
+            \btxcomma
+            % Use the provided text(s) to introduce them, if specified
+            \btxdoifelse {witheditortype} {
+              \btxflush{witheditortype}
+              \btxdoif {withtranslatortype} {
+                \btxspace
+                \btxlabeltext{and}
+                \btxspace
+                \btxflush{withtranslatortype}
+              }
+            } {
+              \btxdoif {withtranslatortype} {
+                \btxflush{withtranslatortype}
+              }
+            }
+            \btxspace
+            \btxflush{witheditor}
+          }
+          % If the name ends with a period (as is the case for "et al."), 
+          % then remove the preceding period
+          \removeunwantedspaces
+          \removepunctuation
+          \btxperiod
+        } {
+          % If not, then handle them separately
+          \texdefinition{btx:sbl:listsubcite:editor}
+          \texdefinition{btx:sbl:listsubcite:translator}
+        }
+      }
+    } {
+      % If not, then just handle the editor
+      \texdefinition{btx:sbl:listsubcite:editor}
+    }
+  } {
+    % If not, then just handle the translator
+    \texdefinition{btx:sbl:listsubcite:translator} 
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:editortranslator
+  % Is there an editor?
+  \btxdoifelse {editor} {
+    % If so, is there also a translator?
+    \btxdoifelse {translator} {
+      % If so, is the editor the same as the author?
+      \doifelse {\btxfoundname{author}} {editor} {
+        % If so, then just handle the translator
+        \texdefinition{btx:sbl:cite:translator}
+      } {
+        % If not, are the editor and translator (and their corresponding "with" fields) the same?
+        \doifelse {\btxdirect{editor}\btxdirect{witheditor}} {\btxdirect{translator}\btxdirect{withtranslator}} {
+          % If so, then typeset them together
+          \btxlabeltext{sbl:translator}
+          \btxspace
+          \btxlabeltext{and}
+          \btxspace
+          \btxlabeltext{sbl:editor}
+          \btxspace
+          \btxflush{editor}
+          % Is there an assisting editor/translator?
+          \btxdoif {witheditor} {
+            \btxcomma
+            % Use the provided text(s) to introduce them, if specified
+            \btxdoifelse {witheditortype} {
+              \btxflush{witheditortype}
+              \btxdoif {withtranslatortype} {
+                \btxspace
+                \btxlabeltext{and}
+                \btxspace
+                \btxflush{withtranslatortype}
+              }
+            } {
+              \btxdoif {withtranslatortype} {
+                \btxflush{withtranslatortype}
+              }
+            }
+            \btxspace
+            \btxflush{witheditor}
+          }
+          % If the name ends with a period (as is the case for "et al."), 
+          % then remove the preceding period
+          \removeunwantedspaces
+          \removepunctuation
+          \btxperiod
+        } {
+          % If not, then handle them separately
+          \texdefinition{btx:sbl:cite:editor}
+          \texdefinition{btx:sbl:cite:translator}
+        }
+      }
+    } {
+      % If not, then just handle the editor
+      \texdefinition{btx:sbl:cite:editor}
+    }
+  } {
+    % If not, then just handle the translator
+    \texdefinition{btx:sbl:cite:translator} 
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:subcite:editortranslator
+  % Is there an editor?
+  \btxdoifelse {editor} {
+    % If so, is there also a translator?
+    \btxdoifelse {translator} {
+      % If so, is the editor the same as the author?
+      \doifelse {\btxfoundname{author}} {editor} {
+        % If so, then just handle the translator
+        \texdefinition{btx:sbl:subcite:translator}
+      } {
+        % If not, are the editor and translator (and their corresponding "with" fields) the same?
+        \doifelse {\btxdirect{editor}\btxdirect{witheditor}} {\btxdirect{translator}\btxdirect{withtranslator}} {
+          % If so, then typeset them together
+          \btxlabeltext{sbl:translator}
+          \btxspace
+          \btxlabeltext{and}
+          \btxspace
+          \btxlabeltext{sbl:editor}
+          \btxspace
+          \btxflush{editor}
+          % Is there an assisting editor/translator?
+          \btxdoif {witheditor} {
+            \btxcomma
+            % Use the provided text(s) to introduce them, if specified
+            \btxdoifelse {witheditortype} {
+              \btxflush{witheditortype}
+              \btxdoif {withtranslatortype} {
+                \btxspace
+                \btxlabeltext{and}
+                \btxspace
+                \btxflush{withtranslatortype}
+              }
+            } {
+              \btxdoif {withtranslatortype} {
+                \btxflush{withtranslatortype}
+              }
+            }
+            \btxspace
+            \btxflush{witheditor}
+          }
+          % If the name ends with a period (as is the case for "et al."), 
+          % then remove the preceding period
+          \removeunwantedspaces
+          \removepunctuation
+          \btxperiod
+        } {
+          % If not, then handle them separately
+          \texdefinition{btx:sbl:subcite:editor}
+          \texdefinition{btx:sbl:subcite:translator}
+        }
+      }
+    } {
+      % If not, then just handle the editor
+      \texdefinition{btx:sbl:subcite:editor}
+    }
+  } {
+    % If not, then just handle the translator
+    \texdefinition{btx:sbl:subcite:translator} 
+  }
+\stoptexdefinition
+
 \starttexdefinition btx:sbl:list:bookxref
   \btxdoif{bookxref} {
     % Proceed by the category of the current entry
@@ -1165,10 +1459,10 @@
       }
     }
     \doifinset {\currentbtxcategory} {suppbook} {
-      % Print the section of the book
+      % Print the section of the book, if there is one
       \btxdoifelse {type} {
         % For list citations, make sure the type is capitalized
-        \btxusecommand [sbl:\s!list:type] {
+        \btxusecommand[sbl:\s!list:type] {
           \btxflush{type}%
         }
         \btxspace
@@ -1186,20 +1480,17 @@
     \btxspace
     % Recursively cite the collection
     \begingroup
-    % Whether or not we add it to the list and what we include in the subcitation
+    % Whether or not we add it to the list and whether or not we include publication fields in the subcitation
     % will depend on the category of this entry
     \doifnotinset {\currentbtxcategory} {review, inlexicon, ancienttext, classictext} {
-      \edef\btxcurrentsubcitetype{inbook}
       \textcite[listsubcite][\btxflush{bookxref}]
     }
     \doifinset {\currentbtxcategory} {review} {
-      \edef\btxcurrentsubcitetype{review} 
+      \def\btxprintpubl{no} % don't publish publication fields
       \textcite[subcite][\btxflush{bookxref}] % even in the list entry, the reviewed book is rendered like it would be in an inline citation
     }
     \doifinset {\currentbtxcategory} {inlexicon, ancienttext, classictext} {
-      \edef\btxcurrentsubcitetype{lexicontext}
       \doifelse {\btxfoundname{bookxref}} {bookxref} {
-        \dotagpublication\currentbtxdataset\btxflush{bookxref} % save books to the list
         \textcite[listsubcite][\btxflush{bookxref}]
       } {
         \textcite[listsubcite][\btxflush{bookxref}] % don't save incollections to the list
@@ -1214,10 +1505,25 @@
   \btxdoif{bookxref} {
     % Proceed by the category of the current entry
     \doifnotinset {\currentbtxcategory} {suppbook, review} {
-      \btxlabeltext{sbl:in}
+      % If the cross-reference is to a book with a shorthand, then don't preface it "in"
+      \clf_btxdoifnot{\currentbtxdataset}{\btxflush{bookxref}}{shorthand} {
+        % If the cross-reference is to a volume in a collection and the collection has a shorthand, then don't preface with "in"
+        \clf_btxdoifelse{\currentbtxdataset}{\btxflush{bookxref}}{collectionxref} {
+          \begingroup
+          \edef\btxcollectionxref{\clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{collectionxref}}
+          \clf_btxdoifnot{\currentbtxdataset}{\btxcollectionxref}{shorthand} {
+            \btxlabeltext{sbl:in}
+            \btxspace
+          }
+          \endgroup
+        } {
+          \btxlabeltext{sbl:in}
+          \btxspace
+        }
+      }
     }
     \doifinset {\currentbtxcategory} {suppbook} {
-      % Print the section of the book
+      % Print the section of the book, if there is one
       \btxdoifelse {type} {
         % For inline citations, the type need not be capitalized
         \btxflush{type}
@@ -1226,43 +1532,53 @@
       } {
         \btxlabeltext{sbl:in}
       }
+      \btxspace
     }
     \doifinset {\currentbtxcategory} {review} {
       % Precede the subcitation with "review of"
       \btxlabeltext{sbl:review}
       \btxspace
       \btxlabeltext{sbl:of}
+      \btxspace
     }
-    \btxspace
-    % Recursively cite the collection
+    % Recursively cite the book
     \begingroup
-    % Whether or not we add it to the list and what we include in the subcitation
+    % Whether or not we add it to the list and whether or not we include publication fields in the subcitation
     % will depend on the category of this entry
     \doifnotinset {\currentbtxcategory} {review, inlexicon, ancienttext, classictext} {
-      \edef\btxcurrentsubcitetype{inbook}
       \textcite[subcite][\btxflush{bookxref}]
     }
     \doifinset {\currentbtxcategory} {review} {
-      \edef\btxcurrentsubcitetype{review}
+      \def\btxprintpubl{no} % don't publish publication fields
       \textcite[subcite][\btxflush{bookxref}]
     }
     \doifinset {\currentbtxcategory} {inlexicon, ancienttext, classictext} {
-      \edef\btxcurrentsubcitetype{lexicontext}
+      % For these categories, we don't add the entry itself to the list, but we do add the book or collection containing it
       \doifelse {\btxfoundname{bookxref}} {bookxref} {
-        \dotagpublication\currentbtxdataset\btxflush{bookxref} % save books to the list
-        \textcite[subcite][\btxflush{bookxref}] 
+        % If the cross-reference is to a single-volume book, then add the book to the list;
       } {
-        \textcite[subcite][\btxflush{bookxref}] % don't save incollections to the list
+        % Otherwise, if it is to an entry in a multivolume collection, then add the collection to the list
       }
+      \textcite[subcite][\btxflush{bookxref}]
     }
     \endgroup
     \btxcomma
     % Cite the pages afterwards, if this is not a review or labeled section of a book
     \doifnotinset {\currentbtxcategory} {suppbook, review} {
       \btxdoif {pages} {
-        % If the book cited is an untitled volume in a collection, 
-        % then prefix the page number(s) with the volume (and part)
+        % If the book cited is an untitled volume in a collection
+        % then do not add a comma before the page range, 
+        % but prefix the page number(s) with the volume (and part)
         \doif {\btxfoundname{bookxref}} {incollectionxref} {
+          % If the collection to which the volume belongs has a shorthand, then remove the preceding comma, too
+          \begingroup
+          \edef\btxcollectionxref{\clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{collectionxref}}
+          \clf_btxdoif{\currentbtxdataset}{\clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{collectionxref}}{shorthand} {
+            \removeunwantedspaces
+            \removepunctuation
+            \btxspace
+          }
+          \endgroup
           \textcite[volume][\btxflush{bookxref}]
           \btxcolon
           \removeunwantedspaces
@@ -1302,10 +1618,12 @@
       \btxlabeltext{sbl:In}
     }
     \btxspace
-    % Recursively cite the collection, but do not save it to the list
+    % If the current entry has a publisher, then don't print the publication information of the collection
     \begingroup
-    \edef\btxcurrentsubcitetype{incollection}
-    \textcite[listsubcite][\btxflush{collectionxref}]
+    \btxdoif {publisher} {
+      \def\btxprintpubl{no}
+    }
+    \textcite[listsubcite][\btxflush{collectionxref}] % recursively cite the collection, but do not save it to the list
     \endgroup
     \btxperiod
   }
@@ -1349,19 +1667,12 @@
       \btxlabeltext{sbl:of}
       \btxspace
     }
-    % Recursively cite the collection
-    % If this subcitation is for a lexicon entry or ancient/classical text, 
-    % then save the collection to the list;
-    % otherwise, do not
+    % If the current entry has a publisher, then don't print the publication information of the collection
     \begingroup
-    \doifelse {\btxcurrentsubcitetype} {lexicontext} {
-      \edef\btxcurrentsubcitetype{incollection}
-      \dotagpublication\currentbtxdataset\btxflush{collectionxref} % save the collection to the list
-      \textcite[listsubcite][\btxflush{collectionxref}]
-    } {
-      \edef\btxcurrentsubcitetype{incollection}
-      \textcite[listsubcite][\btxflush{collectionxref}] % don't save the collection to the list
+    \btxdoif {publisher} {
+      \def\btxprintpubl{no}
     }
+    \textcite[listsubcite][\btxflush{collectionxref}] % recursively cite the collection, but do not save it to the list
     \endgroup
     \btxperiod
   }
@@ -1396,10 +1707,12 @@
         \btxspace
       }
     }
-    % Recursively cite the collection, but do not add it to the list
+    % If the current entry has a publisher, then don't print the publication information of the collection
     \begingroup
-    \edef\btxcurrentsubcitetype{incollection}
-    \textcite[subcite][\btxflush{collectionxref}]
+    \btxdoif {publisher} {
+      \def\btxprintpubl{no}
+    }
+    \textcite[subcite][\btxflush{collectionxref}] % recursively cite the collection, but do not save it to the list
     \endgroup
     \btxcomma
   }
@@ -1434,18 +1747,12 @@
         \btxspace
       }
     }
-    % Recursively cite the collection
-    % If this subcitation is for a lexicon entry or ancient/classical text, 
-    % then save the collection to the list;
-    % otherwise, do not
+    % If the current entry has a publisher, then don't print the publication information of the collection
     \begingroup
-    \doifelse {\btxcurrentsubcitetype} {lexicontext} {
-      \edef\btxcurrentsubcitetype{incollection}
-      \alwayscite[subcite][\btxflush{collectionxref}]
-    } {
-      \edef\btxcurrentsubcitetype{incollection}
-      \textcite[subcite][\btxflush{collectionxref}]
+    \btxdoif {publisher} {
+      \def\btxprintpubl{no}
     }
+    \textcite[subcite][\btxflush{collectionxref}] % recursively cite the collection, but do not save it to the list
     \endgroup
     \btxcomma
   }
@@ -1490,7 +1797,7 @@
       \btxlabeltext{sbl:edition}
     } {
       % If a string, then capitalize its first word
-      \btxusecommand [sbl:\s!list:edition] {
+      \btxusecommand[sbl:\s!list:edition] {
         \btxflush{edition}%
       }
       \btxspace
@@ -1527,13 +1834,13 @@
     \doifelse {\btxfoundname{series}} {seriesxref} {
       % If so, then recursively cite the series, but do not add it to the list
       \begingroup
-      \edef\btxcurrentsubcitetype{series}
+      \def\btxprintpubl{no} % don't print publication information about the series
       \textcite[listsubcite][\btxflush{series}]
       \endgroup
     } {
       % Otherwise, this field just contains the series name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:series]
-        \btxusecommand [sbl:\s!list:title:series] {
+        \btxusecommand[sbl:\s!list:title:series] {
           \btxflush{series}% set the series name according to its style
         }
       \btxstopstyleandcolor
@@ -1565,13 +1872,13 @@
     \doifelse {\btxfoundname{series}} {seriesxref} {
       % If so, then recursively cite the series, but do not add it to the list
       \begingroup
-      \edef\btxcurrentsubcitetype{series}
+      \def\btxprintpubl{no} % don't print publication information about the series
       \textcite[subcite][\btxflush{series}]
       \endgroup
     } {
       % Otherwise, this field just contains the series name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:series]
-        \btxusecommand [sbl:\s!list:title:series] {
+        \btxusecommand[sbl:\s!list:title:series] {
           \btxflush{series}% set the series name according to its style
         }
       \btxstopstyleandcolor
@@ -1619,13 +1926,13 @@
     \doifelse {\btxfoundname{journal}} {journalxref} {
       % If so, then recursively cite the journal, but do not add it to the list
       \begingroup
-      \edef\btxcurrentsubcitetype{journal}
+      \def\btxprintpubl{no}
       \textcite[listsubcite][\btxflush{journal}]
       \endgroup
     } {
       % Otherwise, this field just contains the journal name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:journal]
-        \btxusecommand [sbl:\s!list:title:journal] {
+        \btxusecommand[sbl:\s!list:title:journal] {
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
@@ -1667,13 +1974,13 @@
     \doifelse {\btxfoundname{journal}} {journalxref} {
       % If so, then recursively cite the journal, but do not add it to the list
       \begingroup
-      \edef\btxcurrentsubcitetype{journal}
+      \def\btxprintpubl{no}
       \textcite[subcite][\btxflush{journal}]
       \endgroup
     } {
       % Otherwise, this field just contains the journal name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:journal]
-        \btxusecommand [sbl:\s!list:title:journal] {
+        \btxusecommand[sbl:\s!list:title:journal] {
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
@@ -2014,12 +2321,7 @@
     }
     % Recursively cite the reprinted/translated version, but do not add it to the list
     \begingroup
-    \doif {\btxfoundname{reprxref}} {reprxref} {
-      \edef\btxcurrentsubcitetype{reprint}
-    }
-    \doif {\btxfoundname{reprxref}} {transxref} {
-      \edef\btxcurrentsubcitetype{translation}
-    }
+    \def\btxprintpubl{yes}
     \textcite[listsubcite][\btxflush{reprxref}]
     \endgroup
     \btxperiod
@@ -2049,12 +2351,7 @@
     }
     % Recursively cite the reprinted/translated version, but do not add it to the list
     \begingroup
-    \doif {\btxfoundname{reprxref}} {reprxref} {
-      \edef\btxcurrentsubcitetype{reprint}
-    }
-    \doif {\btxfoundname{reprxref}} {transxref} {
-      \edef\btxcurrentsubcitetype{translation}
-    }
+    \def\btxprintpubl{yes}
     \textcite[subcite][\btxflush{reprxref}]
     \endgroup
     \btxcomma
@@ -2120,7 +2417,7 @@
     % Does it have a blog title?
     \btxdoif {journal} {
       \btxstartstyleandcolor[sbl:\s!list:journal]
-        \btxusecommand [sbl:\s!list:journal] {
+        \btxusecommand[sbl:\s!list:journal] {
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
@@ -2199,7 +2496,7 @@
     % Does it have a blog title?
     \btxdoif {journal} {
       \btxstartstyleandcolor[sbl:\s!list:journal]
-        \btxusecommand [sbl:\s!list:journal] {
+        \btxusecommand[sbl:\s!list:journal] {
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
@@ -2251,7 +2548,7 @@
 \starttexdefinition btx:sbl:list:note
   \btxdoif {note} {
     % Make sure the first word is capitalized
-    \btxusecommand [sbl:\s!list:note] {
+    \btxusecommand[sbl:\s!list:note] {
       \btxflush{note}%
     }
     \btxperiod
@@ -2270,9 +2567,8 @@
 \startsetups btx:sbl:list:book
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:editor}
-  \texdefinition{btx:sbl:list:translator}
   \texdefinition{btx:sbl:list:collectionxref}
+  \texdefinition{btx:sbl:list:editortranslator}
   \texdefinition{btx:sbl:list:edition}
   \texdefinition{btx:sbl:list:seriesxref}
   \texdefinition{btx:sbl:list:publisher}
@@ -2304,10 +2600,9 @@
 \startsetups btx:sbl:list:mvbook
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:editor}
-  \texdefinition{btx:sbl:list:translator}
-  \texdefinition{btx:sbl:list:volumes}
+  \texdefinition{btx:sbl:list:editortranslator}
   \texdefinition{btx:sbl:list:edition}
+  \texdefinition{btx:sbl:list:volumes}
   \texdefinition{btx:sbl:list:seriesxref}
   \texdefinition{btx:sbl:list:publisher}
   \texdefinition{btx:sbl:list:ebook}
@@ -2337,7 +2632,7 @@
 
 \startsetups btx:sbl:list:incollection % this should really only be subcited, but we'll allow it
   \texdefinition{btx:sbl:list:collectionxref}
-  \texdefinition{btx:sbl:list:bookseries}
+  \texdefinition{btx:sbl:list:seriesxref}
   \texdefinition{btx:sbl:list:publisher}
   \texdefinition{btx:sbl:list:ebook}
   \texdefinition{btx:sbl:list:doi}
@@ -2349,7 +2644,7 @@
 
 \startsetups btx:sbl:list:series
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:editor}
+  \texdefinition{btx:sbl:list:editortranslator}
   \texdefinition{btx:sbl:list:volumes}
   \texdefinition{btx:sbl:list:publisher}
   \texdefinition{btx:sbl:list:doi}
@@ -2362,7 +2657,6 @@
 \startsetups btx:sbl:list:inbook
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:translator}
   \texdefinition{btx:sbl:list:bookxref}
   \texdefinition{btx:sbl:list:reprxref}
   \texdefinition{btx:sbl:list:doi}
@@ -2403,7 +2697,6 @@
 \startsetups btx:sbl:list:article
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:translator}
   \texdefinition{btx:sbl:list:journalxref}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
@@ -2439,7 +2732,7 @@
 \startsetups btx:sbl:list:thesis
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:editortranslator}
   \texdefinition{btx:sbl:list:institution}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
@@ -2459,7 +2752,6 @@
 \startsetups btx:sbl:list:conferencepaper
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:translator}
   \texdefinition{btx:sbl:list:presentedat}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
@@ -2471,7 +2763,7 @@
 \startsetups btx:sbl:list:online
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:editortranslator}
   \texdefinition{btx:sbl:list:eprint}
   \texdefinition{btx:sbl:list:note}
   \removeunwantedspaces
@@ -2482,12 +2774,9 @@
 \startsetups btx:sbl:list:misc
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:editor}
-  \texdefinition{btx:sbl:list:maintitle}
-  \texdefinition{btx:sbl:list:maineditor}
-  \texdefinition{btx:sbl:list:translator}
+  \texdefinition{btx:sbl:list:editortranslator}
   \texdefinition{btx:sbl:list:edition}
-  \texdefinition{btx:sbl:list:series}
+  \texdefinition{btx:sbl:list:seriesxref}
   \texdefinition{btx:sbl:list:howpublished}
   \texdefinition{btx:sbl:list:publisher}
   \texdefinition{btx:sbl:list:doi}
@@ -2501,14 +2790,10 @@
 \startsetups btx:sbl:listsubcite:book
   \texdefinition{btx:sbl:list:title}
   \texdefinition{btx:sbl:listsubcite:author}
-  \texdefinition{btx:sbl:listsubcite:editor}
-  \texdefinition{btx:sbl:listsubcite:translator}
-  % Only recursively cite collection data if this subcitation is for a reprint, translation, or inbook citation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook, lexicontext} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:listsubcite:collectionxref}
-  }
-  % Only recursively cite publication data if this subcitation is for a reprint, translation, or inbook citation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook, lexicontext} {
+    \texdefinition{btx:sbl:listsubcite:editortranslator}
     \texdefinition{btx:sbl:list:edition}
     \texdefinition{btx:sbl:list:seriesxref}
     \texdefinition{btx:sbl:list:publisher}
@@ -2539,12 +2824,11 @@
 \startsetups btx:sbl:listsubcite:mvbook
   \texdefinition{btx:sbl:list:title}
   \texdefinition{btx:sbl:listsubcite:author}
-  \texdefinition{btx:sbl:listsubcite:editor}
-  \texdefinition{btx:sbl:listsubcite:translator}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
-    \texdefinition{btx:sbl:list:volumes}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:listsubcite:editortranslator}
     \texdefinition{btx:sbl:list:edition}
+    \texdefinition{btx:sbl:list:volumes}
     \texdefinition{btx:sbl:list:seriesxref}
     \texdefinition{btx:sbl:list:publisher}
     \texdefinition{btx:sbl:list:ebook}
@@ -2573,8 +2857,8 @@
 
 \startsetups btx:sbl:listsubcite:incollection
   \texdefinition{btx:sbl:listsubcite:collectionxref}
-  % Only recursively cite publication data if this subcitation is for a reprint, translation or inbook citation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook, lexicontext} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:list:bookseries}
     \texdefinition{btx:sbl:list:publisher}
     \texdefinition{btx:sbl:list:ebook}
@@ -2604,10 +2888,9 @@
   } {
     \texdefinition{btx:sbl:cite:author}
   }
-  \texdefinition{btx:sbl:listsubcite:translator}
-  \texdefinition{btx:sbl:list:bookxref}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:list:bookxref}
     \texdefinition{btx:sbl:list:reprxref}
     \texdefinition{btx:sbl:list:doi}
   }
@@ -2646,9 +2929,8 @@
 \startsetups btx:sbl:listsubcite:article
   \texdefinition{btx:sbl:list:title}
   \texdefinition{btx:sbl:listsubcite:author}
-  \texdefinition{btx:sbl:listsubcite:translator}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:list:journalxref}
     \texdefinition{btx:sbl:list:doi}
   }
@@ -2678,8 +2960,8 @@
     \texdefinition{btx:sbl:cite:author}
   }
   \texdefinition{btx:sbl:list:bookxref}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:list:journalxref}
     \texdefinition{btx:sbl:list:doi}
   }
@@ -2690,9 +2972,9 @@
 \startsetups btx:sbl:listsubcite:thesis
   \texdefinition{btx:sbl:list:title}
   \texdefinition{btx:sbl:listsubcite:author}
-  \texdefinition{btx:sbl:listsubcite:translator}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:listsubcite:editortranslator}
     \texdefinition{btx:sbl:list:institution}
     \texdefinition{btx:sbl:list:doi}
   }
@@ -2712,9 +2994,8 @@
 \startsetups btx:sbl:cite:book
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:editor}
-  \texdefinition{btx:sbl:cite:translator}
   \texdefinition{btx:sbl:cite:collectionxref}
+  \texdefinition{btx:sbl:cite:editortranslator}
   \texdefinition{btx:sbl:cite:edition}
   \texdefinition{btx:sbl:cite:seriesxref}
   \texdefinition{btx:sbl:cite:publisher}
@@ -2745,10 +3026,9 @@
 \startsetups btx:sbl:cite:mvbook
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:editor}
-  \texdefinition{btx:sbl:cite:translator}
-  \texdefinition{btx:sbl:cite:volumes}
+  \texdefinition{btx:sbl:cite:editortranslator}
   \texdefinition{btx:sbl:cite:edition}
+  \texdefinition{btx:sbl:cite:volumes}
   \texdefinition{btx:sbl:cite:seriesxref}
   \texdefinition{btx:sbl:cite:publisher}
   \texdefinition{btx:sbl:cite:ebook}
@@ -2786,7 +3066,7 @@
 
 \startsetups btx:sbl:cite:series
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:editor}
+  \texdefinition{btx:sbl:cite:editortranslator}
   \texdefinition{btx:sbl:cite:volumes}
   \texdefinition{btx:sbl:cite:publisher}
   \texdefinition{btx:sbl:cite:doi}
@@ -2798,7 +3078,6 @@
 \startsetups btx:sbl:cite:inbook
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:translator}
   \texdefinition{btx:sbl:cite:bookxref}
   \texdefinition{btx:sbl:cite:reprxref}
   \texdefinition{btx:sbl:cite:doi}
@@ -2838,7 +3117,6 @@
 \startsetups btx:sbl:cite:article
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:translator}
   \texdefinition{btx:sbl:cite:journalxref}
   \texdefinition{btx:sbl:cite:doi}
   \texdefinition{btx:sbl:cite:note}
@@ -2872,7 +3150,7 @@
 \startsetups btx:sbl:cite:thesis
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:translator}
+  \texdefinition{btx:sbl:cite:editortranslator}
   \texdefinition{btx:sbl:cite:institution}
   \texdefinition{btx:sbl:cite:doi}
   \texdefinition{btx:sbl:cite:note}
@@ -2890,34 +3168,15 @@
 
 % Inline subcitation setups
 \startsetups btx:sbl:subcite:book
-  % Always use the short form for inbook subcites, if available
-  \doifinsetelse {\btxcurrentsubcitetype} {inbook} {
-    \btxdoifelse {shorthand} {
-      \texdefinition{btx:sbl:cite:shorthand}
-    } {
-      \texdefinition{btx:sbl:cite:title}
-      \texdefinition{btx:sbl:subcite:author}
-      \texdefinition{btx:sbl:subcite:editor}
-      \texdefinition{btx:sbl:subcite:translator}
-      \texdefinition{btx:sbl:subcite:collectionxref}
-      \texdefinition{btx:sbl:cite:edition}
-      \texdefinition{btx:sbl:cite:seriesxref}
-      \texdefinition{btx:sbl:cite:publisher}
-      \texdefinition{btx:sbl:cite:ebook}
-      \texdefinition{btx:sbl:cite:doi}
-      \texdefinition{btx:sbl:cite:reprxref}
-    }
+  \btxdoifelse {shorthand} {
+    \texdefinition{btx:sbl:cite:shorthand}
   } {
     \texdefinition{btx:sbl:cite:title}
     \texdefinition{btx:sbl:subcite:author}
-    \texdefinition{btx:sbl:subcite:editor}
-    \texdefinition{btx:sbl:subcite:translator}
-    % Only recursively cite collection data if this subcitation is for a reprint or translation
-    \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+    % Only recursively cite publication data if the \btxprintpubl variable is set
+    \doif {\btxprintpubl} {yes} {
       \texdefinition{btx:sbl:subcite:collectionxref}
-    }
-    % Only recursively cite publication data if this subcitation is for a reprint or translation
-    \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+      \texdefinition{btx:sbl:subcite:editortranslator}
       \texdefinition{btx:sbl:cite:edition}
       \texdefinition{btx:sbl:cite:seriesxref}
       \texdefinition{btx:sbl:cite:publisher}
@@ -2947,35 +3206,16 @@
 \stopsetups
 
 \startsetups btx:sbl:subcite:mvbook
-  % Always use the short form for incollection subcites, if available
-  \doifinsetelse {\btxcurrentsubcitetype} {incollection} {
-    \btxdoifelse {shorthand} {
-      \texdefinition{btx:sbl:cite:shorthand}
-    } {
-      \texdefinition{btx:sbl:cite:title}
-      \texdefinition{btx:sbl:subcite:author}
-      \texdefinition{btx:sbl:subcite:editor}
-      \texdefinition{btx:sbl:subcite:translator}
-      % Only recursively cite publication data if this subcitation is for a reprint or translation
-      \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
-        \texdefinition{btx:sbl:cite:volumes}
-        \texdefinition{btx:sbl:cite:edition}
-        \texdefinition{btx:sbl:cite:seriesxref}
-        \texdefinition{btx:sbl:cite:publisher}
-        \texdefinition{btx:sbl:cite:ebook}
-        \texdefinition{btx:sbl:cite:doi}
-        \texdefinition{btx:sbl:cite:reprxref}
-      }
-    }
+  \btxdoifelse {shorthand} {
+    \texdefinition{btx:sbl:cite:shorthand}
   } {
     \texdefinition{btx:sbl:cite:title}
     \texdefinition{btx:sbl:subcite:author}
-    \texdefinition{btx:sbl:subcite:editor}
-    \texdefinition{btx:sbl:subcite:translator}
-    % Only recursively cite publication data if this subcitation is for a reprint or translation
-    \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
-      \texdefinition{btx:sbl:cite:volumes}
+    % Only recursively cite publication data if the \btxprintpubl variable is set
+    \doif {\btxprintpubl} {yes} {
+      \texdefinition{btx:sbl:subcite:editortranslator}
       \texdefinition{btx:sbl:cite:edition}
+      \texdefinition{btx:sbl:cite:volumes}
       \texdefinition{btx:sbl:cite:seriesxref}
       \texdefinition{btx:sbl:cite:publisher}
       \texdefinition{btx:sbl:cite:ebook}
@@ -3010,15 +3250,18 @@
       \textcite[short][\btxflush{collectionxref}]
     } {
       \texdefinition{btx:sbl:subcite:collectionxref}
-      \texdefinition{btx:sbl:cite:bookseries}
-      \texdefinition{btx:sbl:cite:publisher}
-      \texdefinition{btx:sbl:cite:ebook}
-      \texdefinition{btx:sbl:cite:doi}
+      % Only recursively cite publication data if the \btxprintpubl variable is set
+      \doif {\btxprintpubl} {yes} {
+        \texdefinition{btx:sbl:cite:bookseries}
+        \texdefinition{btx:sbl:cite:publisher}
+        \texdefinition{btx:sbl:cite:ebook}
+        \texdefinition{btx:sbl:cite:doi}
+      }
     }
   } {
     \texdefinition{btx:sbl:subcite:collectionxref}
-    % Only recursively cite publication data if this subcitation is for a reprint, translation or inbook citation
-    \doifinset {\btxcurrentsubcitetype} {reprint, translation, inbook, lexicontext} {
+    % Only recursively cite publication data if the \btxprintpubl variable is set
+    \doif {\btxprintpubl} {yes} {
       \texdefinition{btx:sbl:cite:bookseries}
       \texdefinition{btx:sbl:cite:publisher}
       \texdefinition{btx:sbl:cite:ebook}
@@ -3049,10 +3292,9 @@
   } {
     \texdefinition{btx:sbl:cite:author}
   }
-  \texdefinition{btx:sbl:subcite:translator}
-  \texdefinition{btx:sbl:cite:bookxref}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:bookxref}
     \texdefinition{btx:sbl:cite:reprxref}
     \texdefinition{btx:sbl:cite:doi}
   }
@@ -3091,7 +3333,6 @@
 \startsetups btx:sbl:subcite:article
   \texdefinition{btx:sbl:cite:title}
   \texdefinition{btx:sbl:subcite:author}
-  \texdefinition{btx:sbl:subcite:translator}
   \texdefinition{btx:sbl:cite:journalxref}
   \texdefinition{btx:sbl:cite:doi}
   \removeunwantedspaces
@@ -3120,8 +3361,8 @@
     \texdefinition{btx:sbl:cite:author}
   }
   \texdefinition{btx:sbl:cite:bookxref}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:cite:journalxref}
     \texdefinition{btx:sbl:cite:doi}
   }
@@ -3132,9 +3373,9 @@
 \startsetups btx:sbl:subcite:thesis
   \texdefinition{btx:sbl:cite:title}
   \texdefinition{btx:sbl:subcite:author}
-  \texdefinition{btx:sbl:subcite:translator}
-  % Only recursively cite publication data if this subcitation is for a reprint or translation
-  \doifinset {\btxcurrentsubcitetype} {reprint, translation} {
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:subcite:editortranslator}
     \texdefinition{btx:sbl:cite:institution}
     \texdefinition{btx:sbl:cite:doi}
   }
@@ -3159,12 +3400,17 @@
   \fastsetup{\s!btx:\s!cite:concat}
   \fastsetup{\s!btx:\s!cite:lefttext}
   \begingroup
-  % Tag the current entry as cited
-  \dotagpublication\currentbtxdataset\currentbtxtag
-  % Keep track of this citation's tag
+  % Reset variables for new citation
   \let\btxroottag\currentbtxtag
+  \def\btxprintpubl{yes}
+  \let\btxcurrentsubcitetype\empty
+  % Add this entry to the list unless it is in a category that should not be cited in the list
+  \doifnotinset{\currentbtxcategory}{inlexicon, ancienttext, classictext} {
+    \btxcitereference
+  }
   % Then cite the list entry
-  \btxhandleciteentry
+  \btx_entry_inject
+  %\btxhandleciteentry
   \endgroup
   \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
@@ -3172,7 +3418,7 @@
 % List subcitation setup
 \startsetups btx:sbl:\s!cite:listsubcite
   \begingroup
-  % Invoke the appropriate setup
+  % This gets cleared in cites, so set it here 
   \edef\currentbtxcategory{\btxfield{category}}
   \fastsetup{btx:sbl:listsubcite:\currentbtxcategory}
   \endgroup
@@ -3183,12 +3429,17 @@
   \fastsetup{\s!btx:\s!cite:concat}
   \fastsetup{\s!btx:\s!cite:lefttext}
   \begingroup
-  % Tag the current entry as cited
-  \dotagpublication\currentbtxdataset\currentbtxtag
-  % Keep track of this citation's tag
-  \let\btxroottag\currentbtxtag
-  % Then invoke the appropriate setup
+  % This gets cleared in cites, so set it here
   \edef\currentbtxcategory{\btxfield{category}}
+  % Reset variables for new citation
+  \let\btxroottag\currentbtxtag
+  \def\btxprintpubl{yes}
+  \let\btxcurrentsubcitetype\empty
+  % Add this entry to the list unless it is in a category that should not be cited in the list
+  %\doifnotinset{\currentbtxcategory}{inlexicon, ancienttext, classictext} {
+  %  \btxcitereference
+  %}
+  % Then invoke the appropriate setup
   \fastsetup{btx:sbl:cite:\currentbtxcategory}
   \endgroup
   \fastsetup{\s!btx:\s!cite:righttext}
@@ -3197,7 +3448,7 @@
 % Inline subcitation setup
 \startsetups btx:sbl:\s!cite:subcite
   \begingroup
-  % Invoke the appropriate setup
+  % This gets cleared in cites, so set it here
   \edef\currentbtxcategory{\btxfield{category}}
   \fastsetup{btx:sbl:subcite:\currentbtxcategory}
   \endgroup
@@ -3252,7 +3503,7 @@
     % Follow this with a shorttitle, if there is one
     \btxdoifelse{shorttitle} {
       \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
-        \btxusecommand [sbl:\s!list:title:\currentbtxcategory] {
+        \btxusecommand[sbl:\s!list:title:\currentbtxcategory] {
           \btxflush{shorttitle}% set the shorthand according to the current category
         }
       \btxstopstyleandcolor
@@ -3277,6 +3528,7 @@
             \btxlabeltext{sbl:by}
           }
           \btxspace
+          %\textcite[name][\btxflush{bookxref}] would be more succinct, but it doesn't work here
           \clf_btxauthor
             {\currentbtxdataset}%
             {\btxflush{bookxref}}%

@@ -7,6 +7,7 @@
 \feature[+][f:bibliography]
 
 \starttext
+
 \subject{6.2 General Examples: Books}
 \subsubject{6.2.1 A Book by a Single Author}
 \cite[talbert:1992]\blank
@@ -159,17 +160,25 @@
 \subsubject{6.3.6 An Article in an Encyclopaedia or a Dictionary}
 \subsubsubject{6.3.6.1 An Article in a Multivolume Encyclopaedia or Dictionary}
 \cite[stendahl:1962]\blank
+\cite[short][stendahl:1962]\blank
 \cite[entry][stendahl:1962]\blank
 \subsubsubject{An Article in a Single-Volume Encyclopaedia or Dictionary}
 \cite[olson:2003]\blank
+\cite[short][olson:2003]\blank
 \cite[entry][olson:2003]\blank
 \subsubject{6.3.7 An Article in a Lexicon or Theological Dictionary}
-\textcite[dahn:horao]\blank
-\textcite[dahn+liefeld:see+vision+eye]\blank
-\textcite[beyer:diakoneo]\blank
-\textcite[beyer:diakoneo+diakonia+ktl]\blank
-\textcite[spicq:amoibe]\blank
-\textcite[spicq:atakteo+ataktos+ataktos]\blank
+\cite[dahn:horao]\blank
+\cite[short][dahn:horao]\blank
+\cite[dahn+liefeld:see+vision+eye]\blank
+\cite[short][dahn+liefeld:see+vision+eye]\blank
+\cite[beyer:diakoneo]\blank
+\cite[short][beyer:diakoneo]\blank
+\cite[beyer:diakoneo+diakonia+ktl]\blank
+\cite[short][beyer:diakoneo+diakonia+ktl]\blank
+\cite[spicq:amoibe]\blank
+\cite[short][spicq:amoibe]\blank
+\cite[spicq:atakteo+ataktos+ataktos]\blank
+\cite[short][spicq:atakteo+ataktos+ataktos]\blank
 %\subsubject{6.3.8 A Paper Presented at a Professional Society}
 %\cite[niditch:1994]\blank
 %\subsubject{6.3.9 An Article in a Magazine}
@@ -177,9 +186,9 @@
 %\subsubject{6.3.10 An Electronic Journal Article}
 %\cite[springer:2014]\blank
 \page
-\startsection[title=Bibliography]
+\startsubject[title=Bibliography]
 	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text
-\stopsection
+\stopsubject
 \stoptext
 
 %\startbuffer[example]
