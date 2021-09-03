@@ -181,7 +181,13 @@ categories.manual = {
 -- which refers to a chapter or article in an untitled multivolume work.
 categories.incollection = {
     sets = {
-        categories.book.sets,
+        author = { "author", "editor" }, -- a book may have an editor instead of an author
+        series = generic.series,
+        origpublisher = generic.origpublisher,
+        location = generic.location,
+        date = generic.date,
+        reprxref = generic.reprxref,
+        doi = generic.doi,
     },
     required = {
         "collectionxref", -- reference to the collection
@@ -189,7 +195,6 @@ categories.incollection = {
         "publisher",
     },
     optional = {
-        "short", -- shorthand for the parent collection, to abbreviate in subcites
         "part",
         "series", "seriesseries", "number",
         "origpublisher",
@@ -204,6 +209,7 @@ categories.incollection = {
 -- a multivolume collection with an editor
 categories.collection = {
     sets = {
+        author = { "editor" },
         series = generic.series,
         origpublisher = generic.origpublisher,
         location = generic.location,
@@ -211,7 +217,7 @@ categories.collection = {
         doi = generic.doi,
     },
     required = { 
-        "editor",
+        "author", -- just an alias for the editor
         "title",
         "volumes",
         "publisher",
@@ -232,7 +238,13 @@ categories.collection = {
 -- a multivolume work (§6.2.20)
 categories.mvbook = {
     sets = {
-        categories.book.sets,
+        author = { "author", "editor" }, -- a book may have an editor instead of an author
+        series = generic.series,
+        origpublisher = generic.origpublisher,
+        location = generic.location,
+        date = generic.date,
+        reprxref = generic.reprxref,
+        doi = generic.doi,
     },
     required = { 
         "author", -- a set
@@ -330,7 +342,9 @@ categories.inbook = {
 -- This category should also contain a reference to either a book or a volume in a collection (§6.2.22)
 categories.suppbook = {
     sets = {
-        categories.inbook.sets,
+        bookxref = generic.bookxref,
+        reprxref = generic.reprxref,
+        doi = generic.doi,
     },
     required = {
         "author", -- author of the introduction/preface/foreword (a set)
@@ -363,7 +377,9 @@ categories.seminarpaper = categories.inbook
 -- almost identical to inbook, but no author is required
 categories.ancienttext = {
     sets = {
-        categories.inbook.sets,
+        bookxref = generic.bookxref,
+        reprxref = generic.reprxref,
+        doi = generic.doi,
     },
     required = {
         "title", -- title of the ancient text
@@ -375,6 +391,7 @@ categories.ancienttext = {
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
+        "part",
         "pages",
         "doi", 
         "note",
@@ -534,7 +551,12 @@ categories.thesis = {
 
 -- a Master's thesis.
 categories.mastersthesis = {
-    sets = categories.thesis.sets,
+    sets = {
+        institution = generic.institution,
+        location = generic.location,
+        date = generic.date,
+        doi = generic.doi,
+    },
     required = {
         "author",
         "title",

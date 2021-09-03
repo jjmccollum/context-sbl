@@ -40,9 +40,9 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 - [x] 6.3.3 A Journal Article Republished in a Collected Volume
 - [x] 6.3.4 A Book Review
 - [x] 6.3.5 An Unpublished Dissertation or Thesis
-- [ ] 6.3.6.1 An Article in a Multivolume Encyclopaedia or Dictionary
-- [ ] 6.3.6.2 An Article in a Single-Volume Encyclopaedia or Dictionary
-- [ ] 6.3.7 An Article in a Lexicon or Theological Dictionary
+- [x] 6.3.6.1 An Article in a Multivolume Encyclopaedia or Dictionary
+- [x] 6.3.6.2 An Article in a Single-Volume Encyclopaedia or Dictionary
+- [x] 6.3.7 An Article in a Lexicon or Theological Dictionary
 - [x] 6.3.8 A Paper Presented at a Professional Society
 - [x] 6.3.9 An Article in a Magazine
 - [x] 6.3.10 An Electronic Journal Article

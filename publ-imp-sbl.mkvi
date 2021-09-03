@@ -769,7 +769,7 @@
     % indicate that this is an editor
     \doifelse {\btxfoundname{author}} {editor} {
       \btxcomma
-      \btxsingularorplural {editor} {
+      \btxsingularorplural {author} {
         \btxlabeltext{sbl:editor}
       } {
         \btxlabeltext{sbl:editors}
@@ -813,16 +813,36 @@
     % If the author and withauthor match the corresponding fields in the root citation, 
     % then skip this
     \doifnot {\btxdirect{author}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{author}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{withauthor}} {
-      % If this is a proper author (and not an editor), then replace the period after the title with a comma 
-      % and print the author in normal order
-      \doif {\btxfoundname{author}} {author} {
+      % If this is an instance of an editor, then there is no author; 
+      % indicate that this is an editor
+      \doifelse {\btxfoundname{author}} {editor} {
+        \btxlabeltext{sbl:Edited} % singular or plural doesn't matter here, as "ed." comes first
+        \btxspace
+        \btxlabeltext{sbl:by}
+        \btxspace
+        \currentbtxciteauthorbyfield
+        % Is there an assisting editor?
+        \btxdoif {witheditor} {
+          \btxcomma
+          % Use the provided text to introduce them, if one is specified
+          \btxdoifelse {witheditortype} {
+            \btxflush{witheditortype}
+          } {
+            \btxlabeltext{sbl:with}
+          }
+          \btxspace
+          \btxflush{witheditor}
+        }
+      } {
+        % If this is a proper author, then replace the preceding period with a comma,
+        % and precede the author's name with "by"
         \removeunwantedspaces
         \removepunctuation
         \btxcomma
         \btxlabeltext{sbl:by}
         \btxspace
         \currentbtxciteauthorbyfield
-        % Is there an assisting author?
+        % If this is an author, is there an assisting author?
         \btxdoif {withauthor} {
           \btxcomma
           % Use the provided text to introduce them, if one is specified
@@ -834,12 +854,12 @@
           \btxspace
           \btxflush{withauthor}
         }
-        % If the name ends with a period (as is the case for "et al."), 
-        % then remove the preceding period
-        \removeunwantedspaces
-        \removepunctuation
-        \btxperiod
       }
+      % If the name ends with a period (as is the case for "et al."), 
+      % then remove the preceding period
+      \removeunwantedspaces
+      \removepunctuation
+      \btxperiod
     }
   }
 \stoptexdefinition
@@ -892,12 +912,29 @@
     % If the author and withauthor match the corresponding fields in the root citation, 
     % then skip this
     \doifnot {\btxdirect{author}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{author}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{withauthor}} {
-      % If this is a proper author (and not an editor), then print the author in normal order
-      \doif {\btxfoundname{author}} {author} {
+      % If this is an instance of an editor, then there is no author; 
+      % indicate that this is an editor
+      \doifelse {\btxfoundname{author}} {editor} {
+        \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
+        \btxspace
+        \currentbtxciteauthorbyfield
+        % Is there an assisting editor?
+        \btxdoif {witheditor} {
+          \btxcomma
+          % Use the provided text to introduce them, if one is specified
+          \btxdoifelse {witheditortype} {
+            \btxflush{witheditortype}
+          } {
+            \btxlabeltext{sbl:with}
+          }
+          \btxspace
+          \btxflush{witheditor}
+        }
+      } {
         \btxlabeltext{sbl:by}
         \btxspace
         \currentbtxciteauthorbyfield
-        % Is there an assisting author?
+        % If this is an author, is there an assisting author?
         \btxdoif {withauthor} {
           \btxcomma
           % Use the provided text to introduce them, if one is specified
@@ -909,8 +946,8 @@
           \btxspace
           \btxflush{withauthor}
         }
-        \btxcomma
       }
+      \btxcomma
     }
   }
 \stoptexdefinition
@@ -1239,8 +1276,11 @@
         }
       }
     } {
-      % If not, then just handle the editor
-      \texdefinition{btx:sbl:list:editor}
+      % If there is no translator, is the editor the same as the author?
+      \doifnot {\btxfoundname{author}} {editor} {
+        % If not, then just handle the editor
+        \texdefinition{btx:sbl:list:editor}
+      }
     }
   } {
     % If not, then just handle the translator
@@ -1308,8 +1348,11 @@
         }
       }
     } {
-      % If not, then just handle the editor
-      \texdefinition{btx:sbl:listsubcite:editor}
+      % If there is no translator, is the editor the same as the author?
+      \doifnot {\btxfoundname{author}} {editor} {
+        % If not, then just handle the editor
+        \texdefinition{btx:sbl:listsubcite:editor}
+      }
     }
   } {
     % If not, then just handle the translator
@@ -1369,8 +1412,11 @@
         }
       }
     } {
-      % If not, then just handle the editor
-      \texdefinition{btx:sbl:cite:editor}
+      % If there is no translator, is the editor the same as the author?
+      \doifnot {\btxfoundname{author}} {editor} {
+        % If not, then just handle the editor
+        \texdefinition{btx:sbl:cite:editor}
+      }
     }
   } {
     % If not, then just handle the translator
@@ -1430,8 +1476,11 @@
         }
       }
     } {
-      % If not, then just handle the editor
-      \texdefinition{btx:sbl:subcite:editor}
+      % If there is no translator, is the editor the same as the author?
+      \doifnot {\btxfoundname{author}} {editor} {
+        % If not, then just handle the editor
+        \texdefinition{btx:sbl:subcite:editor}
+      }
     }
   } {
     % If not, then just handle the translator
@@ -1482,19 +1531,12 @@
     \begingroup
     % Whether or not we add it to the list and whether or not we include publication fields in the subcitation
     % will depend on the category of this entry
-    \doifnotinset {\currentbtxcategory} {review, inlexicon, ancienttext, classictext} {
+    \doifnotinset {\currentbtxcategory} {review} {
       \textcite[listsubcite][\btxflush{bookxref}]
     }
     \doifinset {\currentbtxcategory} {review} {
       \def\btxprintpubl{no} % don't publish publication fields
       \textcite[subcite][\btxflush{bookxref}] % even in the list entry, the reviewed book is rendered like it would be in an inline citation
-    }
-    \doifinset {\currentbtxcategory} {inlexicon, ancienttext, classictext} {
-      \doifelse {\btxfoundname{bookxref}} {bookxref} {
-        \textcite[listsubcite][\btxflush{bookxref}]
-      } {
-        \textcite[listsubcite][\btxflush{bookxref}] % don't save incollections to the list
-      }
     }
     \endgroup
     \btxperiod
@@ -1552,7 +1594,7 @@
       \def\btxprintpubl{no} % don't publish publication fields
       \textcite[subcite][\btxflush{bookxref}]
     }
-    \doifinset {\currentbtxcategory} {inlexicon, ancienttext, classictext} {
+    \doifinset {\currentbtxcategory} {inlexicon} {
       % For these categories, we don't add the entry itself to the list, but we do add the book or collection containing it
       \doifelse {\btxfoundname{bookxref}} {bookxref} {
         % If the cross-reference is to a single-volume book, then add the book to the list;
@@ -1569,7 +1611,7 @@
         % If the book cited is an untitled volume in a collection
         % then do not add a comma before the page range, 
         % but prefix the page number(s) with the volume (and part)
-        \doif {\btxfoundname{bookxref}} {incollectionxref} {
+        \doifelse {\btxfoundname{bookxref}} {incollectionxref} {
           % If the collection to which the volume belongs has a shorthand, then remove the preceding comma, too
           \begingroup
           \edef\btxcollectionxref{\clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{collectionxref}}
@@ -1580,13 +1622,100 @@
           }
           \endgroup
           \textcite[volume][\btxflush{bookxref}]
+          % If this entry has its own part number, then add it here, too
+          \btxdoif {part} {
+            \btxperiod
+            \removeunwantedspaces
+            \btxflush{part}
+          }
           \btxcolon
           \removeunwantedspaces
+        } {
+          % If this entry has its own part number, then add it before the page range
+          \btxdoif {part} {
+            \btxflush{part}
+            \btxcolon
+            \removeunwantedspaces
+          }
         }
         \btxflush{pages}
         \btxcomma
       }
     }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:ancienttextclassictextbookxref
+  \btxdoif{bookxref} {
+    % The book cross-reference will always be in parentheses/brackets:
+    \removeunwantedspaces
+    \removepunctuation
+    \btxleftparenthesisorbracket
+    % Just make sure we swap parentheses for brackets in this context
+    \begingroup
+    \ifx\btxleftparenthesisorbracket\btxleftparenthesis%
+      \let\btxleftparenthesisorbracket\btxleftbracket%
+      \let\btxrightparenthesisorbracket\btxrightbracket%
+    \else%
+      \let\btxleftparenthesisorbracket\btxleftparenthesis%
+      \let\btxrightparenthesisorbracket\btxrightparenthesis%
+    \fi
+    \def\bookxreftag{\btxdirect{bookxref}}
+    % Does the referenced book belong to a collection?
+    \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{collectionxref} {
+      % If it does, then does the collection have a shorthand?
+      \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
+      \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+        % If so, then just cite the shorthand of the collection
+        \textcite[short][\collectionxreftag]
+        \btxspace
+      } {
+        % If not, then do a full inline citation of the book
+        \textcite[inline][\bookxreftag]
+        \btxcomma
+      }
+    } {
+      % If it is a standalone book, then does it have a shorthand?
+      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
+        % If so, then just cite the shorthand
+        \textcite[short][\bookxreftag]
+        \btxspace
+      } {
+        % If not, then do a full inline citation of the book
+        \textcite[inline][\bookxreftag]
+        \btxcomma
+      }
+    }
+    % If there are page numbers, then print them,
+    % preceded by the book's volume and part number 
+    % and the text's part number
+    \btxdoif {pages} {
+      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{volume} {
+        \textcite[volume][\bookxreftag]
+        \btxdoif {part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+        }
+        \btxcolon
+        \removeunwantedspaces
+      } {
+        \btxdoif {part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+          \btxcolon
+          \removeunwantedspaces
+        } 
+      }
+      \btxflush{pages}
+      \btxcomma
+    }
+    \removeunwantedspaces
+    \removepunctuation
+    \endgroup
+    \btxrightparenthesisorbracket
+    \btxcomma
   }
 \stoptexdefinition
 
@@ -1680,39 +1809,12 @@
 
 \starttexdefinition btx:sbl:cite:collectionxref
   \btxdoif{collectionxref} {
-    % If the entry is not in the incollection category, then we cite the volume (and part) here;
-    % otherwise, it will be cited with the page numbers
-    \doifnot {\currentbtxcategory} {incollection} {
-      \btxdoif {volume} {
-        \btxoneorrange {volume} {
-          \btxlabeltext{sbl:volume}
-        } {
-          \btxlabeltext{sbl:volumes}
-        }
-        \btxspace
-        \btxflush{volume}
-        % Is there a part number subdividing the volume?
-        \btxdoif {part} {
-          \btxcomma
-          \btxoneorrange {part} {
-            \btxlabeltext{sbl:part}
-          } {
-            \btxlabeltext{sbl:parts}
-          }
-          \btxspace
-          \btxflush{part}
-        }
-        \btxspace
-        \btxlabeltext{sbl:of}
-        \btxspace
-      }
-    }
     % If the current entry has a publisher, then don't print the publication information of the collection
     \begingroup
     \btxdoif {publisher} {
       \def\btxprintpubl{no}
     }
-    \textcite[subcite][\btxflush{collectionxref}] % recursively cite the collection, but do not save it to the list
+    \textcite[inline][\btxflush{collectionxref}] % recursively cite the collection in full inline form
     \endgroup
     \btxcomma
   }
@@ -1953,7 +2055,7 @@
     % Print the date
     % TODO: If date is in "YYYY-MM-DD" format, 
     % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
-    % otherwise, it should be printed as a year in parentheses followed by a colon.
+    % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
     \btxdoif {date} {
       \btxleftparenthesisorbracket
       \btxflush{date}
@@ -2001,7 +2103,7 @@
     % Print the date
     % TODO: If date is in "YYYY-MM-DD" format, 
     % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
-    % otherwise, it should be printed as a year in parentheses followed by a colon.
+    % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
     \btxdoif {date} {
       \btxleftparenthesisorbracket
       \btxflush{date}
@@ -2223,7 +2325,7 @@
     \btxlabeltext{sbl:Paperpresentedat}
     \btxspace
     \btxflush{eventtitle}
-    \btxcomma
+    \btxperiod
     % Is there a location?
     \btxdoif {location} {
       \btxflush{location}
@@ -2523,6 +2625,11 @@
       \btxcolon
       \removeunwantedspaces
       \hyphenatedurl{\btxflush{doi}}
+      % If both a DOI and URL are present, then print the URL after the DOI
+      \btxdoif {url} {
+        \btxperiod
+        \hyphenatedurl{\btxflush{url}}
+      }
     } {
       \hyphenatedurl{\btxflush{doi}}
     }
@@ -2538,6 +2645,11 @@
       \btxcolon
       \removeunwantedspaces
       \hyphenatedurl{\btxflush{doi}}
+      % If both a DOI and URL are present, then print the URL after the DOI
+      \btxdoif {url} {
+        \btxcomma
+        \hyphenatedurl{\btxflush{url}}
+      }
     } {
       \hyphenatedurl{\btxflush{doi}}
     }
@@ -2674,8 +2786,8 @@
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
+% This should never be cited in the list
 \startsetups btx:sbl:list:inlexicon
-  \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
 \startsetups btx:sbl:list:incommentary
@@ -2688,6 +2800,14 @@
 
 \startsetups btx:sbl:list:inproceedings
   \fastsetup{btx:sbl:list:inbook}
+\stopsetups
+
+% This should never be cited in the list
+\startsetups btx:sbl:list:ancienttext
+\stopsetups
+
+% This should never be cited in the list
+\startsetups btx:sbl:list:classictext
 \stopsetups
 
 \startsetups btx:sbl:list:journal
@@ -2906,8 +3026,8 @@
   \fastsetup{btx:sbl:listsubcite:inbook}
 \stopsetups
 
+% This should never be cited in the list
 \startsetups btx:sbl:listsubcite:inlexicon
-  \fastsetup{btx:sbl:listsubcite:inbook}
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:incommentary
@@ -2920,6 +3040,14 @@
 
 \startsetups btx:sbl:listsubcite:inproceedings
   \fastsetup{btx:sbl:listsubcite:inbook}
+\stopsetups
+
+% This should never be cited in the list
+\startsetups btx:sbl:listsubcite:ancienttext
+\stopsetups
+
+% This should never be cited in the list
+\startsetups btx:sbl:listsubcite:classictext
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:journal
@@ -2990,18 +3118,33 @@
   \fastsetup{btx:sbl:listsubcite:thesis}
 \stopsetups
 
+\startsetups btx:sbl:listsubcite:conferencepaper
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:listsubcite:author}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:list:presentedat}
+    \texdefinition{btx:sbl:list:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
 % Inline citation setups
 \startsetups btx:sbl:cite:book
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:collectionxref}
-  \texdefinition{btx:sbl:cite:editortranslator}
-  \texdefinition{btx:sbl:cite:edition}
-  \texdefinition{btx:sbl:cite:seriesxref}
-  \texdefinition{btx:sbl:cite:publisher}
-  \texdefinition{btx:sbl:cite:ebook}
-  \texdefinition{btx:sbl:cite:doi}
-  \texdefinition{btx:sbl:cite:reprxref}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:collectionxref}
+    \texdefinition{btx:sbl:cite:editortranslator}
+    \texdefinition{btx:sbl:cite:edition}
+    \texdefinition{btx:sbl:cite:seriesxref}
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:ebook}
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
@@ -3026,14 +3169,18 @@
 \startsetups btx:sbl:cite:mvbook
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:editortranslator}
-  \texdefinition{btx:sbl:cite:edition}
-  \texdefinition{btx:sbl:cite:volumes}
-  \texdefinition{btx:sbl:cite:seriesxref}
-  \texdefinition{btx:sbl:cite:publisher}
-  \texdefinition{btx:sbl:cite:ebook}
-  \texdefinition{btx:sbl:cite:doi}
-  \texdefinition{btx:sbl:cite:reprxref}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:editortranslator}
+    \texdefinition{btx:sbl:cite:edition}
+    \texdefinition{btx:sbl:cite:volumes}
+    \texdefinition{btx:sbl:cite:seriesxref}
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:ebook}
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
+  \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
@@ -3054,22 +3201,29 @@
   \fastsetup{btx:sbl:cite:mvbook}
 \stopsetups
 
-\startsetups btx:sbl:cite:incollection % this should really only be subcited, but we'll allow it
+\startsetups btx:sbl:cite:incollection
   \texdefinition{btx:sbl:cite:collectionxref}
-  \texdefinition{btx:sbl:cite:bookseries}
-  \texdefinition{btx:sbl:cite:publisher}
-  \texdefinition{btx:sbl:cite:ebook}
-  \texdefinition{btx:sbl:cite:doi}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:bookseries}
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:ebook}
+    \texdefinition{btx:sbl:cite:doi}
+  }
+  \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:cite:series
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:editortranslator}
-  \texdefinition{btx:sbl:cite:volumes}
-  \texdefinition{btx:sbl:cite:publisher}
-  \texdefinition{btx:sbl:cite:doi}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:editortranslator}
+    \texdefinition{btx:sbl:cite:volumes}
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:doi}
+  }
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
@@ -3108,6 +3262,21 @@
 
 \startsetups btx:sbl:cite:inproceedings
   \fastsetup{btx:sbl:cite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:cite:ancienttext
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:editortranslator}
+  \texdefinition{btx:sbl:cite:ancienttextclassictextbookxref}
+  \texdefinition{btx:sbl:cite:doi}
+  \texdefinition{btx:sbl:cite:note}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:cite:classictext
+  \fastsetup{btx:sbl:cite:ancienttext}
 \stopsetups
 
 \startsetups btx:sbl:cite:journal
@@ -3150,9 +3319,12 @@
 \startsetups btx:sbl:cite:thesis
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:editortranslator}
-  \texdefinition{btx:sbl:cite:institution}
-  \texdefinition{btx:sbl:cite:doi}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:editortranslator}
+    \texdefinition{btx:sbl:cite:institution}
+    \texdefinition{btx:sbl:cite:doi}
+  }
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
@@ -3164,6 +3336,16 @@
 
 \startsetups btx:sbl:cite:phdthesis
   \fastsetup{btx:sbl:cite:thesis}
+\stopsetups
+
+\startsetups btx:sbl:cite:conferencepaper
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:presentedat}
+  \texdefinition{btx:sbl:cite:doi}
+  \texdefinition{btx:sbl:cite:note}
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 % Inline subcitation setups
@@ -3326,6 +3508,14 @@
   \fastsetup{btx:sbl:subcite:inbook}
 \stopsetups
 
+\startsetups btx:sbl:subcite:ancienttext
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
+\startsetups btx:sbl:subcite:classictext
+  \fastsetup{btx:sbl:subcite:inbook}
+\stopsetups
+
 \startsetups btx:sbl:subcite:journal
   \fastsetup{btx:sbl:subcite:series}
 \stopsetups
@@ -3391,6 +3581,18 @@
   \fastsetup{btx:sbl:subcite:thesis}
 \stopsetups
 
+\startsetups btx:sbl:subcite:conferencepaper
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:subcite:author}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:presentedat}
+    \texdefinition{btx:sbl:cite:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Cite alternative setups
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3404,13 +3606,8 @@
   \let\btxroottag\currentbtxtag
   \def\btxprintpubl{yes}
   \let\btxcurrentsubcitetype\empty
-  % Add this entry to the list unless it is in a category that should not be cited in the list
-  \doifnotinset{\currentbtxcategory}{inlexicon, ancienttext, classictext} {
-    \btxcitereference
-  }
   % Then cite the list entry
-  \btx_entry_inject
-  %\btxhandleciteentry
+  \btxhandleciteentry
   \endgroup
   \fastsetup{\s!btx:\s!cite:righttext}
 \stopsetups
@@ -3433,7 +3630,6 @@
   \edef\currentbtxcategory{\btxfield{category}}
   % Reset variables for new citation
   \let\btxroottag\currentbtxtag
-  \def\btxprintpubl{yes}
   \let\btxcurrentsubcitetype\empty
   % Add this entry to the list unless it is in a category that should not be cited in the list
   %\doifnotinset{\currentbtxcategory}{inlexicon, ancienttext, classictext} {
@@ -3520,7 +3716,11 @@
           \btxspace
           \btxlabeltext{sbl:of}
           \btxspace
-          \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}
+          \btxstartstyleandcolor[sbl:\s!list:title:book]
+            \btxusecommand[sbl:\s!list:title:book]{
+              \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
+            }
+          \btxstopstyleandcolor
           \btxleftparenthesisorbracket
           \doifelse{\clf_btxfoundname{\currentbtxdataset}{\btxflush{bookxref}}{author}}{editor} {
             \btxlabeltext{sbl:editor}
