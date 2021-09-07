@@ -153,6 +153,10 @@
 % and the \btxusecommand[sbl:\s!list:title:\currentbtxcategory] command
 % (to invoke the command parameter)
 
+\starttexdefinition titleemph #1
+  \emph{\Word{#1}}
+\stoptexdefinition
+
 \starttexdefinition titlequote #1
   \quotation{\Word{#1}}
 \stoptexdefinition
@@ -160,8 +164,7 @@
 \definebtx
   [sbl:\s!list:title]
   [sbl:\s!list]
-  [\c!style=\v!italic, % by default, titles should be italicized (exceptions must be made by category)
-   \c!command=\Word, % any title should have its first word capitalized
+  [\c!command=\titleemph, % by default, titles should be italicized and their first word capitalized
    \c!translate=\v!yes]
 
 \definebtx
@@ -433,14 +436,10 @@
 \definebtx
   [sbl:\s!cite:lefttext]
   [sbl:\s!cite]
-  [\c!left=,
-   \c!right={\btxspace}]
 
 \definebtx
   [sbl:\s!cite:righttext]
   [sbl:\s!cite]
-  [\c!left={\btxcomma},
-   \c!right=]
 
 \definebtx
   [sbl:\s!cite:year]
@@ -464,7 +463,7 @@
    \c!separator:4={\btxspace\btxlabeltext{and}\space}, % between only 2 titles
    \c!command={\language[\currentbtxlanguage]}, % set the language to that of the entry with the current title
    \c!sorttype=none,
-   \c!style=\v!italic]
+   \c!style=\v!em]
 
 \definebtx
   [sbl:\s!cite:journal] % when specified within an article entry
@@ -629,8 +628,8 @@
 \definebtx
   [sbl:\s!cite:paren]
   [sbl:\s!cite:inline]
-  [\c!left={(},
-   \c!right={)}]
+  [\c!left={\startparen},
+   \c!right={\stopparen}]
 
 % Citations in footnotes should be rendered exactly like citations in the text
 \definebtx
@@ -696,16 +695,41 @@
 
 % First some helpers:
 
-% By default, parenthesized elements are placed in proper parentheses,
-% but for citations made with the paren alternative,
-% brackets should be used instead
-\let\btxleftparenthesisorbracket\btxleftparenthesis
-\let\btxrightparenthesisorbracket\btxrightparenthesis
+% Nested parentheses (used for things like publisher and institution blocks) should alternate between proper parentheses and brackets
+\definedelimitedtext[paren][quotation][location=text,left={(},right={)}]
+\setupdelimitedtext[paren:1][left={(},right={)}]
+\setupdelimitedtext[paren:2][left={[}, right={]}]
+\setupdelimitedtext[paren:3][left={(},right={)}]
+\setupdelimitedtext[paren:4][left={[}, right={]}]
 
 % Define some helper functions for subcitations
 \let\btxroottag\empty% the tag of the initially cited entry
+\def\shorthandtag{none}% the current entry (if any) with a shorthand to be used
 \def\btxprintpubl{yes}% yes/no indicating whether publication information should be specified for the current citation or subcitation
 \let\btxcurrentsubcitetype\empty% the type of subcitation we're invoking
+
+% If the current entry or the book or collection containing it has a shorthand,
+% then update the \shorthandtag variable to it
+\starttexdefinition sbl:setshorthandtag
+  \def\shorthandtag{none}%
+  \btxdoifelse{shorthand} {
+    \def\shorthandtag{\currentbtxtag}%
+  } {
+    \btxdoif{bookxref} {
+      \def\bookxreftag{\btxflush{bookxref}}
+      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
+        \def\shorthandtag{\bookxreftag}%
+      } {
+        \clf_btxdoif{\currentbtxdataset}{\bookxreftag}{collectionxref} {
+          \def\collectionxreftag{\clf_btxflush{\currentbtxdataset}{\bookxreftag}{collectionxref}}
+          \clf_btxdoif{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+            \def\shorthandtag{\collectionxreftag}%
+          }
+        }
+      }
+    }
+  }
+\stoptexdefinition
 
 % Define handlers for same-author entries in the list
 \startsetups sbl:list:sameauthor
@@ -952,6 +976,13 @@
   }
 \stoptexdefinition
 
+\starttexdefinition btx:sbl:short:author
+  \btxdoif{author} {
+    \currentbtxciteauthorbyfield
+    \btxcomma
+  }
+\stoptexdefinition
+
 \starttexdefinition btx:sbl:list:title
   \btxdoif {title} {
     \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
@@ -971,6 +1002,20 @@
       }
     \btxstopstyleandcolor
     \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:short:title
+  % Use the shorttitle if available;
+  % otherwise, use full title
+  \btxdoifelse{shorttitle} {
+    \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+      \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
+        \btxflush{shorttitle}% set the title according to the current category
+      }
+    \btxstopstyleandcolor
+  } {
+    \texdefinition{btx:sbl:cite:title}
   }
 \stoptexdefinition
 
@@ -994,31 +1039,73 @@
 
 \starttexdefinition btx:sbl:cite:ancienttexttitle
   \btxdoif {title} {
-    % If there is a shorthand (as is the case for most manuscripts),
-    % then print it as-is, even in full inline citations
-    \btxdoifelse {shorthand} {
-      \btxflush{shorthand}
-    } {
-      % For inscriptions and chronicles, just print the title as-is
-      \doifinset {\btxflush{type}} {inscription, chronicle} {
-        \btxflush{title}
-      }
-      % For PGM, typeset the shorthand PGM with book formatting
-      \doifinset {\btxflush{type}} {PGM} {
-        \btxstartstyleandcolor[sbl:\s!list:title:book]
-          \btxusecommand[sbl:\s!list:title:book]{
-            {PGM}%
-          }
-        \btxstopstyleandcolor
-      }
-      % For all other cases, just use the regular formatting
-      \doifnotinset {\btxflush{type}} {inscription, chronicle, PGM} {
-        \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
-          \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
-            \btxflush{title}% set the title in the usual way
-          }
-        \btxstopstyleandcolor
-      }
+    % For inscriptions and chronicles, just print the title as-is
+    \doifinset {\btxflush{type}} {inscription, chronicle} {
+      \btxflush{title}
+    }
+    % For PGM, typeset the shorthand PGM with book formatting
+    \doifinset {\btxflush{type}} {PGM} {
+      \btxstartstyleandcolor[sbl:\s!list:title:book]
+        \btxusecommand[sbl:\s!list:title:book]{
+          {PGM}%
+        }
+      \btxstopstyleandcolor
+    }
+    % For all other cases, just use the regular formatting
+    \doifnotinset {\btxflush{type}} {inscription, chronicle, PGM} {
+      \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+        \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
+          \btxflush{title}% set the title in the usual way
+        }
+      \btxstopstyleandcolor
+    }
+    \btxcomma
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:short:ancienttexttitle
+  \btxdoifelse {shorttitle} {
+    % For inscriptions and chronicles, just print the shorttitle as-is
+    \doifinset {\btxflush{type}} {inscription, chronicle} {
+      \btxflush{shorttitle}
+    }
+    % For PGM, typeset the shorthand PGM with book formatting
+    \doifinset {\btxflush{type}} {PGM} {
+      \btxstartstyleandcolor[sbl:\s!list:title:book]
+        \btxusecommand[sbl:\s!list:title:book]{
+          {PGM}%
+        }
+      \btxstopstyleandcolor
+    }
+    % For all other cases, just use the regular formatting
+    \doifnotinset {\btxflush{type}} {inscription, chronicle, PGM} {
+      \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+        \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
+          \btxflush{shorttitle}% set the shorttitle in the usual way
+        }
+      \btxstopstyleandcolor
+    }
+    \btxcomma
+  } {
+    % For inscriptions and chronicles, just print the title as-is
+    \doifinset {\btxflush{type}} {inscription, chronicle} {
+      \btxflush{title}
+    }
+    % For PGM, typeset the shorthand PGM with book formatting
+    \doifinset {\btxflush{type}} {PGM} {
+      \btxstartstyleandcolor[sbl:\s!list:title:book]
+        \btxusecommand[sbl:\s!list:title:book]{
+          {PGM}%
+        }
+      \btxstopstyleandcolor
+    }
+    % For all other cases, just use the regular formatting
+    \doifnotinset {\btxflush{type}} {inscription, chronicle, PGM} {
+      \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+        \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
+          \btxflush{title}% set the title in the usual way
+        }
+      \btxstopstyleandcolor
     }
     \btxcomma
   }
@@ -1062,9 +1149,16 @@
   \btxdoif {editor} {
     % If editor(s) not already listed in the author position, then list here
     \doifnot {\btxfoundname{author}} {editor} {
-      \btxlabeltext{sbl:Edited}
-      \btxspace
-      \btxlabeltext{sbl:by}
+      % Preface with "Edited by" unless a specific editortype is specified
+      \btxdoifelse {editortype} {
+        \btxusecommand[sbl:\s!list:title]{
+          \btxflush{editortype}% make sure it's capitalized
+        }
+      } {
+        \btxlabeltext{sbl:Edited}
+        \btxspace
+        \btxlabeltext{sbl:by}
+      }
       \btxspace
       \btxflush{editor}
       % Is there an assisting editor?
@@ -1093,9 +1187,16 @@
     % If the editor and witheditor match the corresponding fields in the root citation, 
     % then skip this
     \doifnot {\btxdirect{editor}\btxdirect{witheditor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{editor}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{witheditor}} {
-      \btxlabeltext{sbl:Edited}
-      \btxspace
-      \btxlabeltext{sbl:by}
+      % Preface with "Edited by" unless a specific editortype is specified
+      \btxdoifelse {editortype} {
+        \btxusecommand[sbl:\s!list:title]{
+          \btxflush{editortype}% make sure it's capitalized
+        }
+      } {
+        \btxlabeltext{sbl:Edited}
+        \btxspace
+        \btxlabeltext{sbl:by}
+      }
       \btxspace
       \btxflush{editor}
       % Is there an assisting editor?
@@ -1123,7 +1224,12 @@
   \btxdoif {editor} {
     % If editor(s) not already listed in the author position, then list here
     \doifnot {\btxfoundname{author}} {editor} {
-      \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
+      % Preface with the "editor" abbreviation unless a specific editortype is specified
+      \btxdoifelse {editortype} {
+        \btxflush{editortype}%
+      } {
+        \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
+      }
       \btxspace
       \btxflush{editor}
       % Is there an assisting editor?
@@ -1148,7 +1254,12 @@
     % If the editor and witheditor matches the corresponding fields in the root citation, 
     % then skip this
     \doifnot {\btxdirect{editor}\btxdirect{witheditor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{editor}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{witheditor}} {
-      \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
+      % Preface with the "editor" abbreviation unless a specific editortype is specified
+      \btxdoifelse {editortype} {
+        \btxflush{editortype}%
+      } {
+        \btxlabeltext{sbl:editor} % singular or plural doesn't matter here, as "ed." comes first
+      }
       \btxspace
       \btxflush{editor}
       % Is there an assisting editor?
@@ -1607,9 +1718,6 @@
         % If the cross-referenced book is an untitled volume in a collection, 
         % then precede the page range with the volume (and part) number:
         \doif{\btxfoundname{bookxref}}{incollectionxref} {
-          \removeunwantedspaces
-          \removepunctuation
-          \btxspace
           \textcite[volume][\bookxreftag]
           \btxcolon
           \removeunwantedspaces
@@ -1630,10 +1738,32 @@
     \btxspace
     \btxlabeltext{sbl:of}
     \btxspace
-    % Recursively cite the book/collection
-    % Don't print its publication data (the review has its own publication data for the journal)
-    \def\btxprintpubl{no}%
-    \textcite[subcite][\bookxreftag] % even in the list entry, the reviewed book is rendered like it would be in an inline citation
+    % Cite the title and author/editor of the the reviewed book
+    \btxstartstyleandcolor[sbl:\s!list:title:book]
+      \btxusecommand[sbl:\s!list:title:book]{
+        \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
+      }
+    \btxstopstyleandcolor
+    \btxcomma
+    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\bookxreftag}{author}}{editor} {
+      \btxlabeltext{sbl:editor}
+    } {
+      \btxlabeltext{sbl:by}
+    }
+    \btxspace
+    \clf_btxauthor
+      {\currentbtxdataset}%
+      {\bookxreftag}%
+      {author}%
+      {%
+          combiner    {normal}%
+          kind        {list}%
+          etallimit   {sbl:\s!cite\c!etallimit}%
+          etaldisplay {sbl:\s!cite\c!etaldisplay}%
+          etaloption  {sbl:\s!cite\c!etaloption}%
+          symbol      {sbl:\s!cite\c!stopper:initials}%
+          connector   {sbl:\s!cite\c!connector:initials}%
+      }%
     \btxperiod
     \endgroup
   }
@@ -1648,10 +1778,74 @@
     \btxspace
     \btxlabeltext{sbl:of}
     \btxspace
-    % Recursively cite the book/collection
-    % Don't print its publication data (the review has its own publication data for the journal)
-    \def\btxprintpubl{no}%
-    \textcite[subcite][\bookxreftag]
+    % Cite the title and author/editor of the the reviewed book
+    \btxstartstyleandcolor[sbl:\s!list:title:book]
+      \btxusecommand[sbl:\s!list:title:book]{
+        \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
+      }
+    \btxstopstyleandcolor
+    \btxcomma
+    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\bookxreftag}{author}}{editor} {
+      \btxlabeltext{sbl:editor}
+    } {
+      \btxlabeltext{sbl:by}
+    }
+    \btxspace
+    \clf_btxauthor
+      {\currentbtxdataset}%
+      {\bookxreftag}%
+      {author}%
+      {%
+          combiner    {normal}%
+          kind        {list}%
+          etallimit   {sbl:\s!cite\c!etallimit}%
+          etaldisplay {sbl:\s!cite\c!etaldisplay}%
+          etaloption  {sbl:\s!cite\c!etaloption}%
+          symbol      {sbl:\s!cite\c!stopper:initials}%
+          connector   {sbl:\s!cite\c!connector:initials}%
+      }%
+    \btxcomma
+    \endgroup
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:short:reviewbookxref
+  \btxdoif{bookxref} {
+    \begingroup
+    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
+    % Precede the subcitation with "review of"
+    \btxlabeltext{sbl:review}
+    \btxspace
+    \btxlabeltext{sbl:of}
+    \btxspace
+    % Cite the title and author/editor of the the reviewed book
+    \btxstartstyleandcolor[sbl:\s!list:title:book]
+      \btxusecommand[sbl:\s!list:title:book]{
+        \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
+      }
+    \btxstopstyleandcolor
+    \btxspace
+    \startparen
+    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\bookxreftag}{author}}{editor} {
+      \btxlabeltext{sbl:editor}
+    } {
+      \btxlabeltext{sbl:by}
+    }
+    \btxspace
+    \clf_btxauthor
+      {\currentbtxdataset}%
+      {\bookxreftag}%
+      {author}%
+      {%
+          combiner    {name}%
+          kind        {list}%
+          etallimit   {sbl:\s!cite\c!etallimit}%
+          etaldisplay {sbl:\s!cite\c!etaldisplay}%
+          etaloption  {sbl:\s!cite\c!etaloption}%
+          symbol      {sbl:\s!cite\c!stopper:initials}%
+          connector   {sbl:\s!cite\c!connector:initials}%
+      }%
+    \stopparen
     \btxcomma
     \endgroup
   }
@@ -1691,6 +1885,11 @@
     \btxcomma
     \endgroup
   }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:short:suppbookbookxref
+  % Just print the type (this is a required field)
+  \btxflush{type}
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:cite:inreferencebookxref
@@ -1749,9 +1948,10 @@
       \btxdoif {translator} {
         \removeunwantedspaces
         \removepunctuation
-        \btxleftparenthesisorbracket
+        \btxspace
+        \startparen
         \btxflush{translator}
-        \btxrightparenthesisorbracket
+        \stopparen
         \btxcomma
       }
     } {
@@ -1764,16 +1964,9 @@
       }
       \removeunwantedspaces
       \removepunctuation
-      \btxleftparenthesisorbracket
-      % Just make sure we swap parentheses for brackets in this context
+      \btxspace
+      \startparen
       \begingroup
-      \ifx\btxleftparenthesisorbracket\btxleftparenthesis%
-        \let\btxleftparenthesisorbracket\btxleftbracket%
-        \let\btxrightparenthesisorbracket\btxrightbracket%
-      \else%
-        \let\btxleftparenthesisorbracket\btxleftparenthesis%
-        \let\btxrightparenthesisorbracket\btxrightparenthesis%
-      \fi
       \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
       % Is this entry is of type "COS",
       % then only cite the shorthand of the collection,
@@ -1817,7 +2010,7 @@
       \removeunwantedspaces
       \removepunctuation
       \endgroup
-      \btxrightparenthesisorbracket
+      \stopparen
       \btxcomma
     }
   }
@@ -1828,16 +2021,9 @@
     % The book cross-reference will always be in parentheses/brackets:
     \removeunwantedspaces
     \removepunctuation
-    \btxleftparenthesisorbracket
-    % Just make sure we swap parentheses for brackets in this context
+    \btxspace
+    \startparen
     \begingroup
-    \ifx\btxleftparenthesisorbracket\btxleftparenthesis%
-      \let\btxleftparenthesisorbracket\btxleftbracket%
-      \let\btxrightparenthesisorbracket\btxrightbracket%
-    \else%
-      \let\btxleftparenthesisorbracket\btxleftparenthesis%
-      \let\btxrightparenthesisorbracket\btxrightparenthesis%
-    \fi
     \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
     % If there is a translator, then print their last name
     \btxdoif {translator} {
@@ -1918,7 +2104,7 @@
     \removeunwantedspaces
     \removepunctuation
     \endgroup
-    \btxrightparenthesisorbracket
+    \stopparen
     \btxcomma
   }
 \stoptexdefinition
@@ -2287,9 +2473,10 @@
     % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
     % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
     \btxdoif {date} {
-      \btxleftparenthesisorbracket
+      \btxspace
+      \startparen
       \btxflush{date}
-      \btxrightparenthesisorbracket
+      \stopparen
     }
     \btxcolon
     % Print the page numbers
@@ -2335,9 +2522,10 @@
     % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
     % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
     \btxdoif {date} {
-      \btxleftparenthesisorbracket
+      \btxspace
+      \startparen
       \btxflush{date}
-      \btxrightparenthesisorbracket
+      \stopparen
     }
     \btxcolon
     % Print the page numbers
@@ -2403,7 +2591,8 @@
     % Remove all preceding punctuation and spaces and use a parenthesis or bracket
     \removeunwantedspaces
     \removepunctuation
-    \btxleftparenthesisorbracket
+    \btxspace
+    \startparen
     % Is this a reprint?
     \btxdoif {origpublisher} {
       % Is there an original publication location?
@@ -2448,7 +2637,7 @@
     % Close the publication block
     \removeunwantedspaces
     \removepunctuation
-    \btxrightparenthesisorbracket
+    \stopparen
     \btxcomma
   }
 \stoptexdefinition
@@ -2503,7 +2692,8 @@
     % Remove all preceding punctuation and spaces and use a parenthesis or bracket
     \removeunwantedspaces
     \removepunctuation
-    \btxleftparenthesisorbracket
+    \btxspace
+    \startparen
     % Print which type of thesis is being cited
     \doifelse {\currentbtxcategory} {phdthesis} {
       \btxlabeltext{sbl:phd}
@@ -2544,7 +2734,7 @@
     % Close the institution block
     \removeunwantedspaces
     \removepunctuation
-    \btxrightparenthesisorbracket
+    \stopparen
     \btxcomma
   }
 \stoptexdefinition
@@ -2580,7 +2770,8 @@
     % Remove all preceding punctuation and spaces and use a parenthesis
     \removeunwantedspaces
     \removepunctuation
-    \btxleftparenthesisorbracket
+    \btxspace
+    \startparen
     % Print the "paper presented at" preamble
     \btxlabeltext{sbl:paperpresentedat}
     \btxspace
@@ -2601,7 +2792,7 @@
     % Close the block
     \removeunwantedspaces
     \removepunctuation
-    \btxrightparenthesisorbracket
+    \stopparen
     \btxcomma
   }
 \stoptexdefinition
@@ -2716,9 +2907,10 @@
       % Then print the eprint identifier
       \btxflush{eprint}
       % Finally, print its eprintclass in parentheses or brackets
-      \btxleftparenthesisorbracket
+      \btxspace
+      \startparen
       \btxflush{eprintclass}
-      \btxrightparenthesisorbracket
+      \stopparen
       \btxperiod
     } {
       % If not, then this is an online database or website with eprint fields
@@ -2804,9 +2996,9 @@
       \btxflush{eprint}
       \btxspace
       % Finally, print its eprintclass in parentheses or brackets
-      \btxleftparenthesisorbracket
+      \startparen
       \btxflush{eprintclass}
-      \btxrightparenthesisorbracket
+      \stopparen
       \btxcomma
     } {
       % If not, then this is an online database or website with eprint fields
@@ -3435,10 +3627,12 @@
 \stopsetups
 
 \startsetups btx:sbl:cite:reference
+  % Otherwise, cite the author and title
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
   % Only recursively cite publication data if the \btxprintpubl variable is set
   \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:collectionxref}
     \texdefinition{btx:sbl:cite:editortranslator}
     \texdefinition{btx:sbl:cite:edition}
     \texdefinition{btx:sbl:cite:seriesxref}
@@ -3452,12 +3646,29 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:cite:commentary
+\startsetups btx:sbl:cite:lexicon
   \fastsetup{btx:sbl:cite:reference}
 \stopsetups
 
-\startsetups btx:sbl:cite:lexicon
-  \fastsetup{btx:sbl:cite:reference}
+\startsetups btx:sbl:cite:commentary
+  % Otherwise, cite the author and title
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
+  % Only recursively cite publication data if the \btxprintpubl variable is set;
+  % for commentaries, the collection is not cited inline (§6.4.10.1)
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:collectionxref}
+    \texdefinition{btx:sbl:cite:editortranslator}
+    \texdefinition{btx:sbl:cite:edition}
+    \texdefinition{btx:sbl:cite:seriesxref}
+    \texdefinition{btx:sbl:cite:publisher}
+    \texdefinition{btx:sbl:cite:ebook}
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
+  \texdefinition{btx:sbl:cite:note}
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:cite:manual
@@ -3469,6 +3680,7 @@
 \stopsetups
 
 \startsetups btx:sbl:cite:mvbook
+  % Otherwise, cite the author and title
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
   % Only recursively cite publication data if the \btxprintpubl variable is set
@@ -3491,11 +3703,11 @@
   \fastsetup{btx:sbl:cite:mvbook}
 \stopsetups
 
-\startsetups btx:sbl:cite:mvcommentary
+\startsetups btx:sbl:cite:mvlexicon
   \fastsetup{btx:sbl:cite:mvbook}
 \stopsetups
 
-\startsetups btx:sbl:cite:mvlexicon
+\startsetups btx:sbl:cite:mvcommentary
   \fastsetup{btx:sbl:cite:mvbook}
 \stopsetups
 
@@ -3504,13 +3716,18 @@
 \stopsetups
 
 \startsetups btx:sbl:cite:incollection
-  \texdefinition{btx:sbl:cite:collectionxref}
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
   % Only recursively cite publication data if the \btxprintpubl variable is set
   \doif {\btxprintpubl} {yes} {
-    \texdefinition{btx:sbl:cite:bookseries}
+    \texdefinition{btx:sbl:cite:collectionxref}
+    \texdefinition{btx:sbl:cite:editortranslator}
+    \texdefinition{btx:sbl:cite:edition}
+    \texdefinition{btx:sbl:cite:seriesxref}
     \texdefinition{btx:sbl:cite:publisher}
     \texdefinition{btx:sbl:cite:ebook}
     \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
   }
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
@@ -3532,11 +3749,16 @@
 \stopsetups
 
 \startsetups btx:sbl:cite:inbook
+  \texdefinition{sbl:setshorthandtag}
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:bookxref}
-  \texdefinition{btx:sbl:cite:reprxref}
-  \texdefinition{btx:sbl:cite:doi}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:bookxref}
+    \texdefinition{btx:sbl:cite:reprxref}
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
@@ -3555,9 +3777,13 @@
 \startsetups btx:sbl:cite:inreference
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:inreferencebookxref}
-  \texdefinition{btx:sbl:cite:reprxref}
-  \texdefinition{btx:sbl:cite:doi}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:inreferencebookxref}
+    \texdefinition{btx:sbl:cite:reprxref}
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
@@ -3580,11 +3806,22 @@
 \stopsetups
 
 \startsetups btx:sbl:cite:ancienttext
-  \texdefinition{btx:sbl:cite:author}
-  \texdefinition{btx:sbl:cite:ancienttexttitle}
-  \texdefinition{btx:sbl:cite:ancienttextbookxref}
-  \texdefinition{btx:sbl:cite:doi}
-  \texdefinition{btx:sbl:cite:note}
+  \texdefinition{sbl:setshorthandtag}
+  % If this entry has a shorthand, then cite it
+  \doifelse {\shorthandtag} {\currentbtxtag} {
+    \texdefinition{btx:sbl:cite:shorthand}
+  } {
+    % Otherwise, cite the author and title
+    \texdefinition{btx:sbl:cite:author}
+    \texdefinition{btx:sbl:cite:ancienttexttitle}
+    % Only recursively cite publication data if the \btxprintpubl variable is set
+    \doif {\btxprintpubl} {yes} {
+      \texdefinition{btx:sbl:cite:ancienttextbookxref}
+      \texdefinition{btx:sbl:cite:reprxref}
+      \texdefinition{btx:sbl:cite:doi}
+    }
+    \texdefinition{btx:sbl:cite:note}
+  }
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
@@ -3592,8 +3829,12 @@
 \startsetups btx:sbl:cite:classictext
   \texdefinition{btx:sbl:cite:author}
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:cite:classictextbookxref}
-  \texdefinition{btx:sbl:cite:doi}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:classictextbookxref}
+    \texdefinition{btx:sbl:cite:reprxref}
+    \texdefinition{btx:sbl:cite:doi}
+  }
   \texdefinition{btx:sbl:cite:note}
   \removeunwantedspaces
   \removepunctuation
@@ -3915,6 +4156,192 @@
   \removepunctuation
 \stopsetups
 
+% Short citation setups
+\startsetups btx:sbl:short:book
+  \btxdoifelse {shorthand} {
+    \texdefinition{btx:sbl:cite:shorthand}
+  } {
+    \texdefinition{btx:sbl:short:author}
+    \texdefinition{btx:sbl:short:title}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:short:reference
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:commentary
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:lexicon
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:manual
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:proceedings
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:mvbook
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:mvreference
+  \fastsetup{btx:sbl:short:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:short:mvcommentary
+  \fastsetup{btx:sbl:short:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:short:mvlexicon
+  \fastsetup{btx:sbl:short:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:short:collection
+  \fastsetup{btx:sbl:short:mvbook}
+\stopsetups
+
+\startsetups btx:sbl:short:incollection
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:series
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:inbook
+  \btxdoifelse {shorthand} {
+    \texdefinition{btx:sbl:cite:shorthand}
+  } {
+    \texdefinition{btx:sbl:short:author}
+    \texdefinition{btx:sbl:short:title}
+  }
+  % If the type of this entry is "ANRW", then print the shorthand of the collection after the article title, followed by the volume and part and any cited page numbers
+  \doif {\btxflush{type}} {ANRW} {
+    \btxstartstyleandcolor[sbl:\s!list:title:book]
+      \btxusecommand[sbl:\s!list:title:book]{
+        {ANRW}%
+      }
+    \btxstopstyleandcolor
+    \btxspace
+    \begingroup
+    \def\bookxreftag{\btxflush{bookxref}}
+    \textcite[volume][\bookxreftag]
+    \doifelse {\currentbtxrighttext} {\empty} {
+      % If no pages are specified, then cite the full page range, if there is one
+      \btxdoif {pages} {
+        \btxcolon
+        \removeunwantedspaces
+        \btxflush{pages}
+      }
+    } {
+      \btxcolon
+      \removeunwantedspaces
+      \removepunctuation
+      \currentbtxrighttext
+    }
+    \endgroup
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:short:suppbook
+  % Print the author, followed by the type of this entry
+  \texdefinition{btx:sbl:short:author}
+  \texdefinition{btx:sbl:short:suppbookbookxref}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:short:inreference
+  \fastsetup{btx:sbl:short:inbook}
+\stopsetups
+
+\startsetups btx:sbl:short:inlexicon
+  \fastsetup{btx:sbl:short:inbook}
+\stopsetups
+
+\startsetups btx:sbl:short:incommentary
+  \fastsetup{btx:sbl:short:inbook}
+\stopsetups
+
+\startsetups btx:sbl:short:inproceedings
+  \fastsetup{btx:sbl:short:inbook}
+\stopsetups
+
+\startsetups btx:sbl:short:seminarpaper
+  \fastsetup{btx:sbl:short:inproceedings}
+\stopsetups
+
+\startsetups btx:sbl:short:ancienttext
+  \btxdoifelse {shorthand} {
+    \texdefinition{btx:sbl:cite:shorthand}
+  } {
+    \texdefinition{btx:sbl:short:author}
+    \texdefinition{btx:sbl:short:ancienttexttitle}
+  }
+\stopsetups
+
+\startsetups btx:sbl:short:classictext
+  \fastsetup{btx:sbl:short:inbook}
+\stopsetups
+
+\startsetups btx:sbl:short:journal
+  \fastsetup{btx:sbl:short:series}
+\stopsetups
+
+\startsetups btx:sbl:short:article
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:magazine
+  \fastsetup{btx:sbl:short:article}
+\stopsetups
+
+\startsetups btx:sbl:short:newspaper
+  \fastsetup{btx:sbl:short:article}
+\stopsetups
+
+\startsetups btx:sbl:short:periodical
+  \fastsetup{btx:sbl:short:article}
+\stopsetups
+
+\startsetups btx:sbl:short:review
+  % Print the author, then either the title (if there is one) or a summary of the review
+  \texdefinition{btx:sbl:short:author}
+  \btxdoifelse{title} {
+    \texdefinition{btx:sbl:short:title}
+  } {
+    \texdefinition{btx:sbl:short:reviewbookxref}
+  }
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
+\startsetups btx:sbl:short:thesis
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
+\startsetups btx:sbl:short:mastersthesis
+  \fastsetup{btx:sbl:short:thesis}
+\stopsetups
+
+\startsetups btx:sbl:short:phdthesis
+  \fastsetup{btx:sbl:short:thesis}
+\stopsetups
+
+\startsetups btx:sbl:short:conferencepaper
+  \fastsetup{btx:sbl:short:book}
+\stopsetups
+
 %%%%%%%%%%%%%%%%%%%%%%%%%
 % Cite alternative setups
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3922,16 +4349,17 @@
 % List citation setup
 \startsetups btx:sbl:\s!cite:entry
   \fastsetup{\s!btx:\s!cite:concat}
-  \fastsetup{\s!btx:\s!cite:lefttext}
+  \fastsetup{\s!btx:\s!cite:left}
   \begingroup
   % Reset variables for new citation
   \let\btxroottag\currentbtxtag
+  \def\shorthandtag{none}%
   \def\btxprintpubl{yes}%
   \let\btxcurrentsubcitetype\empty
   % Then cite the list entry
   \btxhandleciteentry
   \endgroup
-  \fastsetup{\s!btx:\s!cite:righttext}
+  \fastsetup{\s!btx:\s!cite:right}
 \stopsetups
 
 % List subcitation setup
@@ -3946,40 +4374,37 @@
 % Inline citation setup
 \startsetups btx:sbl:\s!cite:inline
   \fastsetup{\s!btx:\s!cite:concat}
-  \fastsetup{\s!btx:\s!cite:lefttext}
+  \fastsetup{\s!btx:\s!cite:left}
   \begingroup
   % This gets cleared in cites, so set it here
   \def\currentbtxcategory{\btxfield{category}}%
   % Reset variables for new citation
   \let\btxroottag\currentbtxtag
+  \def\shorthandtag{none}%
   \let\btxcurrentsubcitetype\empty
-  % Add this entry to the list unless it is in a category that should not be cited in the list
-  %\doifnotinset{\currentbtxcategory}{inlexicon, ancienttext, classictext} {
-  %  \btxcitereference
-  %}
   % Then invoke the appropriate setup
-  \fastsetup{btx:sbl:cite:\currentbtxcategory}
+  \doifelse {\btxflush{type}} {inlineshorthand} {
+    \fastsetup{btx:sbl:short:\currentbtxcategory}
+  } {
+    \fastsetup{btx:sbl:cite:\currentbtxcategory}
+  }
   \endgroup
-  \fastsetup{\s!btx:\s!cite:righttext}
+  \fastsetup{\s!btx:\s!cite:right}
 \stopsetups
 
 % Inline subcitation setup
 \startsetups btx:sbl:\s!cite:subcite
   \begingroup
+  \def\shorthandtag{none}%
   % This gets cleared in cites, so set it here
   \def\currentbtxcategory{\btxfield{category}}%
   \fastsetup{btx:sbl:subcite:\currentbtxcategory}
   \endgroup
 \stopsetups
 
-% In-text parenthetical citation setup
+% Inline parenthetical citation setup
 \startsetups btx:sbl:cite:paren
-  % Make sure we use brackets instead of parentheses
-  \begingroup
-  \let\btxleftparenthesisorbracket\btxleftbracket
-  \let\btxrightparenthesisorbracket\btxrightbracket
   \fastsetup{btx:sbl:\s!cite:inline}
-  \endgroup
 \stopsetups
 
 % Footnote citation setup
@@ -4006,121 +4431,14 @@
 % Short citations setup
 \startsetups btx:sbl:cite:short
   \fastsetup{\s!btx:\s!cite:concat}
-  \fastsetup{\s!btx:\s!cite:lefttext}
+  \fastsetup{\s!btx:\s!cite:left}
   \begingroup
   \def\currentbtxcategory{\btxfield{category}}%
-  \def\usingshorthand{no}%
-  % If this entry has a shorthand, then just cite that
-  \btxdoif{shorthand} {
-    \def\usingshorthand{yes}%
-    \texdefinition{btx:sbl:cite:shorthand}
-  }
-  % Otherwise, start with the last name of the author/editor
-  \doif{\usingshorthand}{no} {
-    \btxdoif{author} {
-      \currentbtxciteauthorbyfield
-      \btxcomma
-    }
-  }
-  % If this entry belongs to a book or collection with a shorthand, 
-  % then cite the shorthand of the book or collection
-  \doif{\usingshorthand}{no} {
-    \btxdoif{bookxref} {
-      \def\bookxreftag{\btxflush{bookxref}}
-      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
-        \def\usingshorthand{yes}%
-        \textcite[short][\bookxreftag]
-        \btxcomma
-        
-      } {
-        \clf_btxdoif{\currentbtxdataset}{\bookxreftag}{collectionxref} {
-          \def\collectionxreftag{\clf_btxflush{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-          \clf_btxdoif{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-            \def\usingshorthand{yes}%
-            \textcite[short][\collectionxreftag]
-            \btxcomma
-          }
-        }
-      }
-    }
-  }
-  % If we haven't used a shorthand yet, then print the shorttitle or title
-  \doif{\usingshorthand}{no} {
-    \btxdoifelse{shorttitle} {
-      \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
-        \btxusecommand[sbl:\s!list:title:\currentbtxcategory] {
-          \btxflush{shorttitle}% set the shorthand according to the current category
-        }
-      \btxstopstyleandcolor
-      \btxcomma
-    } {
-      % If there isn't a shorttitle, then try using the full title
-      \btxdoifelse{title} {
-        \texdefinition{btx:sbl:cite:title}
-      } {
-        % If there isn't any title, then we're in a special category;
-        % use the appropriate preamble
-        \doif {\currentbtxcategory} {review} {
-          \btxlabeltext{sbl:review}
-          \btxspace
-          \btxlabeltext{sbl:of}
-          \btxspace
-          \btxstartstyleandcolor[sbl:\s!list:title:book]
-            \btxusecommand[sbl:\s!list:title:book]{
-              \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
-            }
-          \btxstopstyleandcolor
-          \btxleftparenthesisorbracket
-          \doifelse{\clf_btxfoundname{\currentbtxdataset}{\btxflush{bookxref}}{author}}{editor} {
-            \btxlabeltext{sbl:editor}
-          } {
-            \btxlabeltext{sbl:by}
-          }
-          \btxspace
-          %\textcite[name][\btxflush{bookxref}] would be more succinct, but it doesn't work here
-          \clf_btxauthor
-            {\currentbtxdataset}%
-            {\btxflush{bookxref}}%
-            {author}%
-            {%
-                combiner    {name}%
-                kind        {list}%
-                etallimit   {\btxparameter\c!etallimit}%
-                etaldisplay {\btxparameter\c!etaldisplay}%
-                etaloption  {\btxparameter\c!etaloption}%
-                symbol      {\btxparameter{\c!stopper:initials}}%
-                connector   {\btxparameter{\c!connector:initials}}%
-            }%
-          \btxrightparenthesisorbracket
-          \btxcomma
-        }
-        \doif {\currentbtxcategory} {suppbook} {
-          \btxflush{type}
-          \btxcomma
-        }
-      }
-    }
-    % If the type of this entry is "ANRW", then just print the shorthand of the collection
-    \doif {\btxflush{type}} {ANRW} {
-      \btxdoif{bookxref} {
-        \def\bookxreftag{\btxflush{bookxref}}%
-        \clf_btxdoif{\currentbtxdataset}{\bookxreftag}{collectionxref} {
-          \def\collectionxreftag{\clf_btxflush{\currentbtxdataset}{\bookxreftag}{collectionxref}}%
-          \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-            \textcite[short][\collectionxreftag]
-          } {
-            \btxlabeltext{sbl:in}
-            \btxspace
-            \textcite[title][\collectionxreftag]
-          }
-        }
-      }
-    }
-  }
+  \fastsetup{btx:sbl:short:\currentbtxcategory}
   \endgroup
   \removeunwantedspaces
   \removepunctuation
-  \fastsetup{\s!btx:\s!cite:righttext}
+  \fastsetup{\s!btx:\s!cite:right}
 \stopsetups
 
 \stopbtxrenderingdefinitions

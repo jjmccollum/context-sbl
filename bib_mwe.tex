@@ -2,6 +2,15 @@
 \usebtxdataset[publ-imp-sbl-test.bib]
 \usebtxdefinitions[sbl]
 
+\mainlanguage[en]
+
+%Setup nested quotation handling (e.g., article titles with quotes)
+\setupdelimitedtext[quotation:1][left={\symbol[leftquotation]},right={\symbol[rightquotation]}]
+\setupdelimitedtext[quotation:2][left={\symbol[leftquote]}, right={\symbol[rightquote]}]
+
+%Setup nested parenthesis handling 
+
+
 \setupbodyfont[ebgaramond]
 \definefontfeature[f:bibliography][onum=no,dlig=no]
 \definefontfeature[f:superscript][sups=yes]
@@ -9,7 +18,7 @@
 \feature[+][f:bibliography]
 
 \starttext
-
+\cite[paren][talbert:1992]\blank
 \title{6 Notes and Bibliographies}
 \subject{6.2 General Examples: Books}
 \subsubject{6.2.1 A Book by a Single Author}
@@ -315,7 +324,24 @@ to indicate the medium in the citation.
 \cite[goodacre:2014]\blank
 \cite[short][goodacre:2014]\blank
 \cite[entry][goodacre:2014]\blank
+\title{7 Other Examples}
+\subject{7.1 BDAG, BDB, BDF}
+\cite[BDAG]\blank
+\cite[entry][BDAG]\blank
+\cite[BDB]\blank
+\cite[entry][BDB]\blank
+\cite[BDF]\blank
+\cite[entry][BDF]\blank
+\subject{7.2 HALOT, TLOT}
+\cite[HALOT]\blank
+\cite[entry][HALOT]\blank
+\cite[TLOT]\blank
+\cite[entry][TLOT]\blank
+\subject{7.3 SBLHS}
+\cite[SBLHS]\blank
+\cite[entry][SBLHS]\blank
 \page
+
 \startsubject[title=Bibliography]
 	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text
 \stopsubject

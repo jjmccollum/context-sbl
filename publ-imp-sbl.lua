@@ -109,7 +109,7 @@ categories.book = {
         "shorttitle", -- for short citations
         "withauthor", "withauthortype",
         "collectionxref", "volume", "part",
-        "editor",
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -122,6 +122,7 @@ categories.book = {
         "transxref",
         "eprint",
         "doi",
+        "type", -- (for exceptional cases that require special formatting, like "inlineshorthand")
         "note",
     },
 }
@@ -158,7 +159,7 @@ categories.manual = {
         "author",
         "withauthor", "withauthortype",
         "collectionxref", "volume", "part",
-        "editor",
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -171,6 +172,7 @@ categories.manual = {
         "transxref",
         "eprint",
         "doi", 
+        "type", -- (for exceptional cases that require special formatting)
         "note",
     },
 }
@@ -195,7 +197,7 @@ categories.incollection = {
         "publisher",
     },
     optional = {
-        "editor",
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -229,12 +231,14 @@ categories.collection = {
     optional = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
+        "editortype",
         "witheditor", "witheditortype",
         "series", "seriesseries", "number",
         "origpublisher",
         "location",
         "date",
         "doi",
+        "type", -- (for exceptional cases that require special formatting)
         "note",
     },
 }
@@ -260,7 +264,7 @@ categories.mvbook = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "withauthor", "withauthortype",
-        "editor",
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",
@@ -273,7 +277,7 @@ categories.mvbook = {
         "transxref",
         "eprint",
         "doi",
-        "type",
+        "type", -- (for exceptional cases that require special formatting, like "Str-B")
         "note",
     },
 }
@@ -305,14 +309,14 @@ categories.series = {
     optional = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
-        "editor",
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "volumes",
         "location",
         "publisher",
         "date",
         "doi",
-        "type", -- (for exceptional cases that require special formatting, like "Str-B")
+        "type",
         "note",
     },
 }
@@ -426,7 +430,7 @@ categories.classictext = {
         "part",
         "pages",
         "doi",
-        "type", -- (for exceptional cases that require special formatting, like "LCL", or "churchfather")
+        "type", -- (for exceptional cases that require special formatting, like "LCL" or "churchfather")
         "note",
     },
 }
@@ -511,6 +515,7 @@ categories.proceedings = {
         "author", -- referring to the set above
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -649,6 +654,8 @@ categories.online = {
         "shorttitle", -- for short citations
         "author", 
         "withauthor", "withauthortype",
+        "editor", "editortype",
+        "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
         "journal", -- can also refer to a blog
@@ -687,7 +694,7 @@ categories.misc = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "xref", "volume", "part",
-        "editor",
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",
@@ -733,7 +740,7 @@ categories.literal = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "bookxref", "volume", "part",
-        "editor",
+        "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",

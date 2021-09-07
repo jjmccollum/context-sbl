@@ -73,9 +73,9 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 
 7 Other Examples
 
-- [ ] 7.1 BDAG, BDB, BDF
-- [ ] 7.2 HALOT, TLOT
-- [ ] 7.3 SBLHS
+- [x] 7.1 BDAG, BDB, BDF
+- [x] 7.2 HALOT, TLOT
+- [x] 7.3 SBLHS
 
 ## To Do
 
@@ -84,3 +84,4 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 - [ ] Add an authorconversion that prints the first of multiple authors in inverted order, but the rest in normal order
 - [ ] Modify the `short` cite alternative to produce shorthand or author-title citations, per the SBL guidelines reproduced at https://github.com/dcpurton/biblatex-sbl/blob/master/test/biblatex-sbl-examples.ref.txt (it would probably be best to implement individual setups for this for each category)
 - [ ] Add a final pass over the entry to move commas and periods that are after right quotes to positions before them, in accordance with American style? (If we could also handle alternating parenthesis to bracket conversions in such a pass, then we wouldn't need a `paren` citation alternative.)
+- [ ] Anytime a shorthand is cited for the first time, it should be added to the abbreviations list, with the printed abbreviation retaining its formatting (e.g., journal shorthands should be italicized, while series shorthands should not) and the `listsubcite` rendering assigned as the full form of the abbreviation (something like `\abbreviation[\btxflush{shorthand}]{\texdefinition{btx:sbl:cite:shorthand}}{\textcite[listsubcite][\btxflush{shorthand}]}` should work for this)
