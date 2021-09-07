@@ -121,7 +121,7 @@ categories.book = {
         "reprxref",
         "transxref",
         "eprint",
-        "doi", 
+        "doi",
         "note",
     },
 }
@@ -175,8 +175,8 @@ categories.manual = {
     },
 }
 
--- an untitled volume in a multivolume collection, edited by the same editor as the collection
--- (a volume number and collection reference are required instead of a title)
+-- an untitled volume in a multivolume collection
+-- (hence, a volume number and collection reference are required instead of a title).
 -- note that this differs from the @incollection category used by biblatex-sbl,
 -- which refers to a chapter or article in an untitled multivolume work.
 categories.incollection = {
@@ -195,6 +195,10 @@ categories.incollection = {
         "publisher",
     },
     optional = {
+        "editor",
+        "witheditor", "witheditortype",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
         "part",
         "series", "seriesseries", "number",
         "origpublisher",
@@ -268,7 +272,8 @@ categories.mvbook = {
         "reprxref",
         "transxref",
         "eprint",
-        "doi", 
+        "doi",
+        "type",
         "note",
     },
 }
@@ -307,6 +312,7 @@ categories.series = {
         "publisher",
         "date",
         "doi",
+        "type", -- (for exceptional cases that require special formatting, like "Str-B")
         "note",
     },
 }
@@ -333,7 +339,8 @@ categories.inbook = {
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",
         "reprxref",
-        "doi", 
+        "doi",
+        "type", -- (for exceptional cases that require special formatting, like "ANRW")
         "note",
     },
 }
@@ -369,9 +376,6 @@ categories.inlexicon = categories.inbook
 -- an article in a single-volume commentary on the entire Bible (§6.4.9.2)
 categories.incommentary = categories.inbook
 
--- a seminar paper (§6.4.11)
-categories.seminarpaper = categories.inbook
-
 -- a text from the Ancient Near East (or anywhere, really; see §6.4.1)
 -- a papyrus or ostracon (§6.4.3)
 -- almost identical to inbook, but no author is required
@@ -387,19 +391,45 @@ categories.ancienttext = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "shorthand", -- to abbreviate (e.g., for papyri, ostraca, and epigraphica)
         "author", -- author of the ancient text (if known)
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
         "part",
         "pages",
-        "doi", 
+        "location", -- for artifact provenance, not publication
+        "doi",
+        "type", -- (for exceptional cases that require special formatting, like "COS", "PGM", "inscription" or "chronicle")
         "note",
     },
 }
 
 -- a classical text (§6.4.2)
-categories.classictext = categories.ancienttext
+categories.classictext = {
+    sets = {
+        bookxref = { "collectionxref", "incollectionxref", "bookxref", "seriesxref" }, -- classical texts can span multiple volumes of multivolume collections
+        reprxref = generic.reprxref,
+        doi = generic.doi,
+    },
+    required = {
+        "title", -- title of the classical text
+    },
+    optional = {
+        "shorttitle", -- for short citations
+        "author", -- author of the classical text (if known)
+        "withauthor", "withauthortype",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
+        "bookxref",
+        "number",
+        "part",
+        "pages",
+        "doi",
+        "type", -- (for exceptional cases that require special formatting, like "LCL", or "churchfather")
+        "note",
+    },
+}
 
 -- a journal
 categories.journal = categories.series
@@ -474,11 +504,11 @@ categories.proceedings = {
         doi = generic.doi,
     },
     required = {
-        "author", -- referring to the set above
         "title",
         "publisher",
     },
     optional = {
+        "author", -- referring to the set above
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "witheditor", "witheditortype",
@@ -492,12 +522,15 @@ categories.proceedings = {
     },
 }
 
--- an article in a conference proceedings
+-- an article in a conference
 -- not covered by SBL, but treated as interchangeable with an article in a published book
 categories.inproceedings = categories.inbook
 
 -- not covered by SBL, but treated as interchangeable with inproceedings in other ConTeXt citation .lua files
 categories.conference = categories.inproceedings
+
+-- a seminar paper (§6.4.11)
+categories.seminarpaper = categories.inproceedings
 
 -- a paper presented at a professional society (but not published; see §6.3.8)
 categories.conferencepaper = {

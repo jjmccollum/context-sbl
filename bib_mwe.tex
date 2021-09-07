@@ -4,6 +4,8 @@
 
 \setupbodyfont[ebgaramond]
 \definefontfeature[f:bibliography][onum=no,dlig=no]
+\definefontfeature[f:superscript][sups=yes]
+\define[1]\textsuperscript{{\feature[+][f:superscript]#1}}
 \feature[+][f:bibliography]
 
 \starttext
@@ -200,14 +202,119 @@
 \cite[entry][kirk:2007]\blank
 \subject{6.4 Special Examples}
 \subsubject{6.4.1 Texts from the Ancient Near East}
+\subsubsubject{6.4.1.1 Citing COS}
 \cite[greathymnaten]\blank
 \cite[short][greathymnaten]\blank
+\subsubsubject{6.4.1.2 Citing Other Texts}
 \cite[suppiluliumas]\blank
 \cite[short][suppiluliumas]\blank
 \cite[erraandishum:dalley]\blank
 \cite[short][erraandishum:dalley]\blank
 \cite[erraandishum:foster]\blank
 \cite[short][erraandishum:foster]\blank
+\cite[doomedprince]\blank
+\cite[short][doomedprince]\blank
+\cite[disappearanceofsungod]\blank
+\cite[short][disappearanceofsungod]\blank
+\cite[ashurinscription]\blank
+\cite[short][ashurinscription]\blank
+\cite[esarhaddonchronicle]\blank
+\cite[short][esarhaddonchronicle]\blank
+\cite[short][ARM1]\blank
+\cite[entry][ARM1]\blank
+\cite[short][ARMT1]\blank
+\cite[entry][ARMT1]\blank
+\subsubject{6.4.2 Loeb Classical Library (Greek and Latin)}
+\cite[josephus:ant]\blank
+\cite[short][josephus:ant]\blank
+\cite[josephus:ant:thackery]\blank
+\cite[short][josephus:ant:thackery]\blank
+\cite[tacitus:ann]\blank
+\cite[short][tacitus:ann]\blank
+\cite[tacitus:ann:jackson]\blank
+\cite[short][tacitus:ann:jackson]\blank
+\subsubject{6.4.3 Papyri, Ostraca, and Epigraphica}
+\subsubsubject{6.4.3.1 Papyri and Ostraca in General}
+\cite[p.cair.zen.]\blank
+\cite[short][p.cair.zen.]\blank
+\cite[p.cair.zen.:hunt+edgar]\blank
+\cite[short][p.cair.zen.:hunt+edgar]\blank
+\subsubsubject{6.4.3.2 Epigraphica}
+\subsubsubject{6.4.3.3 Greek Magical Papyri}
+\cite[PGM]\blank
+\cite[PGM:betz]\blank
+\subsubject{6.4.4 Ancient Epistles and Homilies}
+\cite[heraclitus:epistle1]\blank
+\cite[short][heraclitus:epistle1]\blank
+\cite[heraclitus:epistle1:worley]\blank
+\cite[short][heraclitus:epistle1:worley]\blank
+\cite[entry][heraclitus:epistle1:worley]\blank
+\subsubject{6.4.5 ANF and NPNF, First and Second Series}
+\cite[clementinehomilies]\blank
+\cite[short][clementinehomilies]\blank
+\cite[augustine:letters]\blank
+\cite[short][augustine:letters]\blank
+\subsubject{6.4.6 J.-P. Migne's \italic{Patrologia Latina} and \italic{Patrologia Graeca}}
+\cite[gregory:orationestheologicae]\blank
+\cite[short][gregory:orationestheologicae]\blank
+\subsubject{6.4.7 Strack-Billerbeck, \italic{Kommentar zum Neuen Testament}}
+See the discussion of ἐκρατοῦντο in \cite[short][Str-B] 2:271.\blank
+\subsubject{6.4.8 \italic{Aufstieg und Niedergang der römischen Welt} (\italic{ANRW})}
+\cite[anderson:pepaideumenos]\blank
+\cite[short][anderson:pepaideumenos]\blank
+\cite[entry][anderson:pepaideumenos]\blank
+\subsubject{6.4.9 Bible Commentaries}
+\cite[hooker:1991]\blank
+\cite[short][hooker:1991]\blank
+\cite[entry][hooker:1991]\blank
+\subsubsubject{6.4.9.1 Articles and Notes in Study Bibles}
+\cite[petersen:2006]\blank
+\cite[short][petersen:2006]\blank
+\cite[entry][petersen:2006]\blank
+\subsubsubject{6.4.9.2 Single-Volume Commentaries on the Entire Bible}
+\cite[partain:1995]\blank
+\cite[short][partain:1995]\blank
+\cite[entry][partain:1995]\blank
+\subsubject{6.4.10 Multivolume Commentaries}
+\subsubsubject{6.4.10.1 Multivolume Commentaries on a Single Biblical Book by One Author}
+\cite[dahood:1965-1970]\blank
+\cite[short][dahood:1965-1970]\blank
+\cite[entry][dahood:1965-1970]\blank
+\cite[dahood:1965]\blank
+\cite[short][dahood:1965]\blank
+\cite[entry][dahood:1965]\blank
+\cite[dahood:1968]\blank
+\cite[short][dahood:1968]\blank
+\cite[entry][dahood:1968]\blank
+\subsubsubject{6.4.10.2 Multivolume Commentaries for the Entire Bible by Multiple Authors}
+\cite[miller:2001]\blank
+\cite[short][miller:2001]\blank
+\cite[entry][miller:2001]\blank
+\subsubject{6.4.11 SBL Seminar Papers}
+\cite[crenshaw:2001]\blank
+\cite[short][crenshaw:2001]\blank
+\cite[entry][crenshaw:2001]\blank
+\subsubject{6.4.12 A CD-ROM Reference (with a Corresponding Print Edition)}
+Books on CD-ROM should be cited according to the print edition. It is not necessary
+to indicate the medium in the citation.
+\subsubject{6.4.13 Text Editions Published Online with No Print Counterpart}
+\cite[wilhelm:2013]\blank
+\cite[short][wilhelm:2013]\blank
+\cite[entry][wilhelm:2013]\blank
+\subsubject{6.4.14 Online Database}
+\cite[cobb:figurines]\blank
+\cite[short][cobb:figurines]\blank
+\cite[entry][cobb:figurines]\blank
+\cite[caraher:2013]\blank
+\cite[short][caraher:2013]\blank
+\cite[entry][caraher:2013]\blank
+\subsubject{6.4.15 Websites and Blogs}
+\cite[100cuneiform]\blank
+\cite[short][100cuneiform]\blank
+\cite[entry][100cuneiform]\blank
+\cite[goodacre:2014]\blank
+\cite[short][goodacre:2014]\blank
+\cite[entry][goodacre:2014]\blank
 \page
 \startsubject[title=Bibliography]
 	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text

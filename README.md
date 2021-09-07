@@ -49,21 +49,27 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 
 6.4 Special Examples
 
-- [ ] 6.4.1 Texts from the Ancient Near East
-- [ ] 6.4.2 Loeb Classical Library (Greek and Latin)
-- [ ] 6.4.3 Papyri, Ostraca, and Epigraphica
-- [ ] 6.4.4 Ancient Epistles and Homilies
-- [ ] 6.4.5 ANF and NPNF, First and Second Series
-- [ ] 6.4.6 J.-P. Migne’s Patrologia Latina and Patrologia Graeca
-- [ ] 6.4.7 Strack-Billerbeck, Kommentar zum Neuen Testament
-- [ ] 6.4.8 Aufstieg und Niedergang der römischen Welt (ANRW)
-- [ ] 6.4.9 Bible Commentaries
-- [ ] 6.4.10 Multivolume Commentaries
-- [ ] 6.4.11 SBL Seminar Papers
-- [ ] 6.4.12 A CD-ROM Reference (with a Corresponding Print Edition)
-- [ ] 6.4.13 Text Editions Published Online with No Print Counterpart
-- [ ] 6.4.14 Online Database
-- [ ] 6.4.15 Websites and Blogs
+- [x] 6.4.1.1 Citing COS
+- [x] 6.4.1.2 Citing Other Texts
+- [x] 6.4.2 Loeb Classical Library (Greek and Latin)
+- [x] 6.4.3.1 Papyri and Ostraca in General
+- [x] 6.4.3.2 Epigraphica
+- [x] 6.4.3.3 Greek Magical Papyri
+- [x] 6.4.4 Ancient Epistles and Homilies
+- [x] 6.4.5 ANF and NPNF, First and Second Series
+- [x] 6.4.6 J.-P. Migne's Patrologia Latina and Patrologia Graeca
+- [x] 6.4.7 Strack-Billerbeck, Kommentar zum Neuen Testament
+- [x] 6.4.8 Aufstieg und Niedergang der römischen Welt (ANRW)
+- [x] 6.4.9 Bible Commentaries
+- [x] 6.4.9.1 Articles and Notes in Study Bibles
+- [x] 6.4.9.2 Single-Volume Commentaries on the Entire Bible
+- [x] 6.4.10.1 Multivolume Commentaries on a Single Biblical Book by One Author
+- [x] 6.4.10.2 Multivolume Commentaries for the Entire Bible by Multiple Authors
+- [x] 6.4.11 SBL Seminar Papers
+- [x] 6.4.12 A CD-ROM Reference (with a Corresponding Print Edition)
+- [x] 6.4.13 Text Editions Published Online with No Print Counterpart
+- [x] 6.4.14 Online Database
+- [x] 6.4.15 Websites and Blogs
 
 7 Other Examples
 
@@ -73,10 +79,8 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 
 ## To Do
 
-- [ ] Refactor code around xrefs and recursive citations, if possible
 - [ ] Introduce methods for parsing multiple publishers and multiple journal volumes and pages
-- [ ] Introduce helper methods for identifying (for the purpose of conditional formatting) and rendering dates of various forms that can be provided in the `date` field (e.g., YYYY and YYYY--YYYY can be printed as-is, but YYYY-MM-DD should be parsed as DD Month YYYY)
+- [ ] Introduce helper methods for identifying (for the purpose of conditional formatting) and rendering dates of various forms that can be provided in the `date` field (e.g., YYYY and YYYY--YYYY can be printed as-is, but YYYY-MM should be parsed as Month YYYY, and YYYY-MM-DD should be parsed as DD Month YYYY)
 - [ ] Add an authorconversion that prints the first of multiple authors in inverted order, but the rest in normal order
-- [ ] Combine helper methods for editors and translators and add handling for when the editor and translator are the same (the introduction should be "ed. and trans." or "Edited and translated by")
-- [ ] Add a cite alternative for short author-title citations, per the SBL guidelines reproduced at https://github.com/dcpurton/biblatex-sbl/blob/master/test/biblatex-sbl-examples.ref.txt
-- [ ] Add a final pass over the entry to move commas and periods that are after right quotes to positions before them, in accordance with American style?
+- [ ] Modify the `short` cite alternative to produce shorthand or author-title citations, per the SBL guidelines reproduced at https://github.com/dcpurton/biblatex-sbl/blob/master/test/biblatex-sbl-examples.ref.txt (it would probably be best to implement individual setups for this for each category)
+- [ ] Add a final pass over the entry to move commas and periods that are after right quotes to positions before them, in accordance with American style? (If we could also handle alternating parenthesis to bracket conversions in such a pass, then we wouldn't need a `paren` citation alternative.)
