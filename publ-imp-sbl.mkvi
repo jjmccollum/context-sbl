@@ -4410,7 +4410,7 @@
     \texdefinition{btx:sbl:short:title}
   }
   % If the type of this entry is "ANRW", then print the shorthand of the collection after the article title, followed by the volume and part and any cited page numbers
-  \doif {\btxflush{type}} {ANRW} {
+  \doifelse {\btxflush{type}} {ANRW} {
     \btxstartstyleandcolor[sbl:\s!list:title:book]
       \btxusecommand[sbl:\s!list:title:book]{
         {ANRW}%
@@ -4434,6 +4434,9 @@
     }
     \endgroup
     \btxcomma
+  } {
+    % Otherwise, just print the cited page number as-is
+    \texdefinition{btx:sbl:short:righttext}
   }
   \removeunwantedspaces
   \removepunctuation
