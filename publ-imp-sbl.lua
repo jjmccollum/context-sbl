@@ -88,7 +88,7 @@ local generic = {
 
 local categories = specification.categories
 
--- a book with an explicit publisher (§6.2)
+-- a single-volume book that is not a volume in a collection (§6.2)
 categories.book = {
     sets = {
         author = { "author", "editor" }, -- a book may have an editor instead of an author
@@ -108,7 +108,7 @@ categories.book = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "withauthor", "withauthortype",
-        "collectionxref", "volume", "part",
+        "collectionxref", "volume", "part", -- TODO: remove this from here (these should only be fields for @incollection)
         "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
@@ -197,6 +197,8 @@ categories.incollection = {
         "publisher",
     },
     optional = {
+        "title", -- optional for this category
+        "shorttitle", -- for short citations
         "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
@@ -212,7 +214,7 @@ categories.incollection = {
     },
 }
 
--- a multivolume collection with an editor
+-- a multivolume collection (§6.4.1)
 categories.collection = {
     sets = {
         author = { "editor" },
@@ -277,16 +279,13 @@ categories.mvbook = {
         "transxref",
         "eprint",
         "doi",
-        "type", -- (for exceptional cases that require special formatting, like "Str-B")
+        "type", -- (for exceptional cases that require special formatting, like "plainshorthand")
         "note",
     },
 }
 
 -- a multivolume encyclopedia or dictionary (§6.3.6.2)
 categories.mvreference = categories.mvbook
-
--- a multivolume collection (§6.4.1)
-categories.mvcollection = categories.mvbook
 
 -- a multivolume commentary (§6.4.10)
 categories.mvcommentary = categories.mvbook
@@ -404,7 +403,7 @@ categories.ancienttext = {
         "pages",
         "location", -- for artifact provenance, not publication
         "doi",
-        "type", -- (for exceptional cases that require special formatting, like "COS", "PGM", "inscription" or "chronicle")
+        "type", -- (for exceptional cases that require special formatting, like "PGM", "plaintitle" or "plainshorthand")
         "note",
     },
 }
