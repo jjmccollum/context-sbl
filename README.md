@@ -79,9 +79,10 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 
 ## To Do
 
+- [ ] The list entries are still a mess. First, the subcitations aren't keeping track of the `btxrootauthor` field, so author/editor names are being unnecessarily repeated. Second, some entries (e.g., those in the `@ancienttext` and `@inlexicon` categories, and some in the `@classictext` category) should not be added to the list when they are cited, but the books or collections containing them should be. Making these features work may require some tinkering with low-level methods in `publ-ini.mkiv`.
 - [ ] Introduce methods for parsing multiple publishers and multiple journal volumes and pages
 - [ ] Introduce helper methods for identifying (for the purpose of conditional formatting) and rendering dates of various forms that can be provided in the `date` field (e.g., YYYY and YYYY--YYYY can be printed as-is, but YYYY-MM should be parsed as Month YYYY, and YYYY-MM-DD should be parsed as DD Month YYYY)
-- [ ] Add an authorconversion that prints the first of multiple authors in inverted order, but the rest in normal order
-- [ ] Modify the `short` cite alternative to produce shorthand or author-title citations, per the SBL guidelines reproduced at https://github.com/dcpurton/biblatex-sbl/blob/master/test/biblatex-sbl-examples.ref.txt (it would probably be best to implement individual setups for this for each category)
-- [ ] Add a final pass over the entry to move commas and periods that are after right quotes to positions before them, in accordance with American style? (If we could also handle alternating parenthesis to bracket conversions in such a pass, then we wouldn't need a `paren` citation alternative.)
+- [ ] Implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
+- [ ] Add a final pass over the entry to move commas and periods after right quotes to positions before them, in accordance with American style?
+- [ ] Should introduce an `auto` cite alternative as the default; if a tag has not been encountered before, then use the `inline` setup, otherwise use the `short` setup.
 - [ ] Anytime a shorthand is cited for the first time, it should be added to the abbreviations list, with the printed abbreviation retaining its formatting (e.g., journal shorthands should be italicized, while series shorthands should not) and the `listsubcite` rendering assigned as the full form of the abbreviation (something like `\abbreviation[\btxflush{shorthand}]{\texdefinition{btx:sbl:cite:shorthand}}{\textcite[listsubcite][\btxflush{shorthand}]}` should work for this)

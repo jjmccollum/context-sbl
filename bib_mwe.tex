@@ -8,14 +8,29 @@
 \setupdelimitedtext[quotation:1][left={\symbol[leftquotation]},right={\symbol[rightquotation]}]
 \setupdelimitedtext[quotation:2][left={\symbol[leftquote]}, right={\symbol[rightquote]}]
 
-%Setup nested parenthesis handling 
+% Setup body font
+\definefontfeature[bibliography][default][onum=no,dlig=no]
+\definefontfeature[smallcaps][smcp=yes]
+\definefontfeature[superscript][sups=yes]
+%Use EB Garamond for English and Greek text
+\starttypescriptcollection[garamond]
+	\starttypescript [serif] [garamond]
+		\setups[font:fallback:serif]
+		\definefontsynonym [Serif]          [file:ebgaramond-regular]   [features=bibliography]
+		\definefontsynonym [SerifItalic]    [file:ebgaramond-italic]    [features=bibliography]
+		\definefontsynonym [SerifBold]      [file:ebgaramond-bold]      [features=bibliography]
+		\definefontsynonym [SerifBoldItalic][file:ebgaramond-bolditalic][features=bibliography]
+		\definefontsynonym [SerifCaps]      [Serif]                     [features=smallcaps]
+	\stoptypescript
+	
+	\starttypescript[garamond]
+		\definetypeface [garamond] [rm] [serif] [garamond] [default]
+	\stoptypescript
+\stoptypescriptcollection
 
+\setupbodyfont[garamond]
 
-\setupbodyfont[ebgaramond]
-\definefontfeature[f:bibliography][onum=no,dlig=no]
-\definefontfeature[f:superscript][sups=yes]
-\define[1]\textsuperscript{{\feature[+][f:superscript]#1}}
-\feature[+][f:bibliography]
+\define[1]\textsuperscript{{\feature[+][superscript]#1}}
 
 \starttext
 \title{6 Notes and Bibliographies}
@@ -138,7 +153,7 @@
 \subject{6.3 General Examples: Journal Articles, Reviews, and Dissertations}
 \subsubject{6.3.1 A Journal Article}
 \cite[leyerle:1993]\blank
-\cite[short][leyerle:1993]\blank
+\cite[alternative=short, righttext={161}][leyerle:1993]\blank
 \cite[entry][leyerle:1993]\blank
 \subsubject{6.3.2 A Journal Article with Multiple Page Locations and Volumes}
 \cite[wildberger:1965]\blank
@@ -148,78 +163,78 @@
 \cite[short][wellhausen:1876-1877]\blank
 \cite[entry][wellhausen:1876-1877]\blank
 \subsubject{6.3.3 A Journal Article Republished in a Collected Volume}
-\cite[freedman:1977]\blank
+\cite[righttext={20}][freedman:1977]\blank
 \cite[short][freedman:1977]\blank
 \cite[entry][freedman:1977]\blank
-\cite[freedman:1980]\blank
+\cite[alternative=short, righttext={14}][freedman:1980]\blank
 \cite[short][freedman:1980]\blank
 \cite[entry][freedman:1980]\blank
 \subsubject{6.3.4 A Book Review}
 \cite[teeple:1966]\blank
-\cite[short][teeple:1966]\blank
+\cite[alternative=short, righttext={369}][teeple:1966]\blank
 \cite[entry][teeple:1966]\blank
 \cite[pelikan:1992]\blank
 \cite[short][pelikan:1992]\blank
 \cite[entry][pelikan:1992]\blank
 \cite[petersen:1988]\blank
-\cite[short][petersen:1988]\blank
+\cite[alternative=short, righttext={8}][petersen:1988]\blank
 \cite[entry][petersen:1988]\blank
 \subsubject{6.3.5 An Unpublished Dissertation or Thesis}
-\cite[klosinski:1988]\blank
-\cite[short][klosinski:1988]\blank
+\cite[righttext={22--44}][klosinski:1988]\blank
+\cite[alternative=short, righttext={23}][klosinski:1988]\blank
 \cite[entry][klosinski:1988]\blank
 \subsubject{6.3.6 An Article in an Encyclopaedia or a Dictionary}
 \subsubsubject{6.3.6.1 An Article in a Multivolume Encyclopaedia or Dictionary}
 \cite[stendahl:1962]\blank
-\cite[short][stendahl:1962]\blank
+\cite[alternative=short, righttext={419}][stendahl:1962]\blank
 \cite[entry][stendahl:1962]\blank
 \subsubsubject{6.3.6.2 An Article in a Single-Volume Encyclopaedia or Dictionary}
 \cite[olson:2003]\blank
-\cite[short][olson:2003]\blank
+\cite[alternative=short, righttext={612}][olson:2003]\blank
 \cite[entry][olson:2003]\blank
 \subsubject{6.3.7 An Article in a Lexicon or Theological Dictionary}
 \cite[dahn:horao]\blank
-\cite[short][dahn:horao]\blank
+\cite[alternative=short, righttext={511}][dahn:horao]\blank
 \cite[dahn+liefeld:see+vision+eye]\blank
-\cite[short][dahn+liefeld:see+vision+eye]\blank
+\cite[alternative=short, righttext={511}][dahn+liefeld:see+vision+eye]\blank
 \cite[beyer:diakoneo]\blank
-\cite[short][beyer:diakoneo]\blank
+\cite[alternative=short, righttext={81}][beyer:diakoneo]\blank
 \cite[beyer:diakoneo+diakonia+ktl]\blank
-\cite[short][beyer:diakoneo+diakonia+ktl]\blank
+\cite[alternative=short, righttext={83}][beyer:diakoneo+diakonia+ktl]\blank
 \cite[spicq:amoibe]\blank
-\cite[short][spicq:amoibe]\blank
+\cite[alternative=short, righttext={95}][spicq:amoibe]\blank
 \cite[spicq:atakteo+ataktos+ataktos]\blank
-\cite[short][spicq:atakteo+ataktos+ataktos]\blank
+\cite[alternative=short, righttext={223}][spicq:atakteo+ataktos+ataktos]\blank
 \subsubject{6.3.8 A Paper Presented at a Professional Society}
-\cite[niditch:1994]\blank
-\cite[short][niditch:1994]\blank
+\cite[righttext={13--17}][niditch:1994]\blank
+\cite[alternative=short, righttext={14}][niditch:1994]\blank
 \cite[entry][niditch:1994]\blank
 \subsubject{6.3.9 An Article in a Magazine}
 \cite[saldarini:1998]\blank
-\cite[short][saldarini:1998]\blank
+\cite[alternative=short, righttext={28}][saldarini:1998]\blank
 \cite[entry][saldarini:1998]\blank
 \subsubject{6.3.10 An Electronic Journal Article}
 \cite[springer:2014]\blank
-\cite[short][springer:2014]\blank
+\cite[alternative=short, righttext={158}][springer:2014]\blank
 \cite[entry][springer:2014]\blank
 \cite[truehart:1996]\blank
-\cite[short][truehart:1996]\blank
+\cite[alternative=short, righttext={37}][truehart:1996]\blank
 \cite[entry][truehart:1996]\blank
 \cite[kirk:2007]\blank
-\cite[short][kirk:2007]\blank
+\cite[alternative=short, righttext={186}][kirk:2007]\blank
 \cite[entry][kirk:2007]\blank
 \subject{6.4 Special Examples}
 \subsubject{6.4.1 Texts from the Ancient Near East}
-\subsubsubject{6.4.1.1 Citing COS}
+\subsubsubject{6.4.1.1 Citing \emph{COS}}
 \cite[greathymnaten]\blank
 \cite[alternative=short, righttext={44--46}][greathymnaten]\blank
 \subsubsubject{6.4.1.2 Citing Other Texts}
 \cite[suppiluliumas]\blank
 \cite[alternative=short, righttext={319}][suppiluliumas]\blank
 \cite[erraandishum:dalley]\blank
-\cite[short][erraandishum:dalley]\blank
+\cite[alternative=short,righttext={282}][erraandishum:dalley]\blank
 \cite[erraandishum:foster]\blank
-\cite[alternative=short][erraandishum:foster]\blank
+\cite[alternative=short,righttext={771}][erraandishum:foster]\blank
 \cite[doomedprince]\blank
 \cite[alternative=short, righttext={200--203}][doomedprince]\blank
 \cite[lefttext={§3 \paren{A I 11--17}}, righttext={26}][disappearanceofsungod]\blank
@@ -228,43 +243,48 @@
 \cite[alternative=short, lefttext={\btxcomma obv. lines 10--17}, righttext={143--144}][ashurinscription]\blank
 \cite[esarhaddonchronicle]\blank
 \cite[alternative=short, lefttext={\btxcomma lines 3--4}, righttext={125}][esarhaddonchronicle]\blank
-\cite[short][ARM1]\blank
+\cite[alternative=short,righttext={1.3}][ARM1]\blank
 \cite[entry][ARM1]\blank
-\cite[short][ARMT1]\blank
+\cite[alternative=short, righttext={1.3}][ARMT1]\blank
 \cite[entry][ARMT1]\blank
 \subsubject{6.4.2 Loeb Classical Library (Greek and Latin)}
-\cite[josephus:ant]\blank
-\cite[short][josephus:ant]\blank
-\cite[josephus:ant:thackery]\blank
-\cite[short][josephus:ant:thackery]\blank
-\cite[tacitus:ann]\blank
-\cite[short][tacitus:ann]\blank
-\cite[tacitus:ann:jackson]\blank
-\cite[short][tacitus:ann:jackson]\blank
+\cite[lefttext={2.233--235}][josephus:ant]\blank
+\cite[alternative=short,lefttext={2.233--235}][josephus:ant]\blank
+\cite[lefttext={2.233--235}][josephus:ant:thackeray]\blank
+\cite[alternative=short,lefttext={2.233--235}][josephus:ant:thackeray]\blank
+\cite[lefttext={15.18--19}][tacitus:ann]\blank
+\cite[alternative=short,lefttext={15.18-19}][tacitus:ann]\blank
+\cite[lefttext={15.18--19}][tacitus:ann:jackson]\blank
+\cite[alternative=short,lefttext={15.18--19}][tacitus:ann:jackson]\blank
+\cite[josephus:ant1-19]\blank
+\cite[alternative=short][josephus:ant1-19]\blank
+\cite[entry][josephus:ant1-19]\blank
 \subsubject{6.4.3 Papyri, Ostraca, and Epigraphica}
 \subsubsubject{6.4.3.1 Papyri and Ostraca in General}
-\cite[p.cair.zen.]\blank
-\cite[short][p.cair.zen.]\blank
-\cite[p.cair.zen.:hunt+edgar]\blank
-\cite[short][p.cair.zen.:hunt+edgar]\blank
+\cite[lefttext={59003}][p.cair.zen.]\blank
+\cite[alternative=short,lefttext={59003}][p.cair.zen.]\blank
+\cite[lefttext={59003},righttext={1:96}][p.cair.zen.:hunt+edgar]\blank
+\cite[alternative=short,lefttext={59003},righttext={§31}][p.cair.zen.:hunt+edgar]\blank
 \subsubsubject{6.4.3.2 Epigraphica}
 \subsubsubject{6.4.3.3 Greek Magical Papyri}
-\cite[PGM]\blank
-\cite[PGM:betz]\blank
+\cite[lefttext={III. 1--164}][PGM]\blank
+\cite[lefttext={III. 1--164}][PGM:betz]\blank
 \subsubject{6.4.4 Ancient Epistles and Homilies}
-\cite[heraclitus:epistle1]\blank
-\cite[short][heraclitus:epistle1]\blank
-\cite[heraclitus:epistle1:worley]\blank
-\cite[short][heraclitus:epistle1:worley]\blank
+\cite[lefttext={\btxcomma10}][heraclitus:epistle1]\blank
+\cite[alternative=short,lefttext={\btxcomma10}][heraclitus:epistle1]\blank
+\cite[lefttext={\btxcomma10}][heraclitus:epistle1:worley]\blank
+\cite[alternative=short,lefttext={\btxcomma10}][heraclitus:epistle1:worley]\blank
 \cite[entry][heraclitus:epistle1:worley]\blank
 \subsubject{6.4.5 ANF and NPNF, First and Second Series}
-\cite[clementinehomilies]\blank
-\cite[short][clementinehomilies]\blank
-\cite[augustine:letters]\blank
-\cite[short][augustine:letters]\blank
+\cite[lefttext={1.3},righttext={8:223}][clementinehomilies]\blank
+\cite[alternative=short,lefttext={1.3},righttext={8:223}][clementinehomilies]\blank
+\cite[entry][clementinehomilies]\blank
+\cite[lefttext={28.3.5},righttext={252}][augustine:letters]\blank
+\cite[alternative=short,lefttext={28.3.5},righttext={252}][augustine:letters]\blank
+\cite[entry][augustine:letters]\blank
 \subsubject{6.4.6 J.-P. Migne's \italic{Patrologia Latina} and \italic{Patrologia Graeca}}
-\cite[gregory:orationestheologicae]\blank
-\cite[short][gregory:orationestheologicae]\blank
+\cite[lefttext={4},righttext={12c}][gregory:orationestheologicae]\blank
+\cite[alternative=short,lefttext={4},righttext={12c}][gregory:orationestheologicae]\blank
 \subsubject{6.4.7 Strack-Billerbeck, \italic{Kommentar zum Neuen Testament}}
 See the discussion of ἐκρατοῦντο in \cite[short][Str-B] 2:271.\blank
 \subsubject{6.4.8 \italic{Aufstieg und Niedergang der römischen Welt} (\italic{ANRW})}
@@ -272,31 +292,31 @@ See the discussion of ἐκρατοῦντο in \cite[short][Str-B] 2:271.\blank
 \cite[alternative=short, righttext={86}][anderson:pepaideumenos]\blank
 \cite[entry][anderson:pepaideumenos]\blank
 \subsubject{6.4.9 Bible Commentaries}
-\cite[hooker:1991]\blank
+\cite[righttext={223}][hooker:1991]\blank
 \cite[short][hooker:1991]\blank
 \cite[entry][hooker:1991]\blank
 \subsubsubject{6.4.9.1 Articles and Notes in Study Bibles}
-\cite[petersen:2006]\blank
-\cite[short][petersen:2006]\blank
+\cite[righttext={1096}][petersen:2006]\blank
+\cite[alternative=short,righttext={1096}][petersen:2006]\blank
 \cite[entry][petersen:2006]\blank
 \subsubsubject{6.4.9.2 Single-Volume Commentaries on the Entire Bible}
 \cite[partain:1995]\blank
-\cite[short][partain:1995]\blank
+\cite[alternative=short,righttext={175}][partain:1995]\blank
 \cite[entry][partain:1995]\blank
 \subsubject{6.4.10 Multivolume Commentaries}
 \subsubsubject{6.4.10.1 Multivolume Commentaries on a Single Biblical Book by One Author}
-\cite[dahood:1965-1970]\blank
-\cite[short][dahood:1965-1970]\blank
+\cite[righttext={3:127}][dahood:1965-1970]\blank
+\cite[alternative=short,righttext={2:121}][dahood:1965-1970]\blank
 \cite[entry][dahood:1965-1970]\blank
-\cite[dahood:1965]\blank
-\cite[short][dahood:1965]\blank
+\cite[righttext={44}][dahood:1965]\blank
+\cite[alternative=short,righttext={78}][dahood:1965]\blank
 \cite[entry][dahood:1965]\blank
-\cite[dahood:1968]\blank
+\cite[righttext={374}][dahood:1968]\blank
 \cite[short][dahood:1968]\blank
 \cite[entry][dahood:1968]\blank
 \subsubsubject{6.4.10.2 Multivolume Commentaries for the Entire Bible by Multiple Authors}
 \cite[miller:2001]\blank
-\cite[short][miller:2001]\blank
+\cite[alternative=short,righttext={577}][miller:2001]\blank
 \cite[entry][miller:2001]\blank
 \subsubject{6.4.11 SBL Seminar Papers}
 \cite[crenshaw:2001]\blank
@@ -325,19 +345,19 @@ to indicate the medium in the citation.
 \cite[entry][goodacre:2014]\blank
 \title{7 Other Examples}
 \subject{7.1 BDAG, BDB, BDF}
-\cite[BDAG]\blank
+\cite[righttext={35}][BDAG]\blank
 \cite[entry][BDAG]\blank
-\cite[BDB]\blank
+\cite[righttext={432}][BDB]\blank
 \cite[entry][BDB]\blank
-\cite[BDF]\blank
+\cite[righttext={§441}][BDF]\blank
 \cite[entry][BDF]\blank
 \subject{7.2 HALOT, TLOT}
-\cite[HALOT]\blank
+\cite[righttext={2:223}][HALOT]\blank
 \cite[entry][HALOT]\blank
-\cite[TLOT]\blank
+\cite[righttext={1:24}][TLOT]\blank
 \cite[entry][TLOT]\blank
 \subject{7.3 SBLHS}
-\cite[SBLHS]\blank
+\cite[righttext={§6.2.1}][SBLHS]\blank
 \cite[entry][SBLHS]\blank
 \page
 
@@ -345,139 +365,3 @@ to indicate the medium in the citation.
 	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text
 \stopsubject
 \stoptext
-
-%\startbuffer[example]
-%	@book{scott+etal:1993,
-%		author = {Scott, Bernard Brandon and Dean, Margaret and Sparks, Kristen and LaZar, Frances},
-%		title = {Reading New Testament Greek},
-%		location = {Peabody, MA},
-%		publisher = {Hendrickson},
-%		date = {1993}
-%	}
-%\stopbuffer
-%\usebtxdataset[example.buffer]
-%\startbtxrenderingdefinitions[mystyle]
-%	\definebtx
-%		[mystyle]
-%		[\c!default=default,
-% 		\c!specification=mystyle,
-% 		\c!otherstext={\btxspace\btxlabeltext{others}},
-%		\c!monthconversion=\v!month,
-%		\c!stopper:initials={. }, % with a (breakable) space
-%		\c!separator:names:2={\btxcomma}, % between subsequent names except for last 2
-%		\c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % between last 2 names if > 2
-%		\c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % between only 2 names
-%
-%	\definebtxrendering
-%		[mystyle]
-%		[\c!specification=mystyle,
-%		\c!sorttype=authoryear, % by default, sort bibliographic entries by (author, year)
-%		\c!numbering=\v!no] % by default, do not number bibliographic entries
-%
-%	% Print the bibliographic list as a paragraph, 
-%	% with normal alignment settings (justified and with hyphenation)
-%	\setupbtxlist
-%		[mystyle]
-%		[\c!alternative=\v!paragraph,
-% 		\c!align={normal,verytolerant,stretch},
-%		\c!margin=3.5\emwidth]
-%
-%	% List entry settings
-%	\definebtx
-%		[mystyle:list]
-%		[mystyle]
-%		[\c!etallimit=, % print all names
-%		\c!etaldisplay=, % print all names
-%		\c!authorconversion=normal] % for most names (like editors, translators, etc.), normal order is fine
-%		
-%	\definebtx
-%		[mystyle:list:author]
-%		[mystyle:list]
-%		[\c!authorconversion=inverted] % TODO: need to print just the first name inverted, with all subsequent names in normal order
-%		
-%	% Citation settings
-%	\definebtx
-%		[mystyle:cite]
-%		[mystyle]
-%		[\c!alternative=entry, % by default, cite the entire entry
-% 		\c!otherstext={\btxspace\btxlabeltext{others}}, % use ``et al.'' for truncated author / editor list
-%   		\c!etallimit=3, % don't use et al. for 3 or fewer authors
-%   		\c!etaldisplay=1, % print et al. after the first author if more than 3
-%   		\c!authorconversion=\v!normal, % by default, use normal name order for in-text citations
-%   		\c!sorttype=normal, % \v!normal ?
-%   		\c!style=, % do not apply any styles across the whole citation
-%   		\c!compress=\v!yes] % note that cite sorts only work with compress=yes.
-%   		
-%	% Define default settings for citations in the text
-%	\definebtx
-%		[mystyle:cite:entry]
-%		[mystyle:cite]
-%		[\c!left=, % by default, do not typeset anything to the left of the citation
-%		\c!right=, % by default, do not typeset anything to the right of the citation
-%		\c!otherstext={\btxspace\btxlabeltext{others}}, % use et al. for truncated author / editor list
-%   		\c!etallimit=3, % don't use et al. for 3 or fewer authors
-%   		\c!etaldisplay=1, % print et al. after the first author if more than 3
-%		\c!separator:2={\btxsemicolon}, % between subsequent citations except for last 2
-%		\c!separator:3={\btxsemicolon\btxlabeltext{and}\space}, % between last 2 citations if > 2
-%		\c!separator:4={\btxspace\btxlabeltext{and}\space}] % between only 2 citations
-%	
-%	% Common helper functions for list and cite
-%	\starttexdefinition btx:mystyle:author
-%		\btxdoif {author} {
-%			\doifelse {\currentbtxcitealternative} {entry} {
-%				\currentbtxciteauthorbyfield % why doesn't this get rendered according to mystyle:cite:entry?
-%				\btxcomma
-%			} {
-%				\btxflush{author} % this is correctly rendered according to mystyle:list
-%				% If the name ends with a period (as is the case for an initial), 
-%	      			% then remove the preceding period before adding another one
-%	      			\removeunwantedspaces
-%	      			\removepunctuation
-%				\btxperiod
-%			}
-%		}
-%	\stoptexdefinition
-%	
-%	\starttexdefinition btx:mystyle:title
-%		\btxdoif {title} {
-%			\btxflush{title}
-%			% More conditional formatting
-%			\doifelse {\currentbtxcitealternative} {entry} {
-%				\btxcomma
-%			} {
-%				\btxperiod
-%			}
-%		}
-%	\stoptexdefinition
-%	
-%	% Minimal setup for a book entry
-%	\startsetups btx:mystyle:list:book
-%		\texdefinition{btx:mystyle:author}
-%		\texdefinition{btx:mystyle:title}
-%	  	\removeunwantedspaces
-%	  	\removepunctuation
-%	  	\btxperiod
-%	\stopsetups
-%	
-%	% Long-form in-text citation setup
-%	\startsetups btx:mystyle:cite:entry
-%		\begingroup
-%		\edef\currentbtxcategory{\btxfield{category}}
-%		\fastsetup{btx:mystyle:list:\currentbtxcategory}
-%		% Using the helper functions directly also doesn't work...
-%%		\texdefinition{btx:mystyle:author}
-%%		\texdefinition{btx:mystyle:title}
-%		\endgroup
-%		% Remove the punctuation left at the end of the citation
-%		\removeunwantedspaces
-%		\removepunctuation
-%	\stopsetups
-%\stopbtxrenderingdefinitions
-%\usebtxdefinitions[mystyle]
-%\starttext
-%\cite[scott+etal:1993]
-%\page
-%\startsection[title=Bibliography]
-%	\placelistofpublications
-%\stopsection
-%\stoptext
