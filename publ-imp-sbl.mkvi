@@ -408,14 +408,10 @@
    \c!style=\v!em]
 
 \definebtx
-  [sbl:\s!cite:journal] % when specified within an article entry
-  [sbl:\s!cite:title]
-
-[sbl:\s!cite:title:journal]
+  [sbl:\s!cite:title:journal]
   [sbl:\s!cite:title]
 
 % Exceptional cases; these titles are only in quotations, not italicized
-% TODO: but how to place separators inside quotations (American style) rather than outside?
 \definebtx
   [sbl:\s!cite:title:article]
   [sbl:\s!cite:title]
@@ -644,6 +640,52 @@
 \setupdelimitedtext[paren:2][left={[}, right={]}]
 \setupdelimitedtext[paren:3][left={(},right={)}]
 \setupdelimitedtext[paren:4][left={[}, right={]}]
+
+% Define a macro for converting dates in "YYYY-MM-DD" format to "DD Month YYYY" format
+% Define a macro for converting dates in "YYYY-MM-DD" format to "DD Month YYYY" format
+\startluacode
+  sblhelpers = sblhelpers or {}
+
+  function sblhelpers.countdatecomponents(str)
+    -- if the date is a range of years, then return 1
+    if string.count(str, "%-%-") > 0 then
+      context(1)
+      return
+    end
+    context(string.count(str, "-") + 1)
+  end
+	
+  function sblhelpers.convertdate(str)
+    -- if the date is a range of years, then return it as-is
+    if string.count(str, "%-%-") > 0 then
+      context(str)
+      return
+    end
+    -- if the date contains the substring "and", then return it as-is
+    if string.count(str, "and") > 0 then
+      context(str)
+      return
+    end
+    local components = string.split(str, "-")
+    local n = string.count(str, "%-") + 1
+    if n == 1 then
+      context.date({y = components[1]}, {"year"})
+      return
+    end
+    if n == 2 then
+      context.date({y = components[1], m = components[2]}, {"month,year"})
+      return
+    end
+    if n == 3 then
+      context.date({y = components[1], m = components[2], d = components[3]}, {"dd,month,year"})
+      return
+    else
+      context(str)
+    end
+  end
+\stopluacode
+\def\countdatecomponents#1{\ctxlua{sblhelpers.countdatecomponents([==[#1]==])}}
+\def\convertdate#1{\ctxlua{sblhelpers.convertdate([==[#1]==])}}
 
 % Define some helper functions for subcitations
 \let\btxroottag\empty% the tag of the initially cited entry
@@ -2612,16 +2654,22 @@
       }
     }
     % Print the date
-    % TODO: If date is in "YYYY-MM-DD" format, 
-    % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
+    % If date is in "YYYY-MM-DD" format, 
+    % then it should be printed in "DD Month YYYY" format without parentheses and both preceded and followed by a comma;
     % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
     \btxdoif {date} {
-      \btxspace
-      \startparen
-      \btxflush{date}
-      \stopparen
+      \doifelse {\countdatecomponents{\btxflush{date}}} {3} {
+        \btxcomma
+        \convertdate{\btxflush{date}}
+        \btxcomma
+      } {
+        \btxspace
+        \startparen
+        \convertdate{\btxflush{date}}
+        \stopparen
+        \btxcolon
+      }
     }
-    \btxcolon
     % Print the page numbers
     \btxdoif {pages} {
       \btxflush{pages}
@@ -2661,16 +2709,22 @@
       }
     }
     % Print the date
-    % TODO: If date is in "YYYY-MM-DD" format, 
+    % If date is in "YYYY-MM-DD" format, 
     % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
     % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
     \btxdoif {date} {
-      \btxspace
-      \startparen
-      \btxflush{date}
-      \stopparen
+      \doifelse {\countdatecomponents{\btxflush{date}}} {3} {
+        \btxcomma
+        \convertdate{\btxflush{date}}
+        \btxcomma
+      } {
+        \btxspace
+        \startparen
+        \convertdate{\btxflush{date}}
+        \stopparen
+        \btxcolon
+      }
     }
-    \btxcolon
     % Print the page numbers
     \btxdoif {pages} {
       \btxflush{pages}
@@ -2894,11 +2948,9 @@
       \btxflush{location}
       \btxcomma
     }
-    % Is there an event date?
-    % TODO: If date is in "YYYY-MM-DD" format, 
-    % then it should be printed in "DD Month YYYY" format
+    % Print the event date (formatted appropriately)
     \btxdoif {date} {
-      \btxflush{date} % 
+      \convertdate{\btxflush{date}}
       \btxcomma
     }
     % Close the block
@@ -2925,11 +2977,9 @@
       \btxflush{location}
       \btxcomma
     }
-    % Is there an event date?
-    % TODO: If date is in "YYYY-MM-DD" format, 
-    % then it should be printed in "DD Month YYYY" format
+    % Print the event date (formatted appropriately)
     \btxdoif {date} {
-      \btxflush{date} % 
+      \convertdate{\btxflush{date}}
       \btxcomma
     }
     % Close the block
@@ -3030,11 +3080,11 @@
     % Does it have an eprintclass?
     \btxdoifelse {eprintclass} {
       % If so, then this is a document published only online
-      % Print the release date first, if there is one:
+      % Print the release date (formated appropriately) first, if there is one:
       \btxdoif {eprintdate} {
         \btxlabeltext{sbl:Released}
         \btxspace
-        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \convertdate{\btxflush{eprintdate}}
         \btxperiod
       }
       % If it has an eprinttype, then produce a DOI using it
@@ -3062,11 +3112,11 @@
         \btxflush{eprinttype}
         \btxperiod
       }
-      % Print the release date next, if there is one:
+      % Print the release date (formated appropriately) first, if there is one:
       \btxdoif {eprintdate} {
         \btxlabeltext{sbl:Released}
         \btxspace
-        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \convertdate{\btxflush{eprintdate}}
         \btxperiod
       }
       % Then print the eprint identifier
@@ -3099,9 +3149,9 @@
       }
       \btxperiod
     }
-    % Then print the date of the post, if specified
+    % Then print the date of the post (with appropriate formatting), if specified
     \btxdoif {date} {
-      \btxflush{date} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+      \convertdate{\btxflush{date}}
       \btxperiod
     }
     % Then print the URL, if specified
@@ -3118,11 +3168,11 @@
     % Does it have an eprintclass?
     \btxdoifelse {eprintclass} {
       % If so, then this is a document published only online
-      % Print the release date first, if there is one:
+      % Print the release date (with appropriate formatting) first, if there is one:
       \btxdoif {eprintdate} {
         \btxlabeltext{sbl:released}
         \btxspace
-        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \convertdate{\btxflush{eprintdate}}
         \btxcomma
       }
       % If it has an eprinttype, then produce a DOI using it
@@ -3150,11 +3200,11 @@
         \btxflush{eprinttype}
         \btxcomma
       }
-      % Print the release date next, if there is one:
+      % Print the release date (with appropriate formatting) next, if there is one:
       \btxdoif {eprintdate} {
         \btxlabeltext{sbl:released}
         \btxspace
-        \btxflush{eprintdate} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+        \convertdate{\btxflush{eprintdate}}
         \btxcomma
       }
       % Then print the eprint identifier
@@ -3187,9 +3237,9 @@
       }
       \btxcomma
     }
-    % Then print the date of the post, if specified
+    % Then print the date of the post (with appropriate formatting), if specified
     \btxdoif {date} {
-      \btxflush{date} % TODO: convert "YYYY-MM-DD" input to "DD Month YYYY" format
+      \convertdate{\btxflush{date}}
       \btxcomma
     }
     % Then print the URL, if specified
