@@ -148,7 +148,3 @@ The `publ-imp-sbl-test.bib` file contains BibTeX entries for these examples, and
 - [ ] If possible, add a final pass over the entry to move commas and periods after right quotes to positions before them, in accordance with American style
 - [ ] Introduce an `auto` cite alternative as the default; if a tag has not been encountered before, then use the `inline` setup, otherwise use the `short` setup.
 - [ ] Anytime a shorthand is cited for the first time, it should be added to the abbreviations list, with the printed abbreviation retaining its formatting (e.g., journal shorthands should be italicized, while series shorthands should not) and the `listsubcite` rendering assigned as the full form of the abbreviation (something like `\abbreviation[\btxflush{shorthand}]{\texdefinition{btx:sbl:cite:shorthand}}{\textcite[listsubcite][\btxflush{shorthand}]}` should work for this). This may also necessitate handling certain examples (e.g., _PGM_) differently, as no two entries should have the same shorthand.
-
-## Copyright
-
-This module is part of the ConTeXt macro-package and is therefore copyrighted by PRAGMA.

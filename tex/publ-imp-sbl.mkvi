@@ -592,7 +592,7 @@
    sbl:editors={eds.},
    sbl:Page={Page},
    sbl:Pages={Pages},
-   sbl:esp={esp.},
+   sbl:here={here},
    sbl:edited={edited},
    sbl:Edited={Edited},
    sbl:translator={trans.},
@@ -644,36 +644,150 @@
 \startluacode
   sblhelpers = sblhelpers or {}
 
-  function sblhelpers.ordinal(str)
-    if string.sub(str, -2, -1) == "11" or string.sub(str, -2, -1) == "12" or string.sub(str, -2, -1) == "13" then
-      context("%sth", str)
+  function sblhelpers.doifprefix(prefix, str, ifyes)
+    -- if the given string is a prefix of the given string, then print the "ifyes" argument
+    if string.sub(str, 1, string.len(prefix)) == prefix then
+      context(ifyes)
+    end
+  end
+
+  function sblhelpers.doifprefixelse(prefix, str, ifyes, ifno)
+    -- if the given string is a prefix of the given string, then print the ifyes argument; otherwise, print the ifno argument
+    -- this is useful for conditional formatting when a righttext is a section reference (and thus any preceding comma should be removed)
+    if string.sub(str, 1, string.len(prefix)) == prefix then
+      context(ifyes)
+    else
+      context(ifno)
+    end
+  end
+
+  function sblhelpers.doifpagerange(str, ifyes)
+    -- if the given string is a page range, then print the ifyes argument
+    if string.match(str, "((%d+%.)*%d+:)*%d+%-%-%d+") then
+      context(ifyes)
+    end
+  end
+
+  function sblhelpers.doifpagerangeelse(str, ifyes, ifno)
+    -- if the given string is a page range, then print the ifyes argument; otherwise, print the ifno argument
+    if string.match(str, "((%d+%.)*%d+:)*%d+%-%-%d+") then
+      context(ifyes)
+    else
+      context(ifno)
+    end
+  end
+
+  function sblhelpers.ordinal(num)
+    if string.sub(num, -2, -1) == "11" or string.sub(num, -2, -1) == "12" or string.sub(num, -2, -1) == "13" then
+      context("%sth", num)
       return
     end
-    if string.sub(str, -1, -1) == "1" then
-      context("%sst", str)
+    if string.sub(num, -1, -1) == "1" then
+      context("%sst", num)
       return
     end
-    if string.sub(str, -1, -1) == "2" then
-      context("%snd", str)
+    if string.sub(num, -1, -1) == "2" then
+      context("%snd", num)
       return
     end
-    if string.sub(str, -1, -1) == "3" then
-      context("%srd", str)
+    if string.sub(num, -1, -1) == "3" then
+      context("%srd", num)
       return
     else
-      context("%sth", str)
+      context("%sth", num)
       return
     end
   end
-	
-  function sblhelpers.convertdate(str)
-    -- if the date is a range of years, then return it as-is
-    if string.count(str, "%-%-") > 0 then
-      context(str)
+
+  function sblhelpers.truncatepagerange(pages)
+    -- if this is not a page range, then print it as-is
+    if string.count(pages, "%-%-") == 0 then
+      context(pages)
       return
     end
-    local components = string.split(str, "-")
-    local n = string.count(str, "%-") + 1
+    -- if the page range is prefixed with volume and part numbers, followed by a colon 
+    -- then recursively process the actual page range 
+    -- and add the prefix back when we're done
+    if string.count(pages, ":") > 0 then
+      local volume_prefix = string.split(pages, ":")[1]
+      local pages_in_volume = string.split(pages, ":")[2]
+      context("%s:", volume_prefix)
+      sblhelpers.truncatepagerange(pages_in_volume)
+      return
+    end
+    -- if this is a disjoint set of page ranges separated by the substring ", ",
+    -- then recursively convert each one
+    local sep = ", "
+    local page_ranges = string.split(pages, sep)
+    if #page_ranges > 1 then
+      for i=1,#page_ranges do
+        sblhelpers.truncatepagerange(page_ranges[i])
+        if i < #page_ranges then
+          context(sep)
+        end
+      end
+      return
+    end
+    -- if this is a single page range, then truncate according to Chicago/SBL's horrendous rules
+    -- (§4.2.3)
+    local start_page = string.split(pages, "--")[1]
+    local end_page = string.split(pages, "--")[2]
+    -- if either page number is not an Arabic numeral (e.g., Roman numerals),
+    -- then print the range as-is
+    if not tonumber(start_page) or not tonumber(end_page) then
+      context(pages)
+      return
+    end
+    -- otherwise, if the second page number is smaller than the first page number, then print the range as-is 
+    -- (this shouldn't happen unless users are already applying this rule)
+    if tonumber(end_page) < tonumber(start_page) then
+      context(pages)
+      return
+    end
+    -- otherwise, if the second page number is equal to the first page number, then the "range" is just a single page;
+    -- print just the first page number
+    if tonumber(end_page) == tonumber(start_page) then
+      context(start_page)
+      return
+    end
+    -- otherwise, if the second page number has more digits than the first page number, then print the range as-is
+    if string.len(end_page) > string.len(start_page) then
+      context(pages)
+      return
+    end
+    -- otherwise, if both numbers are fewer than three digits, then print the range as-is
+    if string.len(start_page) < 3 then
+      context(pages)
+      return
+    end
+    -- otherwise, if the first page number ends in 0, then print the range as-is
+    if string.sub(start_page, -1, -1) == "0" then
+      context(pages)
+      return
+    end
+    -- otherwise, if both page numbers end in 01-09, then only use the last digit of the end page in the range
+    if tonumber(string.sub(start_page, -2, -1)) < 10 and tonumber(string.sub(end_page, -2, -1)) < 10 then
+      context("%s--%s", start_page, string.sub(end_page, -1, -1))
+      return
+    end
+    -- otherwise, find the first digit at which the two numbers differ 
+    -- and only use the suffix starting from that position of the end page in the range
+    local index = 1
+    while string.sub(start_page, 1, index) == string.sub(end_page, 1, index) do
+      index = index + 1
+    end
+    context("%s--%s", start_page, string.sub(end_page, index, -1))
+    return
+  end
+	
+  function sblhelpers.convertdate(date)
+    -- if the date is a range of years, then return it as-is
+    if string.count(date, "%-%-") > 0 then
+      context(date)
+      return
+    end
+    local components = string.split(date, "-")
+    local n = string.count(date, "%-") + 1
     if n == 1 then
       context.date({y = components[1]}, {"year"})
       return
@@ -686,7 +800,7 @@
       context.date({y = components[1], m = components[2], d = components[3]}, {"d,month,year"})
       return
     else
-      context(str)
+      context(date)
     end
   end
 
@@ -752,7 +866,7 @@
         context("): ")
       end
       if pages[i] and pages[i] ~= "" then
-        context("%s", pages[i])
+        sblhelpers.truncatepagerange(pages[i])
       end
       if i < #volumes then
         context("; ")
@@ -760,7 +874,12 @@
     end
   end
 \stopluacode
+\def\doifprefix#1#2#3{\ctxlua{sblhelpers.doifprefix([==[#1]==],[==[#2]==],[==[#3]==])}}%
+\def\doifprefixelse#1#2#3#4{\ctxlua{sblhelpers.doifprefixelse([==[#1]==],[==[#2]==],[==[#3]==],[==[#4]==])}}%
+\def\doifpagerange#1#2{\ctxlua{sblhelpers.doifpagerange([==[#1]==],[==[#2]==])}}%
+\def\doifpagerangeelse#1#2#3{\ctxlua{sblhelpers.doifpagerangeelse([==[#1]==],[==[#2]==],[==[#3]==])}}%
 \def\ordinal#1{\ctxlua{sblhelpers.ordinal([==[#1]==])}}%
+\def\truncatepagerange#1{\ctxlua{sblhelpers.truncatepagerange([==[#1]==])}}%
 \def\convertdate#1{\ctxlua{sblhelpers.convertdate([==[#1]==])}}%
 \def\serializelocationpublisher#1#2{\ctxlua{sblhelpers.serializelocationpublisher([==[#1]==],[==[#2]==])}}%
 \def\serializevolumenumberdatepage#1#2#3#4{\ctxlua{sblhelpers.serializevolumenumberdatepage([==[#1]==],[==[#2]==],[==[#3]==],[==[#4]==])}}%
@@ -1725,7 +1844,13 @@
         \btxlabeltext{sbl:Pages}
       }
       \btxspace
-      \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
+      % If this entry has a part number, then prefix the page range with it
+      \btxdoif {part} {
+        \btxflush{part}
+        \btxcolon
+        \removeunwantedspaces
+      }
+      \truncatepagerange{\btxflush{pages}}
       \btxspace
       \btxlabeltext{sbl:in}
     } {
@@ -1754,15 +1879,30 @@
       \let\btxparenttag\currentbtxtag%
       \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
       \btxcomma
-      % If the volume does not have a title, then prefix the page range with its volume (and part) number
-      \clf_btxdoifnot{\currentbtxdataset}{\bookxreftag}{title} {
-        \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
-        \removeunwantedspaces
-        \removepunctuation
-        \btxcolon
-        \removeunwantedspaces
+      % Print page numbers here, if there are any
+      \btxdoif {pages} {
+        % If the volume does not have a title, then prefix the page range with its volume (and part) number
+        \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{title} {
+          % If this entry has a part number, then prefix the page range with it
+          \btxdoif {part} {
+            \btxflush{part}
+            \btxcolon
+            \removeunwantedspaces
+          }
+        } {
+          \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+          % If this entry has a part number, then prefix the page range with it
+          \btxdoif {part} {
+            \btxperiod
+            \removeunwantedspaces
+            \btxflush{part}
+          }
+          \btxcolon
+          \removeunwantedspaces
+        }
+        \truncatepagerange{\btxflush{pages}}
+        \btxcomma
       }
-      \btxflush{pages}
     } {
       % Precede the subcited source with "in", unless it is of type "inlineshort"
       \doifnot{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}}{inlineshort} {
@@ -1772,9 +1912,18 @@
       \let\btxparenttag\currentbtxtag%
       \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
       \btxcomma
-      \btxflush{pages}
+      % Print page numbers here, if there are any
+      \btxdoif {pages} {
+        % If this entry has a part number, then prefix the page range with it
+        \btxdoif {part} {
+          \btxflush{part}
+          \btxcolon
+          \removeunwantedspaces
+        }
+        \truncatepagerange{\btxflush{pages}}
+        \btxcomma
+      }
     }
-    \btxcomma
     \endgroup
   }
 \stoptexdefinition
@@ -1968,7 +2117,7 @@
       \btxcolon
       \let\btxparenttag\currentbtxtag%
       \removeunwantedspaces
-      \btxflush{pages}
+      \truncatepagerange{\btxflush{pages}}
     } {
       \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
         \let\btxparenttag\currentbtxtag%
@@ -1981,7 +2130,7 @@
         \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
         \btxcomma
       }
-      \btxflush{pages}
+      \truncatepagerange{\btxflush{pages}}
     }
     \btxcomma
     \endgroup
@@ -2005,6 +2154,82 @@
         } {
           \let\btxparenttag\currentbtxtag%
           \textcite[alternative=title,lefttext=,righttext=][\bookxreftag]
+          \btxcomma
+        }
+        \let\btxparenttag\currentbtxtag%
+        \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+        \btxcolon
+        \removeunwantedspaces
+      }
+      \texdefinition{btx:sbl:short:righttext}
+    }
+    \btxcomma
+    \endgroup
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:cite:inlexiconbookxref
+  \btxdoif{bookxref} {
+    \begingroup
+    % For lexicons, if the book or collection containing this entry has a shorthand, then use it, even in inline citations;
+    % if the book or collection does not have a shorthand, then use a full subcitation preceded by "in"
+    % In addition, since the lexicon entry itself is not added to the list, add the book or collection to the list instead
+    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
+    \doifelse{\btxfoundname{bookxref}}{incollectionxref} {
+      \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}%
+      \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+        \let\btxparenttag\currentbtxtag%
+        \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
+        \btxspace
+      } {
+        \btxlabeltext{sbl:in}
+        \btxspace
+        \let\btxparenttag\currentbtxtag%
+        \cite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
+        \btxcomma
+      }
+      \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+      \btxcolon
+      \let\btxparenttag\currentbtxtag%
+      \removeunwantedspaces
+      \truncatepagerange{\btxflush{pages}}
+    } {
+      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
+        \let\btxparenttag\currentbtxtag%
+        \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
+        \btxcomma
+      } {
+        \btxlabeltext{sbl:in}
+        \btxspace
+        \let\btxparenttag\currentbtxtag%
+        \cite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
+        \btxcomma
+      }
+      \truncatepagerange{\btxflush{pages}}
+    }
+    \btxcomma
+    \endgroup
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:short:inlexiconbookxref
+  \btxdoif{bookxref} {
+    \begingroup
+    % If this entry is in a multivolume lexicon, 
+    % then cite the shorthand (or, failing that, its title) and prefix any cited pages accordingly;
+    % otherwise, just cite the pages
+    % In addition, since the lexicon entry itself is not added to the list, add the book or collection to the list instead. 
+    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
+    \doifnot {\currentbtxrighttext} {\empty} {
+      \doif{\btxfoundname{bookxref}}{incollectionxref} {
+        \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}%
+        \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+          \let\btxparenttag\currentbtxtag%
+          \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
+          \btxspace
+        } {
+          \let\btxparenttag\currentbtxtag%
+          \cite[alternative=title,lefttext=,righttext=][\bookxreftag]
           \btxcomma
         }
         \let\btxparenttag\currentbtxtag%
@@ -2078,7 +2303,7 @@
             \removeunwantedspaces
           }
         }
-        \btxflush{pages}
+        \truncatepagerange{\btxflush{pages}}
         % If any specific page numbers were cited explicitly by the user, then print them next
         \texdefinition{btx:sbl:cite:righttext}
         \btxcomma
@@ -3296,13 +3521,25 @@
 \starttexdefinition btx:sbl:cite:righttext
   % In this specification, the righttext parameter should be reserved for things like page, chapter, and section numbers,
   % as it will sometimes be added directly after a volume (and part) number. (This should be discernable from the category of the entry.) 
-  % If the entry already has a full page range, then this should be prefaced with "esp."
+  % If the entry already has a full page range, then this should be prefaced with "here"
+  % (https://sblhs2.com/2018/02/08/citing-page-numbers-for-chapters-and-articles/)
   \doifnot {\currentbtxrighttext} {\empty} {
     \btxdoif {pages} {
-      \btxlabeltext{sbl:esp}
+      \btxlabeltext{sbl:here}
       \btxspace
     }
-    \currentbtxrighttext
+    % If the righttext starts with a section mark, then remove any preceding punctuation
+    \doifprefix {§} {\currentbtxrighttext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
+    % If the righttext is a page range, then truncate it; otherwise, print it as-is
+    \doifpagerangeelse{\currentbtxrighttext} {
+      \truncatepagerange{\currentbtxrighttext}
+    } {
+      \currentbtxrighttext
+    }
     \btxcomma
   }
 \stoptexdefinition
@@ -3310,7 +3547,18 @@
 \starttexdefinition btx:sbl:short:righttext
   % Same as inline variant, except that we don't need to check for existing page ranges
   \doifnot {\currentbtxrighttext} {\empty} {
-    \currentbtxrighttext
+    % If the righttext starts with a section mark, then remove any preceding punctuation
+    \doifprefix {§} {\currentbtxrighttext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
+    % If the righttext is a page range, then truncate it; otherwise, print it as-is
+    \doifpagerangeelse{\currentbtxrighttext} {
+      \truncatepagerange{\currentbtxrighttext}
+    } {
+      \currentbtxrighttext
+    }
     \btxcomma
   }
 \stoptexdefinition
@@ -3413,8 +3661,8 @@
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
-% This should never be cited in the list
 \startsetups btx:sbl:list:inlexicon
+  \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
 \startsetups btx:sbl:list:incommentary
@@ -3425,8 +3673,16 @@
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
-% This should never be cited in the list
 \startsetups btx:sbl:list:ancienttext
+  \texdefinition{btx:sbl:list:author}
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:list:editortranslator}
+  \texdefinition{btx:sbl:list:bookxref}
+  \texdefinition{btx:sbl:list:doi}
+  \texdefinition{btx:sbl:list:note}
+  \removeunwantedspaces
+  \removepunctuation
+  \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:classictext
@@ -3660,8 +3916,8 @@
   \fastsetup{btx:sbl:listsubcite:inbook}
 \stopsetups
 
-% This should never be cited in the list
 \startsetups btx:sbl:listsubcite:inlexicon
+  \fastsetup{btx:sbl:listsubcite:inbook}
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:incommentary
@@ -3685,8 +3941,10 @@
   \removepunctuation
 \stopsetups
 
-% This should never be cited in the list
 \startsetups btx:sbl:listsubcite:classictext
+  \texdefinition{btx:sbl:list:title}
+  \texdefinition{btx:sbl:listsubcite:author}
+  \texdefinition{btx:sbl:listsubcite:editortranslator}
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:journal
@@ -3941,7 +4199,18 @@
 \stopsetups
 
 \startsetups btx:sbl:cite:inlexicon
-  \fastsetup{btx:sbl:cite:inreference}
+  \texdefinition{btx:sbl:cite:author}
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:cite:inlexiconbookxref}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:doi}
+    \texdefinition{btx:sbl:cite:reprxref}
+  }
+  \texdefinition{btx:sbl:cite:note}
+  \texdefinition{btx:sbl:cite:righttext}
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:cite:incommentary
@@ -4221,7 +4490,16 @@
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:inlexicon
-  \fastsetup{btx:sbl:inlinesubcite:inbook}
+  \texdefinition{btx:sbl:cite:title}
+  \texdefinition{btx:sbl:inlinesubcite:author}
+  % Only recursively cite publication data if the \btxprintpubl variable is set
+  \doif {\btxprintpubl} {yes} {
+    \texdefinition{btx:sbl:cite:inlexiconbookxref}
+    \texdefinition{btx:sbl:cite:reprxref}
+    \texdefinition{btx:sbl:cite:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:incommentary
@@ -4492,7 +4770,7 @@
       \btxdoif {pages} {
         \btxcolon
         \removeunwantedspaces
-        \btxflush{pages}
+        \truncatepagerange{\btxflush{pages}}
       }
     } {
       \btxcolon
@@ -4703,13 +4981,6 @@
 % Inline parenthetical citation setup
 \startsetups btx:sbl:cite:paren
   \fastsetup{btx:sbl:\s!cite:inline}
-\stopsetups
-
-% Footnote citation setup
-\startsetups btx:sbl:cite:footnote
-  \startfootnote
-    \fastsetup{btx:sbl:\s!cite:inline}
-  \stopfootnote
 \stopsetups
 
 % Volume (and part) number citation setup
