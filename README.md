@@ -50,7 +50,8 @@ While I have tried to account for all cases in the examples using only category-
 | `seriesascollection`  | In short-form citations, the series to which this entry belongs should be cited as if it were a collection containing it.  | Volumes of RIMA (§6.4.1.2) and texts in Migne's PG and PL series | 
 | `useseriesshorthand`  | In short-form citations, use the shorthand of the series to which this entry belongs as if it were this entry's shorthand.  | Volumes of ARM and ARMT (§6.4.1.2) and entries in the Loeb Classical Library series (§6.4.2) | 
 | `plaintitle`  | In long- and short-form citations, do not typeset this entry's title or shorthand using the style associated with its category; instead, typeset it as plain text. | Inscriptions and chronicles (§6.4.1.2) | 
-| `plainshorthand`  | In short-form citations, do not typeset this entry's shorthand using the style associated with its category; instead, typeset it as plain text.  | Papyri and ostraca (§6.4.1.2) and Strack-Billerbeck (§6.4.7) | 
+| `plainshorthand`  | In short-form citations, do not typeset this entry's shorthand using the style associated with its category; instead, typeset it as plain text.  | Papyri and ostraca (§6.4.1.2) and Strack-Billerbeck (§6.4.7) |
+| `listcite`  | Even if this entry is in a category that is normally not added to the list when cited (e.g., `@inlexicon`, `@ancienttext`, `@classictext`), add it to the list anyway. | Ancient epistles and homilies with known authors (§6.4.4-5) |
 
 ## Specification Coverage
 

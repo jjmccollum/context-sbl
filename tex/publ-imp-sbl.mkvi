@@ -766,7 +766,7 @@
 \def\serializevolumenumberdatepage#1#2#3#4{\ctxlua{sblhelpers.serializevolumenumberdatepage([==[#1]==],[==[#2]==],[==[#3]==],[==[#4]==])}}%
 
 % Define some helper functions for subcitations
-\let\btxroottag\empty% the tag of the initially cited entry
+\let\btxparenttag\empty% the tag of the entry subciting the current one
 \def\btxprintpubl{yes}% yes/no indicating whether publication information should be specified for the current citation or subcitation
 \let\btxcurrentsubcitetype\empty% the type of subcitation we're invoking
 
@@ -849,7 +849,7 @@
   \btxdoif {author} {
     % If the author and withauthor match the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxdirect{\btxfoundname{author}}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{\btxfoundname{author}}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{withauthor}} {
+    \doifnot {\btxdirect{\btxfoundname{author}}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{\btxfoundname{author}}\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{withauthor}} {
       % If this is an instance of an editor, then there is no author; 
       % indicate that this is an editor
       \doifelse {\btxfoundname{author}} {editor} {
@@ -948,7 +948,7 @@
   \btxdoif {author} {
     % If the author and withauthor match the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxdirect{\btxfoundname{author}}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{\btxfoundname{author}}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{withauthor}} {
+    \doifnot {\btxdirect{\btxfoundname{author}}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{\btxfoundname{author}}\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{withauthor}} {
       % If this is an instance of an editor, then there is no author; 
       % indicate that this is an editor
       \doifelse {\btxfoundname{author}} {editor} {
@@ -1238,7 +1238,7 @@
   \btxdoif {editor} {
     % If the editor and witheditor match the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxdirect{editor}\btxdirect{witheditor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{editor}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{witheditor}} {
+    \doifnot {\btxdirect{editor}\btxdirect{witheditor}} {\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{editor}\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{witheditor}} {
       % Preface with "Edited by" unless a specific editortype is specified
       \btxdoifelse {editortype} {
         \btxusecommand[sbl:\s!list:type]{
@@ -1305,7 +1305,7 @@
   \btxdoif {editor} {
     % If the editor and witheditor matches the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxdirect{editor}\btxdirect{witheditor}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{editor}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{witheditor}} {
+    \doifnot {\btxdirect{editor}\btxdirect{witheditor}} {\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{editor}\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{witheditor}} {
       % Preface with the "editor" abbreviation unless a specific editortype is specified
       \btxdoifelse {editortype} {
         \btxflush{editortype}%
@@ -1368,7 +1368,7 @@
   \btxdoif {translator} {
     % If the translator and withtranslator match the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxdirect{translator}\btxdirect{withtranslator}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{translator}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{withtranslator}} {
+    \doifnot {\btxdirect{translator}\btxdirect{withtranslator}} {\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{translator}\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{withtranslator}} {
       \btxlabeltext{sbl:Translated}
       \btxspace
       \btxlabeltext{sbl:by}
@@ -1420,7 +1420,7 @@
   \btxdoif {translator} {
     % If the translator and withtranslator match the corresponding fields in the root citation, 
     % then skip this
-    \doifnot {\btxdirect{translator}\btxdirect{withtranslator}} {\clf_btxdirect{\currentbtxdataset}{\btxroottag}{translator}\clf_btxdirect{\currentbtxdataset}{\btxroottag}{withtranslator}} {
+    \doifnot {\btxdirect{translator}\btxdirect{withtranslator}} {\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{translator}\clf_btxdirect{\currentbtxdataset}{\btxparenttag}{withtranslator}} {
       \btxlabeltext{sbl:translator}
       \btxspace
       \btxflush{translator}
@@ -1733,7 +1733,8 @@
     }
     \btxspace
     % Recursively cite the book/collection
-    \textcite[listsubcite][\bookxreftag]
+    \let\btxparenttag\currentbtxtag%
+    \textcite[alternative=listsubcite,lefttext=,righttext=][\bookxreftag]
     \btxperiod
     \endgroup
   }
@@ -1750,6 +1751,7 @@
         \btxlabeltext{sbl:in}
         \btxspace
       }
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
       \btxcomma
       % If the volume does not have a title, then prefix the page range with its volume (and part) number
@@ -1767,6 +1769,7 @@
         \btxlabeltext{sbl:in}
         \btxspace
       }
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
       \btxcomma
       \btxflush{pages}
@@ -1911,7 +1914,8 @@
     \btxlabeltext{sbl:to}
     \btxspace
     % Recursively cite the book/collection
-    \textcite[listsubcite][\bookxreftag]
+    \let\btxparenttag\currentbtxtag%
+    \textcite[alternative=listsubcite,lefttext=,righttext=][\bookxreftag]
     \btxperiod
     \endgroup
   }
@@ -1928,7 +1932,8 @@
     \btxlabeltext{sbl:to}
     \btxspace
     % Recursively cite the book/collection
-    \textcite[subcite][\bookxreftag]
+    \let\btxparenttag\currentbtxtag%
+    \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
     \btxcomma
     \endgroup
   }
@@ -1949,25 +1954,30 @@
     \doifelse{\btxfoundname{bookxref}}{incollectionxref} {
       \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}%
       \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+        \let\btxparenttag\currentbtxtag%
         \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
         \btxspace
       } {
         \btxlabeltext{sbl:in}
         \btxspace
+        \let\btxparenttag\currentbtxtag%
         \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
         \btxcomma
       }
       \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
       \btxcolon
+      \let\btxparenttag\currentbtxtag%
       \removeunwantedspaces
       \btxflush{pages}
     } {
       \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
+        \let\btxparenttag\currentbtxtag%
         \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
         \btxcomma
       } {
         \btxlabeltext{sbl:in}
         \btxspace
+        \let\btxparenttag\currentbtxtag%
         \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
         \btxcomma
       }
@@ -1989,12 +1999,15 @@
       \doif{\btxfoundname{bookxref}}{incollectionxref} {
         \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}%
         \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+          \let\btxparenttag\currentbtxtag%
           \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
           \btxspace
         } {
+          \let\btxparenttag\currentbtxtag%
           \textcite[alternative=title,lefttext=,righttext=][\bookxreftag]
           \btxcomma
         }
+        \let\btxparenttag\currentbtxtag%
         \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
         \btxcolon
         \removeunwantedspaces
@@ -2036,6 +2049,7 @@
       \begingroup
       % Do a full inline citation of the book or collection volume containing this text
       \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=inline,lefttext=,righttext=][\bookxreftag]
       \btxcomma
       % If there are page numbers, then print them,
@@ -2072,7 +2086,7 @@
         % If there is no full page range, then format any cited pages the same way
         \doifnot {\currentbtxrighttext} {\empty} {
           \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{volume} {
-            \textcite[volume][\bookxreftag]
+            \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
             \btxdoif {part} {
               \btxperiod
               \removeunwantedspaces
@@ -2134,6 +2148,7 @@
           % otherwise, just cite its author/editor
           \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
           \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+            \let\btxparenttag\currentbtxtag%
             \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
             \btxspace
           } {
@@ -2182,6 +2197,7 @@
           % then remove the preceding comma and print the series and series entry numbers, 
           % followed by the part number of this entry (if it has one) and cited pages
           \doifelse {\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {seriesascollection} {
+            \let\btxparenttag\currentbtxtag%
             \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
             \removeunwantedspaces
             \removepunctuation
@@ -2266,7 +2282,8 @@
         % followed by any cited page numbers
         \doif{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {useseriesshorthand} {
           \btxcomma
-          \cite[alternative=short][\bookxreftag]
+          \let\btxparenttag\currentbtxtag%
+          \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
           \doifnot {\currentbtxrighttext} {\empty} {
             \btxcomma
             \texdefinition{btx:sbl:cite:righttext}
@@ -2300,11 +2317,13 @@
         } {
           % Otherwise, cite the shorthand (if there is one) of the collection containing this text, followed by any cited page numbers
           \doif {\btxfoundname{bookxref}} {collectionxref} {
+            \let\btxparenttag\currentbtxtag%
             \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
             \btxspace
             \texdefinition{btx:sbl:cite:righttext}
           }
           \doif {\btxfoundname{bookxref}} {incollectionxref} {
+            \let\btxparenttag\currentbtxtag%
             \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
             \btxspace
             \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
@@ -2315,6 +2334,7 @@
           \doif {\btxfoundname{bookxref}} {bookxref} {
             % Only cite a standalone book if it has a shorthand
             \clf_btxdoif{\currentbtxdataset}{\bookxreftag}{shorthand}{
+              \let\btxparenttag\currentbtxtag%
               \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
               \btxcomma
               \texdefinition{btx:sbl:cite:righttext}
@@ -2366,6 +2386,7 @@
     }
     \btxspace
     \def\btxprintpubl{no}% don't print the publication information of the collection
+    \let\btxparenttag\currentbtxtag%
     \textcite[alternative=listsubcite,lefttext=,righttext=][\btxflush{collectionxref}] % recursively cite the collection, but do not save it to the list
     \endgroup
     \btxperiod
@@ -2413,6 +2434,7 @@
       \btxspace
     }
     \def\btxprintpubl{no}% don't print the publication information of the collection
+    \let\btxparenttag\currentbtxtag%
     \textcite[alternative=listsubcite,lefttext=,righttext=][\collectionxreftag] % recursively cite the collection, but do not save it to the list
     \endgroup
     \btxperiod
@@ -2450,6 +2472,7 @@
         \btxspace
       }
       \def\btxprintpubl{no}% don't print the publication information of the collection
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=subcite,lefttext=,righttext=][\collectionxreftag] % recursively subcite the collection
     }
     \endgroup
@@ -2486,6 +2509,7 @@
         \btxspace
       }
       \def\btxprintpubl{no}% don't print the publication information of the collection
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{collectionxref}] % recursively subcite the collection
     }
     \endgroup
@@ -2570,6 +2594,7 @@
       % If so, then recursively cite the series, but do not add it to the list
       \begingroup
       \def\btxprintpubl{no}% don't print publication information about the series
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=listsubcite,lefttext=,righttext=][\btxflush{series}]
       \endgroup
     } {
@@ -2608,6 +2633,7 @@
       % If so, then recursively cite the series, but do not add it to the list
       \begingroup
       \def\btxprintpubl{no}% don't print publication information about the series
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{series}]
       \endgroup
     } {
@@ -2662,7 +2688,8 @@
       % If so, then recursively cite the journal, but do not add it to the list
       \begingroup
       \def\btxprintpubl{no}%
-      \textcite[listsubcite][\btxflush{journal}]
+      \let\btxparenttag\currentbtxtag%
+      \textcite[alternative=listsubcite,lefttext=,righttext=][\btxflush{journal}]
       \endgroup
       \btxspace
     } {
@@ -2687,7 +2714,8 @@
       % If so, then recursively cite the journal, but do not add it to the list
       \begingroup
       \def\btxprintpubl{no}%
-      \textcite[subcite][\btxflush{journal}]
+      \let\btxparenttag\currentbtxtag%
+      \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{journal}]
       \endgroup
       \btxspace
     } {
@@ -2972,20 +3000,6 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:list:pages
-  \btxdoif {pages} {
-    \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
-    \btxperiod
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:cite:pages
-  \btxdoif {pages} {
-    \btxflush{pages} % TODO: implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
-    \btxcomma
-  }
-\stoptexdefinition
-
 \starttexdefinition btx:sbl:list:reprxref
   \btxdoif{reprxref} {
     % Is this reprint a reprint in the same lanugage, or a translation?
@@ -3000,7 +3014,8 @@
     % Recursively cite the reprinted/translated version, but do not add it to the list
     \begingroup
     \def\btxprintpubl{yes}%
-    \textcite[listsubcite][\btxflush{reprxref}]
+    \let\btxparenttag\currentbtxtag%
+    \textcite[alternative=listsubcite,lefttext=,righttext=][\btxflush{reprxref}]
     \endgroup
     \btxperiod
   }
@@ -3030,7 +3045,8 @@
     % Recursively cite the reprinted/translated version, but do not add it to the list
     \begingroup
     \def\btxprintpubl{yes}%
-    \textcite[subcite][\btxflush{reprxref}]
+    \let\btxparenttag\currentbtxtag%
+    \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{reprxref}]
     \endgroup
     \btxcomma
   }
@@ -3049,18 +3065,15 @@
         \convertdate{\btxflush{eprintdate}}
         \btxperiod
       }
-      % If it has an eprinttype, then produce a DOI using it
-      \btxdoif {eprinttype} {
+      % If it has an eprinttype, then produce a DOI by concatenating it with the the eprint identifier
+      \btxdoifelse {eprinttype} {
         {\sc doi}
         \btxcolon
         \removeunwantedspaces
-        \btxflush{eprinttype}
-        \removeunwantedspaces
-        {/}
-        \btxcolon
+        \hyphenatedurl{\btxflush{eprinttype}/: \btxflush{eprint}}
+      } {
+        \hyphenatedurl{\btxflush{eprint}}
       }
-      % Then print the eprint identifier
-      \btxflush{eprint}
       % Finally, print its eprintclass in parentheses or brackets
       \btxspace
       \startparen
@@ -3082,14 +3095,14 @@
         \btxperiod
       }
       % Then print the eprint identifier
-      \btxflush{eprint}
+      \hyphenatedurl{\btxflush{eprint}}
       \btxperiod
       % If a DOI was specified, then use it here
       \btxdoif {doi} {
         {\sc doi}
         \btxcolon
         \removeunwantedspaces
-        \btxflush{doi}
+        \hyphenatedurl{\btxflush{doi}}
         \btxperiod
       }
     }
@@ -3100,6 +3113,7 @@
       \doifelse {\btxfoundname{journal}} {journalxref} {
         \begingroup
         \def\btxprintpubl{no}%
+        \let\btxparenttag\currentbtxtag%
         \textcite[subcite][\btxflush{journal}]
         \endgroup
       } {
@@ -3137,19 +3151,15 @@
         \convertdate{\btxflush{eprintdate}}
         \btxcomma
       }
-      % If it has an eprinttype, then produce a DOI using it
-      \btxdoif {eprinttype} {
+      % If it has an eprinttype, then produce a DOI by concatenating it with the the eprint identifier
+      \btxdoifelse {eprinttype} {
         {\sc doi}
         \btxcolon
         \removeunwantedspaces
-        \btxflush{eprinttype}
-        \removeunwantedspaces
-        {/}
-        \btxcolon
+        \hyphenatedurl{\btxflush{eprinttype}/: \btxflush{eprint}}
+      } {
+        \hyphenatedurl{\btxflush{eprint}}
       }
-      % Then print the eprint identifier
-      \btxflush{eprint}
-      \btxspace
       % Finally, print its eprintclass in parentheses or brackets
       \startparen
       \btxflush{eprintclass}
@@ -3170,14 +3180,14 @@
         \btxcomma
       }
       % Then print the eprint identifier
-      \btxflush{eprint}
+      \hyphenatedurl{\btxflush{eprint}}
       \btxcomma
       % If a DOI was specified, then use it here
       \btxdoif {doi} {
         {\sc doi}
         \btxcolon
         \removeunwantedspaces
-        \btxflush{doi}
+        \hyphenatedurl{\btxflush{doi}}
         \btxcomma
       }
     }
@@ -3188,6 +3198,7 @@
       \doifelse {\btxfoundname{journal}} {journalxref} {
         \begingroup
         \def\btxprintpubl{no}%
+        \let\btxparenttag\currentbtxtag%
         \textcite[subcite][\btxflush{journal}]
         \endgroup
       } {
@@ -3573,8 +3584,17 @@
   % If this entry does not have a title, then just cite its collection
   \btxdoifelse {title} {
     \texdefinition{btx:sbl:list:title}
-    \texdefinition{btx:sbl:listsubcite:author}
-    \texdefinition{btx:sbl:listsubcite:collectionxref}
+    % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection
+    \begingroup
+    \def\collectionxreftag{\btxflush{collectionxref}}%
+    \doifelse {\btxdirect{\btxfoundname{author}}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{\btxfoundname{author}}\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{withauthor}} {
+      \texdefinition{btx:sbl:listsubcite:collectionxref}
+      \texdefinition{btx:sbl:listsubcite:author}
+    } {
+      \texdefinition{btx:sbl:listsubcite:author}
+      \texdefinition{btx:sbl:listsubcite:collectionxref}
+    }
+    \endgroup
     % Only recursively cite publication data if the \btxprintpubl variable is set
     \doif {\btxprintpubl} {yes} {
       \texdefinition{btx:sbl:listsubcite:editortranslator}
@@ -3831,6 +3851,7 @@
     \begingroup
     \def\collectionxreftag{\btxflush{collectionxref}}%
     \def\btxprintpubl{no}
+    \let\btxparenttag\currentbtxtag%
     \textcite[alternative=inline,lefttext=,righttext=][\collectionxreftag]
     \endgroup
     \btxcomma
@@ -4102,8 +4123,17 @@
   % If this entry does not have a title, then just subcite its collection
   \btxdoifelse {title} {
     \texdefinition{btx:sbl:cite:title}
-    \texdefinition{btx:sbl:subcite:author}
-    \texdefinition{btx:sbl:subcite:collectionxref}
+    % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection
+    \begingroup
+    \def\collectionxreftag{\btxflush{collectionxref}}%
+    \doifelse {\btxdirect{\btxfoundname{author}}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{\btxfoundname{author}}\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{withauthor}} {
+      \texdefinition{btx:sbl:subcite:collectionxref}
+      \texdefinition{btx:sbl:subcite:author}
+    } {
+      \texdefinition{btx:sbl:subcite:author}
+      \texdefinition{btx:sbl:subcite:collectionxref}
+    }
+    \endgroup
     % Only recursively cite publication data if the \btxprintpubl variable is set
     \doif {\btxprintpubl} {yes} {
       \texdefinition{btx:sbl:cite:editortranslator}
@@ -4119,6 +4149,7 @@
     \begingroup
     \def\collectionxreftag{\btxflush{collectionxref}}%
     \def\btxprintpubl{no}%
+    \let\btxparenttag\currentbtxtag%
     \textcite[alternative=subcite,lefttext=,righttext=][\collectionxreftag]
     \endgroup
     \btxcomma
@@ -4305,6 +4336,7 @@
     \doifelse {\btxfoundname{series}} {seriesxref} {
       % If so, then recursively cite the shorthand for the series
       \def\seriesxreftag{\btxflush{series}}
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=short,lefttext=,righttext=][\btxflush{series}]
       \btxspace
     } {
@@ -4363,6 +4395,7 @@
     \doifelse {\btxfoundname{series}} {seriesxref} {
       % If so, then recursively cite the shorthand for the series
       \def\seriesxreftag{\btxflush{series}}
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=short,lefttext=,righttext=][\btxflush{series}]
       \btxspace
     } {
@@ -4381,6 +4414,7 @@
     \def\collectionxreftag{\btxflush{collectionxref}}%
     \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
       % If the collection containing this entry has a shorthand, then cite it;
+      \let\btxparenttag\currentbtxtag%
       \textcite[alternative=short,lefttext=,righttext=][\collectionxreftag]
       \btxcomma
       % If there are any cited page numbers, then prefix them with the volume and part of this entry
@@ -4406,6 +4440,7 @@
         \texdefinition{btx:sbl:short:title}
         \texdefinition{btx:sbl:short:righttext}
       } {
+        \let\btxparenttag\currentbtxtag%
         \textcite[alternative=short,lefttext=,righttext=][\collectionxreftag]
         % If there are any cited page numbers, then prefix them with the volume and part of this entry
         \doifnot {\currentbtxrighttext} {\empty} {
@@ -4611,7 +4646,7 @@
   \fastsetup{\s!btx:\s!cite:left}
   \begingroup
   % Reset variables for new citation
-  \let\btxroottag\currentbtxtag
+  \let\btxparenttag\currentbtxtag%
   \def\shorthandtag{none}%
   \def\btxprintpubl{yes}%
   \let\btxcurrentsubcitetype\empty
@@ -4637,7 +4672,7 @@
   % This gets cleared in cites, so set it here
   \def\currentbtxcategory{\btxfield{category}}%
   % Reset variables for new citation
-  \let\btxroottag\currentbtxtag
+  \let\btxparenttag\currentbtxtag%
   \def\shorthandtag{none}%
   \let\btxcurrentsubcitetype\empty
   % Then invoke the appropriate setup
