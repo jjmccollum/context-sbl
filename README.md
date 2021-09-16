@@ -139,16 +139,16 @@ The following cases (taken from https://github.com/dcpurton/biblatex-sbl/blob/ma
 - [x] 7.2 HALOT, TLOT
 - [x] 7.3 SBLHS
 
-The `publ-imp-sbl-test.bib` file contains BibTeX entries for these examples, and the `bib_mwe.tex` file demonstrates how to typeset them with various settings. 
+The `publ-imp-sbl-test.bib` file contains BibTeX entries for these examples, and the `publ-imp-sbl-test.tex` file demonstrates how to typeset them with various settings. 
 
 ## To Do
 
-- [ ] The list entries are still a mess. First, the subcitations aren't keeping track of the `btxrootauthor` field, so author/editor names are being unnecessarily repeated. Second, some entries (e.g., those in the `@ancienttext` and `@inlexicon` categories, and some in the `@classictext` category) should not be added to the list when they are cited, but the books or collections containing them should be. Making these features work may require some tinkering with low-level methods in `publ-ini.mkiv`.
+- [ ] The list entries still need some work. Ideally, entries in the `@inlexicon`, `@ancienttext`, and `@classictext` categories should not be added to the list even when they are cited with the `\cite` command (unless they are of type `listcite`), but the books or collections containing them should be.
 - [ ] Implement the horrendous page range abbreviation rules used by Chicago and SBL ... if I have to
 - [ ] If possible, add a final pass over the entry to move commas and periods after right quotes to positions before them, in accordance with American style
 - [ ] Introduce an `auto` cite alternative as the default; if a tag has not been encountered before, then use the `inline` setup, otherwise use the `short` setup.
-- [ ] Anytime a shorthand is cited for the first time, it should be added to the abbreviations list, with the printed abbreviation retaining its formatting (e.g., journal shorthands should be italicized, while series shorthands should not) and the `listsubcite` rendering assigned as the full form of the abbreviation (something like `\abbreviation[\btxflush{shorthand}]{\texdefinition{btx:sbl:cite:shorthand}}{\textcite[listsubcite][\btxflush{shorthand}]}` should work for this)
+- [ ] Anytime a shorthand is cited for the first time, it should be added to the abbreviations list, with the printed abbreviation retaining its formatting (e.g., journal shorthands should be italicized, while series shorthands should not) and the `listsubcite` rendering assigned as the full form of the abbreviation (something like `\abbreviation[\btxflush{shorthand}]{\texdefinition{btx:sbl:cite:shorthand}}{\textcite[listsubcite][\btxflush{shorthand}]}` should work for this). This may also necessitate handling certain examples (e.g., _PGM_) differently, as no two entries should have the same shorthand.
 
 ## Copyright
 
-This module is part of the ConTeXT macro-package and is therefore copyrighted by PRAGMA.
+This module is part of the ConTeXt macro-package and is therefore copyrighted by PRAGMA.
