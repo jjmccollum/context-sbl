@@ -548,7 +548,7 @@
 
 % Inline subcitations are similar to inline citations
 \definebtx
-  [sbl:\s!cite:subcite]
+  [sbl:\s!cite:inlinesubcite]
   [sbl:\s!cite:inline]
 
 % Parenthetical citations should be rendered exactly like inline citations, 
@@ -944,7 +944,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:subcite:author
+\starttexdefinition btx:sbl:inlinesubcite:author
   \btxdoif {author} {
     % If the author and withauthor match the corresponding fields in the root citation, 
     % then skip this
@@ -1301,7 +1301,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:subcite:editor
+\starttexdefinition btx:sbl:inlinesubcite:editor
   \btxdoif {editor} {
     % If the editor and witheditor matches the corresponding fields in the root citation, 
     % then skip this
@@ -1416,7 +1416,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:subcite:translator
+\starttexdefinition btx:sbl:inlinesubcite:translator
   \btxdoif {translator} {
     % If the translator and withtranslator match the corresponding fields in the root citation, 
     % then skip this
@@ -1649,7 +1649,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:subcite:editortranslator
+\starttexdefinition btx:sbl:inlinesubcite:editortranslator
   % Is there an editor?
   \btxdoifelse {editor} {
     % If so, is there also a translator?
@@ -1657,7 +1657,7 @@
       % If so, is the editor the same as the author?
       \doifelse {\btxfoundname{author}} {editor} {
         % If so, then just handle the translator
-        \texdefinition{btx:sbl:subcite:translator}
+        \texdefinition{btx:sbl:inlinesubcite:translator}
       } {
         % If not, are the editor and translator (and their corresponding "with" fields) the same?
         \doifelse {\btxdirect{editor}\btxdirect{witheditor}} {\btxdirect{translator}\btxdirect{withtranslator}} {
@@ -1696,20 +1696,20 @@
           \btxperiod
         } {
           % If not, then handle them separately
-          \texdefinition{btx:sbl:subcite:editor}
-          \texdefinition{btx:sbl:subcite:translator}
+          \texdefinition{btx:sbl:inlinesubcite:editor}
+          \texdefinition{btx:sbl:inlinesubcite:translator}
         }
       }
     } {
       % If there is no translator, is the editor the same as the author?
       \doifnot {\btxfoundname{author}} {editor} {
         % If not, then just handle the editor
-        \texdefinition{btx:sbl:subcite:editor}
+        \texdefinition{btx:sbl:inlinesubcite:editor}
       }
     }
   } {
     % If not, then just handle the translator
-    \texdefinition{btx:sbl:subcite:translator} 
+    \texdefinition{btx:sbl:inlinesubcite:translator} 
   }
 \stoptexdefinition
 
@@ -1752,7 +1752,7 @@
         \btxspace
       }
       \let\btxparenttag\currentbtxtag%
-      \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
+      \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
       \btxcomma
       % If the volume does not have a title, then prefix the page range with its volume (and part) number
       \clf_btxdoifnot{\currentbtxdataset}{\bookxreftag}{title} {
@@ -1770,7 +1770,7 @@
         \btxspace
       }
       \let\btxparenttag\currentbtxtag%
-      \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
+      \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
       \btxcomma
       \btxflush{pages}
     }
@@ -1933,7 +1933,7 @@
     \btxspace
     % Recursively cite the book/collection
     \let\btxparenttag\currentbtxtag%
-    \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
+    \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
     \btxcomma
     \endgroup
   }
@@ -1961,7 +1961,7 @@
         \btxlabeltext{sbl:in}
         \btxspace
         \let\btxparenttag\currentbtxtag%
-        \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
+        \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
         \btxcomma
       }
       \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
@@ -1978,7 +1978,7 @@
         \btxlabeltext{sbl:in}
         \btxspace
         \let\btxparenttag\currentbtxtag%
-        \textcite[alternative=subcite,lefttext=,righttext=][\bookxreftag]
+        \textcite[alternative=inlinesubcite,lefttext=,righttext=][\bookxreftag]
         \btxcomma
       }
       \btxflush{pages}
@@ -2473,14 +2473,14 @@
       }
       \def\btxprintpubl{no}% don't print the publication information of the collection
       \let\btxparenttag\currentbtxtag%
-      \textcite[alternative=subcite,lefttext=,righttext=][\collectionxreftag] % recursively subcite the collection
+      \textcite[alternative=inlinesubcite,lefttext=,righttext=][\collectionxreftag] % recursively subcite the collection
     }
     \endgroup
     \btxcomma
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:subcite:collectionxref
+\starttexdefinition btx:sbl:inlinesubcite:collectionxref
   \btxdoif{collectionxref} {
     \begingroup
     \def\collectionxreftag{\btxflush{collectionxref}}%
@@ -2510,7 +2510,7 @@
       }
       \def\btxprintpubl{no}% don't print the publication information of the collection
       \let\btxparenttag\currentbtxtag%
-      \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{collectionxref}] % recursively subcite the collection
+      \textcite[alternative=inlinesubcite,lefttext=,righttext=][\btxflush{collectionxref}] % recursively subcite the collection
     }
     \endgroup
     \btxcomma
@@ -2634,7 +2634,7 @@
       \begingroup
       \def\btxprintpubl{no}% don't print publication information about the series
       \let\btxparenttag\currentbtxtag%
-      \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{series}]
+      \textcite[alternative=inlinesubcite,lefttext=,righttext=][\btxflush{series}]
       \endgroup
     } {
       % Otherwise, this field just contains the series name; print it with the appropriate formatting
@@ -2715,7 +2715,7 @@
       \begingroup
       \def\btxprintpubl{no}%
       \let\btxparenttag\currentbtxtag%
-      \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{journal}]
+      \textcite[alternative=inlinesubcite,lefttext=,righttext=][\btxflush{journal}]
       \endgroup
       \btxspace
     } {
@@ -3046,7 +3046,7 @@
     \begingroup
     \def\btxprintpubl{yes}%
     \let\btxparenttag\currentbtxtag%
-    \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{reprxref}]
+    \textcite[alternative=inlinesubcite,lefttext=,righttext=][\btxflush{reprxref}]
     \endgroup
     \btxcomma
   }
@@ -4069,15 +4069,15 @@
 \stopsetups
 
 % Inline subcitation setups
-\startsetups btx:sbl:subcite:book
+\startsetups btx:sbl:inlinesubcite:book
   \btxdoifelse {shorthand} {
     \texdefinition{btx:sbl:cite:shorthand}
   } {
     \texdefinition{btx:sbl:cite:title}
-    \texdefinition{btx:sbl:subcite:author}
+    \texdefinition{btx:sbl:inlinesubcite:author}
     % Only recursively cite publication data if the \btxprintpubl variable is set
     \doif {\btxprintpubl} {yes} {
-      \texdefinition{btx:sbl:subcite:editortranslator}
+      \texdefinition{btx:sbl:inlinesubcite:editortranslator}
       \texdefinition{btx:sbl:cite:edition}
       \texdefinition{btx:sbl:cite:seriesxref}
       \texdefinition{btx:sbl:cite:publisher}
@@ -4090,23 +4090,23 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:manual
-  \fastsetup{btx:sbl:subcite:book}
+\startsetups btx:sbl:inlinesubcite:manual
+  \fastsetup{btx:sbl:inlinesubcite:book}
 \stopsetups
 
-\startsetups btx:sbl:subcite:proceedings
-  \fastsetup{btx:sbl:subcite:book}
+\startsetups btx:sbl:inlinesubcite:proceedings
+  \fastsetup{btx:sbl:inlinesubcite:book}
 \stopsetups
 
-\startsetups btx:sbl:subcite:collection
+\startsetups btx:sbl:inlinesubcite:collection
   \btxdoifelse {shorthand} {
     \texdefinition{btx:sbl:cite:shorthand}
   } {
     \texdefinition{btx:sbl:cite:title}
-    \texdefinition{btx:sbl:subcite:author}
+    \texdefinition{btx:sbl:inlinesubcite:author}
     % Only recursively cite publication data if the \btxprintpubl variable is set
     \doif {\btxprintpubl} {yes} {
-      \texdefinition{btx:sbl:subcite:editortranslator}
+      \texdefinition{btx:sbl:inlinesubcite:editortranslator}
       \texdefinition{btx:sbl:cite:volumes}
       \texdefinition{btx:sbl:cite:seriesxref}
       \texdefinition{btx:sbl:cite:publisher}
@@ -4119,7 +4119,7 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:incollection
+\startsetups btx:sbl:inlinesubcite:incollection
   % If this entry does not have a title, then just subcite its collection
   \btxdoifelse {title} {
     \texdefinition{btx:sbl:cite:title}
@@ -4127,11 +4127,11 @@
     \begingroup
     \def\collectionxreftag{\btxflush{collectionxref}}%
     \doifelse {\btxdirect{\btxfoundname{author}}\btxdirect{withauthor}} {\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{\btxfoundname{author}}\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{withauthor}} {
-      \texdefinition{btx:sbl:subcite:collectionxref}
-      \texdefinition{btx:sbl:subcite:author}
+      \texdefinition{btx:sbl:inlinesubcite:collectionxref}
+      \texdefinition{btx:sbl:inlinesubcite:author}
     } {
-      \texdefinition{btx:sbl:subcite:author}
-      \texdefinition{btx:sbl:subcite:collectionxref}
+      \texdefinition{btx:sbl:inlinesubcite:author}
+      \texdefinition{btx:sbl:inlinesubcite:collectionxref}
     }
     \endgroup
     % Only recursively cite publication data if the \btxprintpubl variable is set
@@ -4150,7 +4150,7 @@
     \def\collectionxreftag{\btxflush{collectionxref}}%
     \def\btxprintpubl{no}%
     \let\btxparenttag\currentbtxtag%
-    \textcite[alternative=subcite,lefttext=,righttext=][\collectionxreftag]
+    \textcite[alternative=inlinesubcite,lefttext=,righttext=][\collectionxreftag]
     \endgroup
     \btxcomma
     % Only recursively cite publication data if the \btxprintpubl variable is set
@@ -4169,7 +4169,7 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:series
+\startsetups btx:sbl:inlinesubcite:series
   % Always use the short form in subcites, if available
   \btxdoifelse {shorthand} {
     \texdefinition{btx:sbl:cite:shorthand}
@@ -4180,9 +4180,9 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:inbook
+\startsetups btx:sbl:inlinesubcite:inbook
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:inlinesubcite:author}
   % Only recursively cite publication data if the \btxprintpubl variable is set
   \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:cite:bookxref}
@@ -4193,7 +4193,7 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:suppbook
+\startsetups btx:sbl:inlinesubcite:suppbook
   % For booksupps, cite the title if there is one,
   % and if not, then cite the type (e.g., "introduction", "foreword", "preface")
   \btxdoifelse {title} {
@@ -4202,14 +4202,14 @@
     \btxflush{type}
     \btxcomma
   }
-  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:inlinesubcite:author}
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:inreference
+\startsetups btx:sbl:inlinesubcite:inreference
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:inlinesubcite:author}
   % Only recursively cite publication data if the \btxprintpubl variable is set
   \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:cite:inreferencebookxref}
@@ -4220,57 +4220,57 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:inlexicon
-  \fastsetup{btx:sbl:subcite:inbook}
+\startsetups btx:sbl:inlinesubcite:inlexicon
+  \fastsetup{btx:sbl:inlinesubcite:inbook}
 \stopsetups
 
-\startsetups btx:sbl:subcite:incommentary
-  \fastsetup{btx:sbl:subcite:inbook}
+\startsetups btx:sbl:inlinesubcite:incommentary
+  \fastsetup{btx:sbl:inlinesubcite:inbook}
 \stopsetups
 
-\startsetups btx:sbl:subcite:inproceedings
-  \fastsetup{btx:sbl:subcite:inbook}
+\startsetups btx:sbl:inlinesubcite:inproceedings
+  \fastsetup{btx:sbl:inlinesubcite:inbook}
 \stopsetups
 
-\startsetups btx:sbl:subcite:ancienttext
-  \fastsetup{btx:sbl:subcite:inbook}
+\startsetups btx:sbl:inlinesubcite:ancienttext
+  \fastsetup{btx:sbl:inlinesubcite:inbook}
 \stopsetups
 
-\startsetups btx:sbl:subcite:classictext
-  \fastsetup{btx:sbl:subcite:inbook}
+\startsetups btx:sbl:inlinesubcite:classictext
+  \fastsetup{btx:sbl:inlinesubcite:inbook}
 \stopsetups
 
-\startsetups btx:sbl:subcite:journal
-  \fastsetup{btx:sbl:subcite:series}
+\startsetups btx:sbl:inlinesubcite:journal
+  \fastsetup{btx:sbl:inlinesubcite:series}
 \stopsetups
 
-\startsetups btx:sbl:subcite:article
+\startsetups btx:sbl:inlinesubcite:article
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:inlinesubcite:author}
   \texdefinition{btx:sbl:cite:journalxref}
   \texdefinition{btx:sbl:cite:doi}
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:magazine
-  \fastsetup{btx:sbl:subcite:article}
+\startsetups btx:sbl:inlinesubcite:magazine
+  \fastsetup{btx:sbl:inlinesubcite:article}
 \stopsetups
 
-\startsetups btx:sbl:subcite:newspaper
-  \fastsetup{btx:sbl:subcite:article}
+\startsetups btx:sbl:inlinesubcite:newspaper
+  \fastsetup{btx:sbl:inlinesubcite:article}
 \stopsetups
 
-\startsetups btx:sbl:subcite:periodical
-  \fastsetup{btx:sbl:subcite:article}
+\startsetups btx:sbl:inlinesubcite:periodical
+  \fastsetup{btx:sbl:inlinesubcite:article}
 \stopsetups
 
-\startsetups btx:sbl:subcite:review
+\startsetups btx:sbl:inlinesubcite:review
   % Titles are not necessary for book reviews, 
   % so render the author correctly if there isn't one
   \btxdoifelse {title} {
     \texdefinition{btx:sbl:cite:title}
-    \texdefinition{btx:sbl:subcite:author}
+    \texdefinition{btx:sbl:inlinesubcite:author}
   } {
     \texdefinition{btx:sbl:cite:author}
   }
@@ -4284,12 +4284,12 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:thesis
+\startsetups btx:sbl:inlinesubcite:thesis
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:inlinesubcite:author}
   % Only recursively cite publication data if the \btxprintpubl variable is set
   \doif {\btxprintpubl} {yes} {
-    \texdefinition{btx:sbl:subcite:editortranslator}
+    \texdefinition{btx:sbl:inlinesubcite:editortranslator}
     \texdefinition{btx:sbl:cite:institution}
     \texdefinition{btx:sbl:cite:doi}
   }
@@ -4297,17 +4297,17 @@
   \removepunctuation
 \stopsetups
 
-\startsetups btx:sbl:subcite:mastersthesis
-  \fastsetup{btx:sbl:subcite:thesis}
+\startsetups btx:sbl:inlinesubcite:mastersthesis
+  \fastsetup{btx:sbl:inlinesubcite:thesis}
 \stopsetups
 
-\startsetups btx:sbl:subcite:phdthesis
-  \fastsetup{btx:sbl:subcite:thesis}
+\startsetups btx:sbl:inlinesubcite:phdthesis
+  \fastsetup{btx:sbl:inlinesubcite:thesis}
 \stopsetups
 
-\startsetups btx:sbl:subcite:conferencepaper
+\startsetups btx:sbl:inlinesubcite:conferencepaper
   \texdefinition{btx:sbl:cite:title}
-  \texdefinition{btx:sbl:subcite:author}
+  \texdefinition{btx:sbl:inlinesubcite:author}
   % Only recursively cite publication data if the \btxprintpubl variable is set
   \doif {\btxprintpubl} {yes} {
     \texdefinition{btx:sbl:cite:presentedat}
@@ -4686,7 +4686,7 @@
 \stopsetups
 
 % Inline subcitation setup
-\startsetups btx:sbl:\s!cite:subcite
+\startsetups btx:sbl:\s!cite:inlinesubcite
   \begingroup
   \def\shorthandtag{none}%
   % This gets cleared in cites, so set it here
@@ -4695,7 +4695,7 @@
   \doifelse {\btxflush{type}} {inlineshort} {
     \fastsetup{btx:sbl:short:\currentbtxcategory}
   } {
-    \fastsetup{btx:sbl:subcite:\currentbtxcategory}
+    \fastsetup{btx:sbl:inlinesubcite:\currentbtxcategory}
   }
   \endgroup
 \stopsetups
