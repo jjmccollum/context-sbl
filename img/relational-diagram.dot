@@ -1,0 +1,182 @@
+digraph relational_diagram {
+	margin=0;
+	graph [pad="2.0", nodesep="2.0", ranksep="2"];
+	node [shape=plaintext, fontname="Alegreya Sans"];
+	rankdir=BT;
+	series [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="series"><b>@series</b></td></tr>
+			<tr><td>title</td></tr>
+		</table>
+	>]
+	journal [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="journal"><b>@journal</b></td></tr>
+			<tr><td>title</td></tr>
+		</table>
+	>]
+	collection [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="collection"><b>@collection</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>publisher</td></tr>
+			<tr><td>volumes</td></tr>
+			<tr><td port="collectionseriesxref">seriesxref</td></tr>
+		</table>
+	>]
+	book [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="book"><b>@book</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>publisher</td></tr>
+			<tr><td port="bookseriesxref">seriesxref</td></tr>
+		</table>
+	>]
+	manual [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="manual"><b>@manual</b></td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>publisher</td></tr>
+			<tr><td port="manualseriesxref">seriesxref</td></tr>
+		</table>
+	>]
+	proceedings [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="proceedings"><b>@proceedings</b></td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>publisher</td></tr>
+			<tr><td port="proceedingsseriesxref">seriesxref</td></tr>
+		</table>
+	>]
+	incollection [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="incollection"><b>@incollection</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>volume</td></tr>
+			<tr><td port="incollectioncollectionxref">collectionxref</td></tr>
+			<tr><td>publisher</td></tr>
+			<tr><td port="incollectionseriesxref">seriesxref</td></tr>
+		</table>
+	>]
+	inbook [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="inbook"><b>@inbook</b></td></tr>
+			<tr><td><b>@inreference</b></td></tr>
+			<tr><td><b>@inlexicon</b></td></tr>
+			<tr><td><b>@incommentary</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>pages</td></tr>
+			<tr><td port="inbookbookxref">bookxref</td></tr>
+			<tr><td port="inbookincollectionxref">incollectionxref</td></tr>
+		</table>
+	>]
+	suppbook [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="suppbook"><b>@suppbook</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>type</td></tr>
+			<tr><td port="suppbookbookxref">bookxref</td></tr>
+			<tr><td port="suppbookincollectionxref">incollectionxref</td></tr>
+		</table>
+	>]
+	inproceedings [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="inproceedings"><b>@inproceedings</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>pages</td></tr>
+			<tr><td port="inproceedingsbookxref">bookxref</td></tr>
+		</table>
+	>]
+	ancienttext [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="ancienttext"><b>@ancienttext</b></td></tr>
+			<tr><td>title</td></tr>
+			<tr><td port="ancienttextbookxref">bookxref</td></tr>
+			<tr><td port="ancienttextincollectionxref">incollectionxref</td></tr>
+		</table>
+	>]
+	classictext [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="classictext"><b>@classictext</b></td></tr>
+			<tr><td>title</td></tr>
+			<tr><td port="classictextbookxref">bookxref</td></tr>
+			<tr><td port="classictextincollectionxref">incollectionxref</td></tr>
+			<tr><td port="classictextcollectionxref">collectionxref</td></tr>
+			<tr><td port="classictextseriesxref">seriesxref</td></tr>
+		</table>
+	>]
+	article [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="article"><b>@article</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td port="articlejournalxref">journalxref</td></tr>
+		</table>
+	>]
+	review [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="review"><b>@review</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td port="reviewbookxref">bookxref</td></tr>
+			<tr><td port="reviewincollectionxref">incollectionxref</td></tr>
+			<tr><td port="reviewjournalxref">journalxref</td></tr>
+		</table>
+	>]
+	conferencepaper [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="conferencepaper"><b>@conferencepaper</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>conference</td></tr>
+		</table>
+	>]
+	thesis [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="thesis"><b>@thesis</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>institution</td></tr>
+			<tr><td>type</td></tr>
+		</table>
+	>]
+	mastersthesis [label = <
+		<table border="0" cellborder="1" cellspacing="0">
+			<tr><td port="mastersthesis"><b>@mastersthesis</b></td></tr>
+			<tr><td port="phdthesis"><b>@phdthesis</b></td></tr>
+			<tr><td>author</td></tr>
+			<tr><td>title</td></tr>
+			<tr><td>institution</td></tr>
+		</table>
+	>]
+
+	{rank=same; series, journal}
+	{rank=same; collection}
+	{rank=same; book, manual, proceedings, incollection, thesis, mastersthesis}
+	{rank=same; inbook, suppbook, inproceedings, ancienttext, classictext, article, review, conferencepaper}
+	
+	collection:collectionseriesxref -> series:series[style=dashed];
+	book:bookseriesxref -> series:series[style=dashed];
+	manual:manualseriesxref -> series:series[style=dashed];
+	proceedings:proceedingsseriesxref -> series:series[style=dashed];
+	incollection:incollectionseriesxref -> series:series[style=dashed];
+	classictext:classictextseriesxref -> series:series[style=dashed];
+	incollection:incollectioncollectionxref -> collection:collection[style=solid];
+	classictext:classictextcollectionxref -> collection:collection[style=dashed];
+	inbook:inbookincollectionxref -> incollection:incollection[style=solid];
+	suppbook:suppbookincollectionxref -> incollection:incollection[style=solid];
+	ancienttext:ancienttextincollectionxref -> incollection:incollection[style=dashed];
+	classictext:classictextincollectionxref -> incollection:incollection[style=dashed];
+	review:reviewincollectionxref -> incollection:incollection[style=solid];
+	inbook:inbookbookxref -> book:book[style=solid];
+	suppbook:suppbookbookxref -> book:book[style=solid];
+	ancienttext:ancienttextbookxref -> book:book[style=dashed];
+	classictext:classictextbookxref -> book:book[style=dashed];
+	review:reviewbookxref -> book:book[style=solid];
+	inproceedings:inproceedingsbookxref -> proceedings:proceedings[style=solid];
+	article:articlejournalxref -> journal:journal[style=solid];
+	review:reviewjournalxref -> journal:journal[style=solid];
+}

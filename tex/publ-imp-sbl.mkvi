@@ -175,8 +175,7 @@
 \definebtx
   [sbl:\s!list:title:article]
   [sbl:\s!list:title]
-  [\c!style=, %disable italics
-  \c!command=\titlequote] % article title is quoted and its first word is capitalized
+  [\c!command=\titlequote] % article title is quoted and its first word is capitalized
 
 \definebtx
   [sbl:\s!list:title:magazine]
@@ -221,14 +220,12 @@
 \definebtx
   [sbl:\s!list:title:series]
   [sbl:\s!list:title]
-  [\c!style=, %disable italics
-  \c!command=,] %disable capitalization
+  [\c!command=,] %disable italics and capitalization
 
 \definebtx
   [sbl:\s!list:title:inbook]
   [sbl:\s!list:title]
-  [\c!style=, %disable italics
-  \c!command=\titlequote] % article title is quoted and its first word is capitalized
+  [\c!command=\titlequote] % article title is quoted and its first word is capitalized
 
 \definebtx
   [sbl:\s!list:title:inreference]
@@ -267,18 +264,13 @@
   [sbl:\s!list:title:inbook]
 
 \definebtx
-  [sbl:\s!list:title:conference]
-  [sbl:\s!list:title:inbook]
-
-\definebtx
   [sbl:\s!list:title:conferencepaper]
   [sbl:\s!list:title:inbook]
 
 \definebtx
   [sbl:\s!list:title:unpublished]
   [sbl:\s!list:title]
-  [\c!style=, %disable italics
-  \c!command=\titlequote] % unpublished title is quoted and its first word is capitalized
+  [\c!command=\titlequote] % unpublished title is quoted and its first word is capitalized
 
 \definebtx
   [sbl:\s!list:title:thesis]
@@ -612,9 +604,10 @@
    sbl:Volumes={Vols.},
    sbl:part={part},
    sbl:parts={parts},
-   sbl:diss={diss.},
    sbl:masters={Master's},
+   sbl:thesis={thesis},
    sbl:phd={PhD},
+   sbl:diss={diss.},
    sbl:reprint={repr.},
    sbl:Reprint={Repr.},
    sbl:review={review},
@@ -634,6 +627,12 @@
 
 % First some helpers:
 
+%Setup nested quotation handling (e.g., article titles with quotes)
+\setupdelimitedtext[quotation:1][left={\symbol[leftquotation]},right={\symbol[rightquotation]}]
+\setupdelimitedtext[quotation:2][left={\symbol[leftquote]}, right={\symbol[rightquote]}]
+\setupdelimitedtext[quotation:3][left={\symbol[leftquotation]},right={\symbol[rightquotation]}]
+\setupdelimitedtext[quotation:4][left={\symbol[leftquote]}, right={\symbol[rightquote]}]
+
 % Nested parentheses (used for things like publisher and institution blocks) should alternate between proper parentheses and brackets
 \definedelimitedtext[paren][quotation][location=text,left={(},right={)}]
 \setupdelimitedtext[paren:1][left={(},right={)}]
@@ -641,28 +640,35 @@
 \setupdelimitedtext[paren:3][left={(},right={)}]
 \setupdelimitedtext[paren:4][left={[}, right={]}]
 
-% Define a macro for converting dates in "YYYY-MM-DD" format to "DD Month YYYY" format
-% Define a macro for converting dates in "YYYY-MM-DD" format to "DD Month YYYY" format
+% Various Lua macros for parsing and conversion
 \startluacode
   sblhelpers = sblhelpers or {}
 
-  function sblhelpers.countdatecomponents(str)
-    -- if the date is a range of years, then return 1
-    if string.count(str, "%-%-") > 0 then
-      context(1)
+  function sblhelpers.ordinal(str)
+    if string.sub(str, -2, -1) == "11" or string.sub(str, -2, -1) == "12" or string.sub(str, -2, -1) == "13" then
+      context("%sth", str)
       return
     end
-    context(string.count(str, "-") + 1)
+    if string.sub(str, -1, -1) == "1" then
+      context("%sst", str)
+      return
+    end
+    if string.sub(str, -1, -1) == "2" then
+      context("%snd", str)
+      return
+    end
+    if string.sub(str, -1, -1) == "3" then
+      context("%srd", str)
+      return
+    else
+      context("%sth", str)
+      return
+    end
   end
 	
   function sblhelpers.convertdate(str)
     -- if the date is a range of years, then return it as-is
     if string.count(str, "%-%-") > 0 then
-      context(str)
-      return
-    end
-    -- if the date contains the substring "and", then return it as-is
-    if string.count(str, "and") > 0 then
       context(str)
       return
     end
@@ -677,44 +683,92 @@
       return
     end
     if n == 3 then
-      context.date({y = components[1], m = components[2], d = components[3]}, {"dd,month,year"})
+      context.date({y = components[1], m = components[2], d = components[3]}, {"d,month,year"})
       return
     else
       context(str)
     end
   end
+
+  function sblhelpers.serializelocationpublisher(location, publisher)
+    -- split all fields into arrays of components separated by the substring " and "
+    local locations = string.split(location, " and ")
+    local publishers = string.split(publisher, " and ")
+    -- if the locations array is shorter than the publishers array (because we may be citing multiple publishers in the same city), 
+    -- then pad it with its last value (if it has one) until it is the same length
+    while #locations < #publishers do
+      if locations[#locations] and locations[#locations] ~= "" then
+        table.insert(locations, locations[#locations])
+      else
+        break
+      end
+    end
+    for i=1,#publishers do
+      context("%s: %s", locations[i], publishers[i])
+      if i < #publishers then
+        context("; ")
+      end
+    end
+  end
+
+  function sblhelpers.serializevolumenumberdatepage(volume, number, date, page)
+    -- split all fields into arrays of components separated by the substring " and "
+    local volumes = string.split(volume, " and ")
+    local numbers = string.split(number, " and ")
+    local dates = string.split(date, " and ")
+    local pages = string.split(page, " and ")
+    -- if the volumes array is shorter than the numbers array (because we may be citing multiple numbers in the same volume), 
+    -- then pad it with its last value (if it has one) until it is the same length
+    while #volumes < #numbers do
+      if volumes[#volumes] and volumes[#volumes] ~= "" then
+        table.insert(volumes, volumes[#volumes])
+      else
+        break
+      end
+    end
+    -- if the dates array is shorter than the volumes array (because we may be citing multiple issues in the same year), 
+    -- then pad it until it is the same length
+    while #dates < #volumes do
+      if dates[#dates] and dates[#dates] ~= "" then
+        table.insert(dates, dates[#dates])
+      else
+        break
+      end
+    end
+    -- now print all fields together
+    for i=1,#volumes do
+      context("%s", volumes[i])
+      if numbers[i] and numbers[i] ~= "" then
+        context(".%s", numbers[i])
+      end
+      -- we print the date differently if it is a full date
+      if string.find(dates[i], "%d%d%d%d%-%d%d%-%d%d") then
+        context(", ")
+        sblhelpers.convertdate(dates[i])
+        context(", ")
+      else
+        context(" (")
+        sblhelpers.convertdate(dates[i])
+        context("): ")
+      end
+      if pages[i] and pages[i] ~= "" then
+        context("%s", pages[i])
+      end
+      if i < #volumes then
+        context("; ")
+      end
+    end
+  end
 \stopluacode
-\def\countdatecomponents#1{\ctxlua{sblhelpers.countdatecomponents([==[#1]==])}}
-\def\convertdate#1{\ctxlua{sblhelpers.convertdate([==[#1]==])}}
+\def\ordinal#1{\ctxlua{sblhelpers.ordinal([==[#1]==])}}%
+\def\convertdate#1{\ctxlua{sblhelpers.convertdate([==[#1]==])}}%
+\def\serializelocationpublisher#1#2{\ctxlua{sblhelpers.serializelocationpublisher([==[#1]==],[==[#2]==])}}%
+\def\serializevolumenumberdatepage#1#2#3#4{\ctxlua{sblhelpers.serializevolumenumberdatepage([==[#1]==],[==[#2]==],[==[#3]==],[==[#4]==])}}%
 
 % Define some helper functions for subcitations
 \let\btxroottag\empty% the tag of the initially cited entry
-\def\shorthandtag{none}% the current entry (if any) with a shorthand to be used
 \def\btxprintpubl{yes}% yes/no indicating whether publication information should be specified for the current citation or subcitation
 \let\btxcurrentsubcitetype\empty% the type of subcitation we're invoking
-
-% If the current entry or the book or collection containing it has a shorthand,
-% then update the \shorthandtag variable to it
-\starttexdefinition sbl:setshorthandtag
-  \def\shorthandtag{none}%
-  \btxdoifelse{shorthand} {
-    \def\shorthandtag{\currentbtxtag}%
-  } {
-    \btxdoif{bookxref} {
-      \def\bookxreftag{\btxflush{bookxref}}
-      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
-        \def\shorthandtag{\bookxreftag}%
-      } {
-        \clf_btxdoif{\currentbtxdataset}{\bookxreftag}{collectionxref} {
-          \def\collectionxreftag{\clf_btxflush{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-          \clf_btxdoif{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-            \def\shorthandtag{\collectionxreftag}%
-          }
-        }
-      }
-    }
-  }
-\stoptexdefinition
 
 % Define handlers for same-author entries in the list
 \startsetups sbl:list:sameauthor
@@ -735,28 +789,6 @@
 \startsetups sbl:list:sameauthor:ditto
   {Ibid.}
 \stopsetups
-
-% I thought \enordinaldaynumber was already defined elsewhere in ConTeXt, 
-% but the engine isn't recognizing it...
-\starttexdefinition btx:sbl:enordinal #1
-  #1\ifnum\lasttwodigits{#1}=11
-    th%
-  \else\ifnum\lasttwodigits{#1}=12
-    th%
-  \else\ifnum\lasttwodigits{#1}=13
-    th%
-  \else\ifcase\lastdigit{#1}%
-    th%
-    \or % 1
-      st%
-    \or % 2
-      nd%
-    \or % 3
-      rd%
-  \else
-    th%
-  \fi\fi\fi\fi
-\stoptexdefinition
 
 \starttexdefinition btx:sbl:list:author
   \btxdoif {author} {
@@ -1713,8 +1745,8 @@
     \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
     \doifelse{\btxfoundname{bookxref}}{incollectionxref} {
       \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}%
-      % Precede the subcited source with "in", unless it is of type "inlineshorthand"
-      \doifnot{\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{type}}{inlineshorthand} {
+      % Precede the subcited source with "in", unless it is of type "inlineshort"
+      \doifnot{\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{type}}{inlineshort} {
         \btxlabeltext{sbl:in}
         \btxspace
       }
@@ -1730,8 +1762,8 @@
       }
       \btxflush{pages}
     } {
-      % Precede the subcited source with "in", unless it is of type "inlineshorthand"
-      \doifnot{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}}{inlineshorthand} {
+      % Precede the subcited source with "in", unless it is of type "inlineshort"
+      \doifnot{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}}{inlineshort} {
         \btxlabeltext{sbl:in}
         \btxspace
       }
@@ -2011,8 +2043,8 @@
       % and the text's part number
       \btxdoifelse {pages} {
         \doifelse {\btxfoundname{bookxref}} {incollectionxref} {
-          % If the volume containing this text is of type "inlineshorthand", then remove the preceding comma
-          \doif {\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {inlineshorthand} {
+          % If the volume containing this text is of type "inlineshort", then remove the preceding comma
+          \doif {\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {inlineshort} {
             \removeunwantedspaces
             \removepunctuation
             \btxspace
@@ -2232,7 +2264,7 @@
         \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}%
         % If the collection, volume, or book containing this text uses the shorthand of its series (e.g., LCL), then cite it here,
         % followed by any cited page numbers
-        \doif{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {seriesasshorthand} {
+        \doif{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {useseriesshorthand} {
           \btxcomma
           \cite[alternative=short][\bookxreftag]
           \doifnot {\currentbtxrighttext} {\empty} {
@@ -2495,7 +2527,7 @@
     % Is the edition a string or a number?
     \doifnumberelse {\btxflush{edition}} {
       % If a number, then convert it to an ordinal
-      \texdefinition{btx:sbl:enordinal}{\btxflush{edition}}
+      \ordinal{\btxflush{edition}}
       \btxspace
       \btxlabeltext{sbl:edition}
     } {
@@ -2518,7 +2550,7 @@
     % Is the edition a string or a number?
     \doifnumberelse {\btxflush{edition}} {
       % If a number, then convert it to an ordinal
-      \texdefinition{btx:sbl:enordinal}{\btxflush{edition}}
+      \ordinal{\btxflush{edition}}
       \btxspace
       \btxlabeltext{sbl:edition}
     } {
@@ -2538,7 +2570,7 @@
       % If so, then recursively cite the series, but do not add it to the list
       \begingroup
       \def\btxprintpubl{no}% don't print publication information about the series
-      \textcite[listsubcite][\btxflush{series}]
+      \textcite[alternative=listsubcite,lefttext=,righttext=][\btxflush{series}]
       \endgroup
     } {
       % Otherwise, this field just contains the series name; print it with the appropriate formatting
@@ -2576,7 +2608,7 @@
       % If so, then recursively cite the series, but do not add it to the list
       \begingroup
       \def\btxprintpubl{no}% don't print publication information about the series
-      \textcite[subcite][\btxflush{series}]
+      \textcite[alternative=subcite,lefttext=,righttext=][\btxflush{series}]
       \endgroup
     } {
       % Otherwise, this field just contains the series name; print it with the appropriate formatting
@@ -2632,6 +2664,7 @@
       \def\btxprintpubl{no}%
       \textcite[listsubcite][\btxflush{journal}]
       \endgroup
+      \btxspace
     } {
       % Otherwise, this field just contains the journal name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:journal]
@@ -2639,41 +2672,10 @@
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
-    }
-    % Print the volume number(s), if any
-    % TODO: Need to handle the case of multiple volumes/numbers, dates, and page numbers separated by "and"
-    \btxdoif {volume} {
       \btxspace
-      \btxflush{volume}
-      % If there is an issue number or range, then print it after the volume number, with a period in between
-      \btxdoif {number} {
-        \removeunwantedspaces
-        \btxperiod
-        \removeunwantedspaces
-        \btxflush{number}
-      }
     }
-    % Print the date
-    % If date is in "YYYY-MM-DD" format, 
-    % then it should be printed in "DD Month YYYY" format without parentheses and both preceded and followed by a comma;
-    % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
-    \btxdoif {date} {
-      \doifelse {\countdatecomponents{\btxflush{date}}} {3} {
-        \btxcomma
-        \convertdate{\btxflush{date}}
-        \btxcomma
-      } {
-        \btxspace
-        \startparen
-        \convertdate{\btxflush{date}}
-        \stopparen
-        \btxcolon
-      }
-    }
-    % Print the page numbers
-    \btxdoif {pages} {
-      \btxflush{pages}
-    }
+    % Print the volume(s), number(s), date(s), and page range(s)
+    \serializevolumenumberdatepage{\btxflush{volume}}{\btxflush{number}}{\btxflush{date}}{\btxflush{pages}}
     \btxperiod
   }
 \stoptexdefinition
@@ -2687,6 +2689,7 @@
       \def\btxprintpubl{no}%
       \textcite[subcite][\btxflush{journal}]
       \endgroup
+      \btxspace
     } {
       % Otherwise, this field just contains the journal name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:journal]
@@ -2694,41 +2697,10 @@
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
-    }
-    % Print the volume number(s), if any
-    % TODO: Need to handle the case of multiple volumes/numbers, dates, and page numbers separated by "and"
-    \btxdoif {volume} {
       \btxspace
-      \btxflush{volume}
-      % If there is an issue number or range, then print it after the volume number, with a period in between
-      \btxdoif {number} {
-        \removeunwantedspaces
-        \btxperiod
-        \removeunwantedspaces
-        \btxflush{number}
-      }
     }
-    % Print the date
-    % If date is in "YYYY-MM-DD" format, 
-    % then it should be printed in "DD Month YYYY" format without parentheses and followed by a comma;
-    % otherwise, it should be printed as a year (preceded by the month, if provided) in parentheses followed by a colon.
-    \btxdoif {date} {
-      \doifelse {\countdatecomponents{\btxflush{date}}} {3} {
-        \btxcomma
-        \convertdate{\btxflush{date}}
-        \btxcomma
-      } {
-        \btxspace
-        \startparen
-        \convertdate{\btxflush{date}}
-        \stopparen
-        \btxcolon
-      }
-    }
-    % Print the page numbers
-    \btxdoif {pages} {
-      \btxflush{pages}
-    }
+    % Print the volume(s), number(s), date(s), and page range(s)
+    \serializevolumenumberdatepage{\btxflush{volume}}{\btxflush{number}}{\btxflush{date}}{\btxflush{pages}}
     \btxcomma
   }
 \stoptexdefinition
@@ -2736,41 +2708,36 @@
 \starttexdefinition btx:sbl:list:publisher
   \btxdoif {publisher} {
     % Is this a reprint?
-    \btxdoif {origpublisher} {
-      % Is there an original publication location?
-      \btxdoif {origlocation} {
-        \btxflush{origlocation}
-        \btxcolon
+    \btxdoif {origdate} {
+      % Is there an original publisher distinct from the current publisher?
+      % If not, then we assume that the publisher is the same, and only the date is different
+      \btxdoif {origpublisher} {
+        \doifnot {\btxflush{origpublisher}} {\btxflush{publisher}} {
+          % Is the original location distinct from the current location?
+          \btxdoifelse {origlocation} {
+            \serializelocationpublisher{\btxflush{origlocation}}{\btxflush{origpublisher}}
+          } {
+            \serializelocationpublisher{\btxflush{location}}{\btxflush{origpublisher}}
+          }
+          \btxcomma
+        }
       }
-      % Is there an original publisher?
-      \doif {\btxfoundname{origpublisher}} {origpublisher} {
-        \btxflush{origpublisher}
-        \btxcomma
-      }
-      % Is there an original publication date?
-      \btxdoif {origdate} {
-        \btxflush{origdate}
-        \btxcomma
-      }
-      % Remove the last punctuation token and replace it with a period,
-      % followed by the reprint notation
-      \removeunwantedspaces
-      \removepunctuation
+      \btxflush{origdate}
       \btxperiod
+      % Follow this with the reprint notation
       \btxlabeltext{sbl:Reprint}
       \btxcomma
     }
-    % Is there a location?
-    \btxdoif {location} {
-      \btxflush{location}
-      \btxcolon
-    }
     % Is there a publisher?
     \btxdoif {publisher} {
-      \btxflush{publisher}
+      % Does the publisher have a location?
+      \btxdoifelse {location} {
+        \serializelocationpublisher{\btxflush{location}}{\btxflush{publisher}}% in case there are multiple publishers at different locations
+      } {
+        \btxflush{publisher}
+      }
       \btxcomma
     }
-    
     % Is there a publication date?
     \btxdoif{date} {
       \btxflush{date}
@@ -2791,41 +2758,36 @@
     \btxspace
     \startparen
     % Is this a reprint?
-    \btxdoif {origpublisher} {
-      % Is there an original publication location?
-      \btxdoif {origlocation} {
-        \btxflush{origlocation}
-        \btxcolon
+    \btxdoif {origdate} {
+      % Is there an original publisher distinct from the current publisher?
+      % If not, then we assume that the publisher is the same, and only the date is different
+      \btxdoif {origpublisher} {
+        \doifnot {\btxflush{origpublisher}} {\btxflush{publisher}} {
+          % Is the original location distinct from the current location?
+          \btxdoifelse {origlocation} {
+            \serializelocationpublisher{\btxflush{origlocation}}{\btxflush{origpublisher}}
+          } {
+            \serializelocationpublisher{\btxflush{location}}{\btxflush{origpublisher}}
+          }
+          \btxcomma
+        }
       }
-      % Is there an original publisher?
-      \doif {\btxfoundname{origpublisher}} {origpublisher} {
-        \btxflush{origpublisher}
-        \btxcomma
-      }
-      % Is there an original publication date?
-      \btxdoif {origdate} {
-        \btxflush{origdate}
-        \btxcomma
-      }
-      % Remove the last punctuation token and replace it with a semicolon,
-      % followed by the reprint notation
-      \removeunwantedspaces
-      \removepunctuation
+      \btxflush{origdate}
       \btxsemicolon
+      % Follow this with the reprint notation
       \btxlabeltext{sbl:reprint}
       \btxcomma
     }
-    % Is there a location?
-    \btxdoif {location} {
-      \btxflush{location}
-      \btxcolon
-    }
     % Is there a publisher?
     \btxdoif {publisher} {
-      \btxflush{publisher}
+      % Does the publisher have a location?
+      \btxdoifelse {location} {
+        \serializelocationpublisher{\btxflush{location}}{\btxflush{publisher}}% in case there are multiple publishers at different locations
+      } {
+        \btxflush{publisher}
+      }
       \btxcomma
     }
-    
     % Is there a publication date?
     \btxdoif{date} {
       \btxflush{date}
@@ -2851,7 +2813,7 @@
       \doifelse {\currentbtxcategory} {mastersthesis} {
         \btxlabeltext{sbl:masters}
         \btxspace
-        \btxlabeltext{sbl:diss}
+        \btxlabeltext{sbl:thesis}
         \btxcomma
       } {
         \btxdoif {type} {
@@ -2864,7 +2826,7 @@
           \doif {\btxfield{type}} {mastersthesis} {
             \btxlabeltext{sbl:masters}
             \btxspace
-            \btxlabeltext{sbl:diss}
+            \btxlabeltext{sbl:thesis}
             \btxcomma
           }
         }
@@ -2937,11 +2899,11 @@
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:list:presentedat
-  \btxdoif {eventtitle} {
+  \btxdoif {conference} {
     % Print the "paper presented at" preamble
     \btxlabeltext{sbl:Paperpresentedat}
     \btxspace
-    \btxflush{eventtitle}
+    \btxflush{conference}
     \btxperiod
     % Is there a location?
     \btxdoif {location} {
@@ -2961,7 +2923,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:cite:presentedat
-  \btxdoif {eventtitle} {
+  \btxdoif {conference} {
     % Remove all preceding punctuation and spaces and use a parenthesis
     \removeunwantedspaces
     \removepunctuation
@@ -2970,7 +2932,7 @@
     % Print the "paper presented at" preamble
     \btxlabeltext{sbl:paperpresentedat}
     \btxspace
-    \btxflush{eventtitle}
+    \btxflush{conference}
     \btxcomma
     % Is there a location?
     \btxdoif {location} {
@@ -4337,8 +4299,8 @@
       \texdefinition{btx:sbl:short:righttext}
     }
   }
-  % If this entry is of type "seriesasshorthand", then cite the shorthand of its series (without series and entry numbers) as its shorthand, followed by any cited page numbers
-  \doif{\btxflush{type}}{seriesasshorthand} {
+  % If this entry is of type "useseriesshorthand", then cite the shorthand of its series (without series and entry numbers) as its shorthand, followed by any cited page numbers
+  \doif{\btxflush{type}}{useseriesshorthand} {
     % Is this a cross-reference to a separate entry for the series?
     \doifelse {\btxfoundname{series}} {seriesxref} {
       % If so, then recursively cite the shorthand for the series
@@ -4357,7 +4319,7 @@
     \texdefinition{btx:sbl:short:righttext}
   }
   % Otherwise, proceed normally
-  \doifnotinset{\btxflush{type}}{seriesascollection, seriesasshorthand} {
+  \doifnotinset{\btxflush{type}}{seriesascollection, useseriesshorthand} {
     \btxdoifelse {shorthand} {
       \texdefinition{btx:sbl:cite:shorthand}
     } {
@@ -4395,8 +4357,8 @@
       \texdefinition{btx:sbl:short:righttext}
     }
   }
-  % If this entry is of type "seriesasshorthand", then cite the shorthand of its series (without series and entry numbers) as its shorthand, followed by any cited page numbers
-  \doif {\btxflush{type}}{seriesasshorthand} {
+  % If this entry is of type "useseriesshorthand", then cite the shorthand of its series (without series and entry numbers) as its shorthand, followed by any cited page numbers
+  \doif {\btxflush{type}}{useseriesshorthand} {
     % Is this a cross-reference to a separate entry for the series?
     \doifelse {\btxfoundname{series}} {seriesxref} {
       % If so, then recursively cite the shorthand for the series
@@ -4415,7 +4377,7 @@
     \texdefinition{btx:sbl:short:righttext}
   }
   % Otherwise, proceed normally
-  \doifnotinset{\btxflush{type}}{seriesascollection, seriesasshorthand} {
+  \doifnotinset{\btxflush{type}}{seriesascollection, useseriesshorthand} {
     \def\collectionxreftag{\btxflush{collectionxref}}%
     \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
       % If the collection containing this entry has a shorthand, then cite it;
@@ -4679,7 +4641,7 @@
   \def\shorthandtag{none}%
   \let\btxcurrentsubcitetype\empty
   % Then invoke the appropriate setup
-  \doifelse {\btxflush{type}} {inlineshorthand} {
+  \doifelse {\btxflush{type}} {inlineshort} {
     \fastsetup{btx:sbl:short:\currentbtxcategory}
   } {
     \fastsetup{btx:sbl:cite:\currentbtxcategory}
@@ -4695,7 +4657,7 @@
   % This gets cleared in cites, so set it here
   \def\currentbtxcategory{\btxfield{category}}%
   % Then invoke the appropriate setup
-  \doifelse {\btxflush{type}} {inlineshorthand} {
+  \doifelse {\btxflush{type}} {inlineshort} {
     \fastsetup{btx:sbl:short:\currentbtxcategory}
   } {
     \fastsetup{btx:sbl:subcite:\currentbtxcategory}
