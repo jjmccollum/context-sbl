@@ -842,8 +842,8 @@
       context(pages)
       return
     end
-    -- otherwise, if the first page number ends in 0, then print the range as-is
-    if string.sub(start_page, -1, -1) == "0" then
+    -- otherwise, if the first page number ends in 00, then print the range as-is
+    if string.sub(start_page, -2, -1) == "00" then
       context(pages)
       return
     end
