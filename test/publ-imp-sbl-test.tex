@@ -28,6 +28,12 @@
 
 \define[1]\textsuperscript{{\feature[+][superscript]#1}}
 
+\setupbtx[sbl:cite][
+	alternative=inline, % comment to use footnote variant as default
+	%useibid=yes, %uncomment to test ibid.
+	%useidem=yes, %uncomment to test idem
+]
+
 \starttext
 \title{6 Notes and Bibliographies}
 \subject{6.2 General Examples: Books}
@@ -358,6 +364,6 @@ to indicate the medium in the citation.
 \page
 
 \startsubject[title=Bibliography]
-	\placelistofpublications[criterium=all] % print all entries, even if they haven't been cited in-text
+	\placelistofpublications
 \stopsubject
 \stoptext

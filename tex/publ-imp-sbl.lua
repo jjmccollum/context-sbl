@@ -11,6 +11,7 @@ local specification = {
     -- derived (combinations of) fields (all share the same default set)
     --
     virtual = {
+        "authortitle",
         "authoryear",
         "authoryears",
         "authornum",
@@ -103,6 +104,7 @@ categories.series = {
     optional = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
+        "subtitle",
         "editor", "editortype",
         "witheditor", "witheditortype",
         "volumes",
@@ -142,6 +144,7 @@ categories.collection = {
     optional = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype",
         "editor", "editortype",
         "witheditor", "witheditortype",
@@ -180,6 +183,7 @@ categories.book = {
     optional = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype",
         "editor", "editortype",
         "witheditor", "witheditortype",
@@ -216,6 +220,7 @@ categories.manual = {
     optional = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
+        "subtitle",
         "author",
         "withauthor", "withauthortype",
         "editor", "editortype",
@@ -254,6 +259,7 @@ categories.proceedings = {
         "author", -- referring to the set above
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
+        "subtitle",
         "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
@@ -289,6 +295,7 @@ categories.incollection = {
     optional = {
         "title", -- optional for this category
         "shorttitle", -- for short citations
+        "subtitle",
         "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
@@ -323,6 +330,7 @@ categories.inbook = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype",
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",
@@ -388,6 +396,7 @@ categories.ancienttext = {
     optional = {
         "shorthand", -- to abbreviate (e.g., for papyri, ostraca, and epigraphica)
         "shorttitle", -- for short citations
+        "subtitle",
         "author", -- author of the ancient text (if known)
         "withauthor", "withauthortype",
         "editor", "editortype",
@@ -419,6 +428,7 @@ categories.classictext = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "author", -- author of the classical text (if known)
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
@@ -448,6 +458,7 @@ categories.article = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype", 
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -483,6 +494,7 @@ categories.review = {
     optional = {
         "withauthor", "withauthortype",
         "title",
+        "subtitle",
         "shorttitle", -- for short citations
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -507,6 +519,7 @@ categories.conferencepaper = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -533,6 +546,7 @@ categories.thesis = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -558,6 +572,7 @@ categories.mastersthesis = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -584,6 +599,7 @@ categories.unpublished = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "withauthor", "withauthortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
@@ -608,6 +624,7 @@ categories.online = {
     },
     optional = {
         "shorttitle", -- for short citations
+        "subtitle",
         "author", 
         "withauthor", "withauthortype",
         "editor", "editortype",
@@ -647,8 +664,9 @@ categories.misc = {
         "author", 
         "withauthor", "withauthortype",
         "title",
-        "shorthand", -- to abbreviate in subcites
+        "subtitle",
         "shorttitle", -- for short citations
+        "shorthand", -- to abbreviate in subcites
         "collectionxref", "volume", "part",
         "bookxref",
         "pages",
@@ -696,8 +714,9 @@ categories.literal = {
     optional = {
         "withauthor", "withauthortype",
         "title",
-        "shorthand", -- to abbreviate in subcites
+        "subtitle",
         "shorttitle", -- for short citations
+        "shorthand", -- to abbreviate in subcites
         "collectionxref", "volume", "part",
         "bookxref",
         "pages",
