@@ -3002,6 +3002,20 @@
     } {
       \btxlabeltext{sbl:volumes}
     }
+    % If the volumes are subdivided by a specified number of parts,
+    % then print the number of parts, as well
+    \btxdoif {parts} {
+      \btxspace
+      \btxlabeltext{sbl:in}
+      \btxspace
+      \btxflush{parts}
+      \btxspace
+      \doifelse {\btxflush{parts}} {1} {
+        \btxlabeltext{sbl:part}
+      } {
+        \btxlabeltext{sbl:parts}
+      }
+    }
     % Don't duplicate the period from "vol." or "vols."
     \removeunwantedspaces
     \removepunctuation
@@ -3017,6 +3031,20 @@
       \btxlabeltext{sbl:volume}
     } {
       \btxlabeltext{sbl:volumes}
+    }
+    % If the volumes are subdivided by a specified number of parts,
+    % then print the number of parts, as well
+    \btxdoif {parts} {
+      \btxspace
+      \btxlabeltext{sbl:in}
+      \btxspace
+      \btxflush{parts}
+      \btxspace
+      \doifelse {\btxflush{parts}} {1} {
+        \btxlabeltext{sbl:part}
+      } {
+        \btxlabeltext{sbl:parts}
+      }
     }
     \btxcomma
   }

@@ -150,6 +150,7 @@ categories.collection = {
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
+        "parts",
         "series", "seriesseries", "number",
         "origlocation", "origpublisher", "origdate",
         "location",
