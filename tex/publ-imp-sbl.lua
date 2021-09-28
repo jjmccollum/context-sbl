@@ -71,7 +71,7 @@ local generic = {
     location = { "location", "address" }, -- interchangeable
     institution = { "institution", "school" }, -- interchangeable
     date = { "date", "year", "pubstate" }, -- prefer the more specific field, and prefer any date to publication state (e.g., "forthcoming")
-    bookxref = { "bookxref", "incollectionxref" }, -- the presence of any of these fields indicates that the entry is part of a single-volume book or a volume in a collection
+    crossref = { "crossref", "xref" }, -- the presence of any of these fields indicates that the entry is cross-referenced to a book or collection containing it
     pages = { "pages", "page" }, -- interchangeable
     reprxref = { "reprxref", "transxref" }, -- the presence of any of these fields indicates that the entry is a reprint or translation of another work
     doi = { "doi", "url" }, -- prefer DOI to arbitrary URL
@@ -318,7 +318,7 @@ categories.incollection = {
 -- an article or note in a study Bible (§6.4.9.1)
 categories.inbook = {
     sets = {
-        bookxref = generic.bookxref,
+        crossref = generic.crossref,
         pages = generic.pages,
         reprxref = generic.reprxref,
         doi = generic.doi,
@@ -326,7 +326,7 @@ categories.inbook = {
     required = {
         "author", -- author of the article/chapter (or book, if the author also wrote the book)
         "title", -- title of the article/chapter
-        "bookxref", -- a set
+        "crossref", -- a set
         "pages", -- a set
     },
     optional = {
@@ -338,18 +338,15 @@ categories.inbook = {
         "reprxref",
         "doi",
         "type", -- (for exceptional cases that require special formatting)
+        "entrysubtype", -- (for subdivisions such as "inlexicon" or "incommentary")
         "note",
     },
 }
 
 -- an article in an encyclopaedia or a dictionary (§6.3.6)
-categories.inreference = categories.inbook
-
 -- an article in a lexicon (§6.3.7)
-categories.inlexicon = categories.inreference
-
 -- an article in a commentary on the entire Bible (§6.4.9.2, 6.4.10.2)
-categories.incommentary = categories.inreference
+categories.inreference = categories.inbook
 
 -- a seminar paper (§6.4.11)
 categories.inproceedings = categories.inbook
@@ -361,7 +358,7 @@ categories.conference = categories.inproceedings
 -- similar to inbook, but a type is required instead of a page range (although a page range can optionally be supplied, as well)
 categories.suppbook = {
     sets = {
-        bookxref = generic.bookxref,
+        crossref = generic.crossref,
         pages = generic.pages,
         reprxref = generic.reprxref,
         doi = generic.doi,
@@ -369,7 +366,7 @@ categories.suppbook = {
     required = {
         "author", -- author of the introduction/preface/foreword (a set)
         "type", -- e.g., "introduction", "preface", "foreword"
-        "bookxref", -- a set
+        "crossref", -- a set
     },
     optional = {
         "withauthor", "withauthortype",
@@ -386,7 +383,7 @@ categories.suppbook = {
 -- almost identical to inbook, but no author is required
 categories.ancienttext = {
     sets = {
-        bookxref = generic.bookxref,
+        crossref = generic.crossref,
         pages = generic.pages,
         reprxref = generic.reprxref,
         doi = generic.doi,
@@ -404,7 +401,7 @@ categories.ancienttext = {
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
-        "bookxref",
+        "crossref",
         "part",
         "pages",
         "location", -- for artifact provenance, not publication
@@ -418,7 +415,7 @@ categories.ancienttext = {
 -- an ancient work by a church father (§6.4.4-6)
 categories.classictext = {
     sets = {
-        bookxref = { "collectionxref", "incollectionxref", "bookxref" }, -- classical texts can span multiple volumes of multivolume collections
+        crossref = generic.crossref,
         pages = generic.pages,
         series = generic.series,
         reprxref = generic.reprxref,
@@ -435,7 +432,7 @@ categories.classictext = {
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
         "series", "seriesseries", "number",
-        "bookxref",
+        "crossref",
         "part",
         "pages",
         "doi",
@@ -484,12 +481,12 @@ categories.review = {
         journal = generic.journal,
         date = generic.date,
         pages = generic.pages,
-        bookxref = generic.bookxref,
+        crossref = generic.crossref,
         doi = generic.doi,
     },
     required = {
         "author",
-        "bookxref", -- a set
+        "crossref", -- a set
         "journal", -- a set
     },
     optional = {
@@ -648,7 +645,7 @@ categories.electronic = categories.online
 categories.misc = {
     sets = {
         author = { "author", "editor", "organization" },
-        bookxref = generic.bookxref,
+        crossref = generic.crossref,
         journal = generic.journal,
         pages = generic.pages,
         series = generic.series,
@@ -669,7 +666,7 @@ categories.misc = {
         "shorttitle", -- for short citations
         "shorthand", -- to abbreviate in subcites
         "collectionxref", "volume", "part",
-        "bookxref",
+        "crossref",
         "pages",
         "editor", "editortype",
         "witheditor", "witheditortype",
@@ -697,7 +694,7 @@ categories.misc = {
 categories.literal = {
     sets = {
         author = { "key" },
-        bookxref = generic.bookxref,
+        crossref = generic.crossref,
         journal = generic.journal,
         pages = generic.pages,
         series = generic.series,
@@ -719,7 +716,7 @@ categories.literal = {
         "shorttitle", -- for short citations
         "shorthand", -- to abbreviate in subcites
         "collectionxref", "volume", "part",
-        "bookxref",
+        "crossref",
         "pages",
         "editor", "editortype",
         "witheditor", "witheditortype",

@@ -12,7 +12,7 @@
 
 % NOTE FOR HANS: Because of cross-reference relationships between bibliographic entries that this rendering uses,
 % I have had to use several low-level macros to retrieve fields from entries other than the current one.
-% Specifically, these are \clf_btxdirect, \clf_btxdoif, \clf_btxdoifelse, \clf_btxfoundname, and \clf_btxauthor.
+% Specifically, these are \clf_btxfield, \clf_btxdirect, \clf_btxdoif, \clf_btxdoifelse, \clf_btxfoundname, and \clf_btxauthor.
 % If using higher-level helper function would be preferable here, then these helper functions will need to be defined.
 
 \startbtxrenderingdefinitions[sbl]
@@ -235,14 +235,6 @@
 
 \definebtx
   [sbl:\s!list:title:inreference]
-  [sbl:\s!list:title:inbook]
-
-\definebtx
-  [sbl:\s!list:title:inlexicon]
-  [sbl:\s!list:title:inbook]
-
-\definebtx
-  [sbl:\s!list:title:incommentary]
   [sbl:\s!list:title:inbook]
 
 \definebtx
@@ -965,53 +957,97 @@
   function sbl.serializevolumenumberdatepage(volume, number, date, page)
     -- split all fields into arrays of components separated by the word "and"
     --local andsplitter = string.wordsplitter("and") -- when Hans adds it
-    --local volumes = wordsplitter(volume)
-    --local numbers = wordsplitter(number)
-    --local dates = wordsplitter(date)
-    --local pages = wordsplitter(page)
-    local volumes = sbl.regexsplit(volume, "%s+and%s+")
-    local numbers = sbl.regexsplit(number, "%s+and%s+")
-    local dates = sbl.regexsplit(date, "%s+and%s+")
-    local pages = sbl.regexsplit(page, "%s+and%s+")
-    -- if the volumes array is shorter than the numbers array (because we may be citing multiple numbers in the same volume), 
-    -- then pad it with its last value (if it has one) until it is the same length
-    while #volumes < #numbers do
+    --local volumes = andsplitter(volume)
+    --local numbers = andsplitter(number)
+    --local dates = andsplitter(date)
+    --local pages = andsplitter(page)
+    local volumes = {}
+    if string.count(volume, "%s+and%s+") > 0 then
+      volumes = sbl.regexsplit(volume, "%s+and%s+")
+    else
+      if volume and volume ~= "" then
+        table.insert(volumes, volume)
+      end
+    end
+    local numbers = {}
+    if string.count(number, "%s+and%s+") > 0 then
+      numbers = sbl.regexsplit(number, "%s+and%s+")
+    else
+      if number and number ~= "" then
+        table.insert(numbers, number)
+      end
+    end
+    local dates = {}
+    if string.count(date, "%s+and%s+") > 0 then
+      dates = sbl.regexsplit(date, "%s+and%s+")
+    else
+      if date and date ~= "" then
+        table.insert(dates, date)
+      end
+    end
+    local pages = {}
+    if string.count(page, "%s+and%s+") > 0 then
+      pages = sbl.regexsplit(page, "%s+and%s+")
+    else
+      if page and page ~= "" then
+        table.insert(pages, page)
+      end
+    end
+    -- pad all arrays until they are the length of the longest array
+    local max_len = math.max(#volumes, #numbers, #dates, #pages)
+    while #volumes < max_len do
       if volumes[#volumes] and volumes[#volumes] ~= "" then
         table.insert(volumes, volumes[#volumes])
       else
-        break
+        table.insert(volumes, "")
       end
     end
-    -- if the dates array is shorter than the volumes array (because we may be citing multiple issues in the same year), 
-    -- then pad it until it is the same length
-    while #dates < #volumes do
+    while #numbers < max_len do
+      if numbers[#numbers] and numbers[#numbers] ~= "" then
+        table.insert(numbers, numbers[#numbers])
+      else
+        table.insert(numbers, "")
+      end
+    end
+    while #dates < max_len do
       if dates[#dates] and dates[#dates] ~= "" then
         table.insert(dates, dates[#dates])
       else
-        break
+        table.insert(dates, "")
+      end
+    end
+    while #pages < max_len do
+      if pages[#pages] and pages[#pages] ~= "" then
+        table.insert(pages, pages[#pages])
+      else
+        table.insert(pages, "")
       end
     end
     -- now print all fields together
-    for i=1,#volumes do
-      context("%s", volumes[i])
-      if numbers[i] and numbers[i] ~= "" then
-        context(".%s", numbers[i])
+    for i=1,max_len do
+      if volumes[i] ~= "" then
+        context(" ") -- add a space to follow the journal name
+        context("%s", volumes[i])
+        if numbers[i] ~= "" then
+          context(".%s", numbers[i])
+        end
       end
       -- we replace surrounding parentheses and colons with commas if it is a full date
       if string.find(dates[i], "%d%d%d%d%-%d%d%-%d%d") then
         context(", ")
         sbl.convertdate(dates[i])
-        context(", ")
+        context(",")
       else
         context(" (")
         sbl.convertdate(dates[i])
-        context("): ")
+        context("):")
       end
-      if pages[i] and pages[i] ~= "" then
+      if pages[i] ~= "" then
+        context(" ")
         sbl.abbreviatepagerange(pages[i])
       end
-      if i < #volumes then
-        context("; ")
+      if i < max_len then
+        context(";")
       end
     end
   end
@@ -1028,6 +1064,22 @@
 \def\btx_sbl_serializelocationpublisher#1#2{\ctxlua{publications.btx.sbl.serializelocationpublisher([==[#1]==],[==[#2]==])}}
 \def\btx_sbl_serializevolumenumberdatepage#1#2#3#4{\ctxlua{publications.btx.sbl.serializevolumenumberdatepage([==[#1]==],[==[#2]==],[==[#3]==],[==[#4]==])}}
 
+\starttexdefinition btx:sbl:doifsamefield #1#2#3#4
+  % If two input entry tags (#1 and #2) have the same field (#3),
+  % then execute input #4
+  \doif {\clf_btxdirect{\currentbtxdataset}{#1}{#3}} {\clf_btxdirect{\currentbtxdataset}{#2}{#3}} {
+    {#4}
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:doifnotsamefield #1#2#3#4
+  % If two input entry tags (#1 and #2) do not have the same field (#3),
+  % then execute input #4
+  \doifnot {\clf_btxdirect{\currentbtxdataset}{#1}{#3}} {\clf_btxdirect{\currentbtxdataset}{#2}{#3}} {
+    {#4}
+  }
+\stoptexdefinition
+
 \starttexdefinition btx:sbl:doifsamefieldelse #1#2#3#4#5
   % If two input entry tags (#1 and #2) have the same field (#3),
   % then execute input #4; otherwise, execute input #5
@@ -1039,7 +1091,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:doifsameauthorelse #1#2#3#4
-  % If two input entry tags have the same author (and contributing/assisting author) fields
+  % If two input entry tags (#1 and #2) have the same author (and contributing/assisting author) fields
   % (not including editors in the place of authors),
   % then execute input #3; otherwise, execute input #4
   \texdefinition{btx:sbl:doifsamefieldelse} {#1}{#2}{author} {
@@ -1055,7 +1107,7 @@
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:doifsameeditorelse #1#2#3#4
-  % If two input entry tags have the same editor (and contributing/assisting editor) fields, 
+  % If two input entry tags (#1 and #2) have the same editor (and contributing/assisting editor) fields, 
   % then execute input #3; otherwise, execute input #4
   \texdefinition{btx:sbl:doifsamefieldelse} {#1}{#2}{editor} {
     % Are the assisting editors identical?
@@ -1071,7 +1123,7 @@
 
 % Define some helper functions for subcitations
 \starttexdefinition btx:sbl:doifsamefoundnameauthorelse #1#2#3#4
-  % If two input entry tags have the same found-name author (and contributing/assisting author) fields
+  % If two input entry tags (#1 and #2) have the same found-name author (and contributing/assisting author) fields
   % (i.e., author, editor, or in some cases, organization),
   % then execute input #3; otherwise, execute input #4
   \doifelse {\clf_btxfoundname{\currentbtxdataset}{#1}{author}} {\clf_btxfoundname{\currentbtxdataset}{#2}{author}} {
@@ -1092,6 +1144,58 @@
     }
   } {
     {#4}
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:doifsametitleelse #1#2#3#4
+  % If two input entry tags (#1 and #2) have the same title and subtitle,
+  % then execute input #3; otherwise, execute input #4
+  \texdefinition{btx:sbl:doifsamefieldelse}{#1}{#2}{title} {
+    \texdefinition{btx:sbl:doifsamefieldelse}{#1}{#2}{subtitle} {
+      {#3}
+    } {
+      {#4}
+    }
+  } {
+    {#4}
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:doifownfield #1#2
+  % If the current entry has a field (#1) that is not inherited from a cross-referenced entry,
+  % then execute input #2
+  \btxdoif{#1} {
+    \btxdoifelse{crossref} {
+      \begingroup
+      \def\crossreftag{\btxflush{crossref}}
+      \texdefinition{btx:sbl:doifnotsamefield}{\currentbtxtag}{\crossreftag}{#1} {
+        #2
+      }
+      \endgroup
+    } {
+      #2
+    }
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:doifownfieldelse #1#2#3
+  % If the current entry has a field (#1) that is not inherited from a cross-referenced entry,
+  % then execute input #2; otherwise, execute input #3
+  \btxdoifelse{#1} {
+    \btxdoifelse{crossref} {
+      \begingroup
+      \def\crossreftag{\btxflush{crossref}}
+      \texdefinition{btx:sbl:doifsamefieldelse}{\currentbtxtag}{\crossreftag}{#1} {
+        #3
+      } {
+        #2
+      }
+      \endgroup
+    } {
+      #2
+    }
+  } {
+    #3
   }
 \stoptexdefinition
 
@@ -1346,6 +1450,12 @@
         \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
           \btxflush{title}% set the title according to the current category
         }
+        \btxdoif {subtitle} {
+          \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
+            \btxcolon% add a colon between title and subtitle
+            \btxflush{subtitle}% set the subtitle according to the current category
+          }
+        }
       \btxstopstyleandcolor
     }
     \btxperiod
@@ -1362,6 +1472,12 @@
         \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
           \btxflush{title}% set the title according to the current category
         }
+        \btxdoif {subtitle} {
+          \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
+            \btxcolon% add a colon between title and subtitle
+            \btxflush{subtitle}% set the subtitle according to the current category
+          }
+        }
       \btxstopstyleandcolor
     }
     \btxcomma
@@ -1370,8 +1486,8 @@
 
 \starttexdefinition btx:sbl:short:title
   % Use the shorttitle if available;
-  % otherwise, use full title
-  \btxdoifelse{shorttitle} {
+  % otherwise, use its title (but not any subtitle)
+  \texdefinition{btx:sbl:doifownfieldelse}{shorttitle} {
     % If the entry is of type plaintitle, then do not apply formatting to its title
     \doifelse{\btxflush{type}}{plaintitle} {
       \btxflush{shorttitle}
@@ -1384,17 +1500,27 @@
     }
     \btxcomma
   } {
-    \texdefinition{btx:sbl:inline:title}
+    % If the entry is of type plaintitle, then do not apply formatting to its title
+    \doifelse{\btxflush{type}}{plaintitle} {
+      \btxflush{title}
+    } {
+      \btxstartstyleandcolor[sbl:\s!list:title:\currentbtxcategory]
+        \btxusecommand[sbl:\s!list:title:\currentbtxcategory]{
+          \btxflush{title}% set the title according to the current category
+        }
+      \btxstopstyleandcolor
+    }
+    \btxcomma
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:list:ancienttexttitle
-  \texdefinition{btx:sbl:inline:title}
+  \texdefinition{btx:sbl:list:title}
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:inline:ancienttexttitle
-  % If this entry has a shorthand, then use it, even in inline citations
-  \btxdoifelse {shorthand} {
+  % If this entry has its own shorthand, then use it, even in inline citations
+  \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
     \texdefinition{btx:sbl:inline:shorthand}
     % If there is a lefttext containing a reference within the ancient text, then remove the preceding comma and print it after the shorthand
     \doifnot {\currentbtxlefttext} {\empty} {
@@ -1430,8 +1556,8 @@
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:short:ancienttexttitle
-  % If this entry has a shorthand, then use it
-  \btxdoifelse {shorthand} {
+  % If this entry has its own shorthand, then use it
+  \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
     \texdefinition{btx:sbl:inline:shorthand}
     % If there is a lefttext containing a reference within the ancient text, then remove the preceding comma and print it after the shorthand
     \doifnot {\currentbtxlefttext} {\empty} {
@@ -2017,10 +2143,10 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:list:bookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:list:inbookcrossref
+  \btxdoif{crossref} {
     \begingroup
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+    \def\crossreftag{\btxflush{crossref}}
     % Print page numbers here, if there are any
     \btxdoifelse {pages} {
       \btxoneorrange {pages} {
@@ -2045,46 +2171,50 @@
     }
     \btxspace
     % Recursively cite the book or volume
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-      \textcite[alternative=listsubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
+    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+      \textcite[alternative=listsubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
     } {
-      \textcite[alternative=listsubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
+      \textcite[alternative=listsubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
     }
     \btxperiod
     \endgroup
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inline:bookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:inline:inbookcrossref
+  \btxdoif{crossref} {
     \begingroup
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
-    \doifelse{\btxfoundname{bookxref}}{incollectionxref} {
-      \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-      % Precede the subcited source with "in", unless it is of type "inlineshort"
-      \doifnot{\clf_btxdirect{\currentbtxdataset}{\collectionxreftag}{type}}{inlineshort} {
+    % Use a short citation it the book or collection containing this entry is of type "inlineshort";
+    % otherwise, use a full subcitation preceded by "in"
+    \def\crossreftag{\btxflush{crossref}}
+    \doifelse{\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}}{incollection} {
+      \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
+      \doifelse{\clf_btxdirect{\currentbtxdataset}{\collectiontag}{type}} {inlineshort} {
+        \textcite[alternative=short,lefttext=,righttext=][\collectiontag]
+        \btxspace
+        \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
+        \btxdoif {part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+        }
+        \btxcolon
+        \removeunwantedspaces
+        \btxusecommand[sbl:\s!list:pages]{
+          \btxflush{pages}%
+        }
+      } {
         \btxlabeltext{sbl:in}
         \btxspace
-      }
-      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-        \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
-      } {
-        \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
-      }
-      \btxcomma
-      % Print page numbers here, if there are any
-      \btxdoif {pages} {
-        % If the volume does not have a title, then prefix the page range with its volume (and part) number
-        \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{title} {
-          % If this entry has a part number, then prefix the page range with it
-          \btxdoif {part} {
-            \btxflush{part}
-            \btxcolon
-            \removeunwantedspaces
+        % If the volume and collection have the same name, then prefix the page numbers with the volume number
+        \texdefinition{btx:sbl:doifsametitleelse}{\crossreftag}{\collectiontag} {
+          \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+            \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
+          } {
+            \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
           }
-        } {
-          \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
-          % If this entry has a part number, then prefix the page range with it
+          \btxcomma
+          \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
           \btxdoif {part} {
             \btxperiod
             \removeunwantedspaces
@@ -2092,59 +2222,63 @@
           }
           \btxcolon
           \removeunwantedspaces
+          \btxusecommand[sbl:\s!list:pages]{
+            \btxflush{pages}%
+          }
+        } {
+          \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+            \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
+          } {
+            \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
+          }
+          \btxcomma
+          \btxusecommand[sbl:\s!list:pages]{
+            \btxflush{pages}%
+          }
         }
-        \btxusecommand[sbl:\s!list:pages]{
-          \btxflush{pages}%
-        }
-        \btxcomma
       }
     } {
-      % Precede the subcited source with "in", unless it is of type "inlineshort"
-      \doifnot{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}}{inlineshort} {
+      \doifelse{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{type}} {inlineshort} {
+        \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
+        \btxcomma
+      } {
         \btxlabeltext{sbl:in}
         \btxspace
-      }
-      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-        \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
-      } {
-        \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
-      }
-      \btxcomma
-      % Print page numbers here, if there are any
-      \btxdoif {pages} {
-        % If this entry has a part number, then prefix the page range with it
-        \btxdoif {part} {
-          \btxflush{part}
-          \btxcolon
-          \removeunwantedspaces
-        }
-        \btxusecommand[sbl:\s!list:pages]{
-          \btxflush{pages}%
+        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+          \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
+        } {
+          \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
         }
         \btxcomma
       }
+      % If this entry has a part number, then prefix the page range with it
+      \btxdoif {part} {
+        \btxflush{part}
+        \btxcolon
+        \removeunwantedspaces
+      }
+      \btxusecommand[sbl:\s!list:pages]{
+        \btxflush{pages}%
+      }
     }
+    \btxcomma
     \endgroup
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:list:reviewbookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:list:reviewcrossref
+  \btxdoif{crossref} {
     \begingroup
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+    \def\crossreftag{\btxflush{crossref}}
     % Precede the subcitation with "Review of"
     \btxlabeltext{sbl:Review}
     \btxspace
     \btxlabeltext{sbl:of}
     \btxspace
     % Cite the title and author/editor of the the reviewed book
-    \btxstartstyleandcolor[sbl:\s!list:title:book]
-      \btxusecommand[sbl:\s!list:title:book]{
-        \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
-      }
-    \btxstopstyleandcolor
+    \textcite[alternative=title,lefttext=,righttext=][\crossreftag]
     \btxcomma
-    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\bookxreftag}{author}}{editor} {
+    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\crossreftag}{author}}{editor} {
       \btxlabeltext{sbl:editor}
     } {
       \btxlabeltext{sbl:by}
@@ -2152,7 +2286,7 @@
     \btxspace
     \clf_btxauthor
       {\currentbtxdataset}%
-      {\bookxreftag}%
+      {\crossreftag}%
       {author}%
       {%
           combiner    {normal}%
@@ -2168,23 +2302,19 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inline:reviewbookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:inline:reviewcrossref
+  \btxdoif{crossref} {
     \begingroup
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+    \def\crossreftag{\btxflush{crossref}}
     % Precede the subcitation with "review of"
     \btxlabeltext{sbl:review}
     \btxspace
     \btxlabeltext{sbl:of}
     \btxspace
     % Cite the title and author/editor of the the reviewed book
-    \btxstartstyleandcolor[sbl:\s!list:title:book]
-      \btxusecommand[sbl:\s!list:title:book]{
-        \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
-      }
-    \btxstopstyleandcolor
+    \textcite[alternative=title,lefttext=,righttext=][\crossreftag]
     \btxcomma
-    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\bookxreftag}{author}}{editor} {
+    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\crossreftag}{author}}{editor} {
       \btxlabeltext{sbl:editor}
     } {
       \btxlabeltext{sbl:by}
@@ -2192,7 +2322,7 @@
     \btxspace
     \clf_btxauthor
       {\currentbtxdataset}%
-      {\bookxreftag}%
+      {\crossreftag}%
       {author}%
       {%
           combiner    {normal}%
@@ -2208,24 +2338,20 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:short:reviewbookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:short:reviewcrossref
+  \btxdoif{crossref} {
     \begingroup
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+    \def\crossreftag{\btxflush{crossref}}
     % Precede the subcitation with "review of"
     \btxlabeltext{sbl:review}
     \btxspace
     \btxlabeltext{sbl:of}
     \btxspace
     % Cite the title and author/editor of the the reviewed book
-    \btxstartstyleandcolor[sbl:\s!list:title:book]
-      \btxusecommand[sbl:\s!list:title:book]{
-        \clf_btxdirect{\currentbtxdataset}{\btxflush{bookxref}}{title}% set the title according to the current category
-      }
-    \btxstopstyleandcolor
+    \textcite[alternative=title,lefttext=,righttext=][\crossreftag]
     \btxspace
     \startparen
-    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\bookxreftag}{author}}{editor} {
+    \doifelse{\clf_btxfoundname{\currentbtxdataset}{\crossreftag}{author}}{editor} {
       \btxlabeltext{sbl:editor}
     } {
       \btxlabeltext{sbl:by}
@@ -2233,7 +2359,7 @@
     \btxspace
     \clf_btxauthor
       {\currentbtxdataset}%
-      {\bookxreftag}%
+      {\crossreftag}%
       {author}%
       {%
           combiner    {name}%
@@ -2250,10 +2376,10 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:list:suppbookbookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:list:suppbookcrossref
+  \btxdoif{crossref} {
     \begingroup
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+    \def\crossreftag{\btxflush{crossref}}
     % Print the section of the book (this is a required field)
     % For list citations, make sure the type is capitalized
     \btxusecommand[sbl:\s!list:type] {
@@ -2263,20 +2389,20 @@
     \btxlabeltext{sbl:to}
     \btxspace
     % Recursively cite the book/collection
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-      \textcite[alternative=listsubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
+    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+      \textcite[alternative=listsubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
     } {
-      \textcite[alternative=listsubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
+      \textcite[alternative=listsubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
     }
     \btxperiod
     \endgroup
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inline:suppbookbookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:inline:suppbookcrossref
+  \btxdoif{crossref} {
     \begingroup
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+    \def\crossreftag{\btxflush{crossref}}
     % Print the section of the book (this is a required field)
     % For inline citations, this can be printed without capitalization
     \btxflush{type}
@@ -2284,68 +2410,89 @@
     \btxlabeltext{sbl:to}
     \btxspace
     % Recursively cite the book/collection
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-      \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
+    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+      \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
     } {
-      \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
+      \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
     }
     \btxcomma
     \endgroup
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:short:suppbookbookxref
+\starttexdefinition btx:sbl:short:suppbookcrossref
   % Just print the type (this is a required field)
   \btxflush{type}
   \btxcomma
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inline:inreferencebookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:inline:inreferencecrossref
+  \btxdoif{crossref} {
     \begingroup
     % For references, if the book or collection containing this entry has a shorthand, then use it, even in inline citations;
     % if the book or collection does not have a shorthand, then use a full subcitation preceded by "in"
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
-    \doifelse{\btxfoundname{bookxref}}{incollectionxref} {
-      \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-      \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-          \textcite[alternative=short,printauthor=no,lefttext=,righttext=][\bookxreftag]
-        } {
-          \textcite[alternative=short,printauthor=yes,lefttext=,righttext=][\bookxreftag]
-        }
+    \def\crossreftag{\btxflush{crossref}}
+    \doifelse{\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}}{incollection} {
+      \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
+      \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
+        \textcite[alternative=short,lefttext=,righttext=][\collectiontag]
         \btxspace
+        \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
+        \btxdoif {part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+        }
+        \btxcolon
+        \removeunwantedspaces
+        \btxusecommand[sbl:\s!list:pages]{
+          \btxflush{pages}%
+        }
       } {
         \btxlabeltext{sbl:in}
         \btxspace
-        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-          \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
+        \texdefinition{btx:sbl:doifsametitleelse}{\crossreftag}{\collectiontag} {
+          \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+            \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
+          } {
+            \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
+          }
+          \btxcomma
+          \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
+          \btxdoif {part} {
+            \btxperiod
+            \removeunwantedspaces
+            \btxflush{part}
+          }
+          \btxcolon
+          \removeunwantedspaces
+          \btxusecommand[sbl:\s!list:pages]{
+            \btxflush{pages}%
+          }
         } {
-          \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
+          \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+            \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
+          } {
+            \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
+          }
+          \btxcomma
+          \btxusecommand[sbl:\s!list:pages]{
+            \btxflush{pages}%
+          }
         }
         \btxcomma
-      }
-      \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
-      \btxcolon
-      \removeunwantedspaces
-      \btxusecommand[sbl:\s!list:pages]{
-        \btxflush{pages}%
       }
     } {
-      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
-        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-          \textcite[alternative=short,printauthor=no,lefttext=,righttext=][\bookxreftag]
-        } {
-          \textcite[alternative=short,printauthor=yes,lefttext=,righttext=][\bookxreftag]
-        }
+      \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
+        \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
         \btxcomma
       } {
         \btxlabeltext{sbl:in}
         \btxspace
-        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-          \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
+        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+          \textcite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\crossreftag]
         } {
-          \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
+          \textcite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\crossreftag]
         }
         \btxcomma
       }
@@ -2358,120 +2505,35 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:short:inreferencebookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:short:inreferencecrossref
+  \btxdoif{crossref} {
     \begingroup
     % If this entry is in a multivolume reference, 
     % then cite the shorthand (or, failing that, its title) and prefix any cited pages accordingly;
     % otherwise, just cite the pages
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+    \def\crossreftag{\btxflush{crossref}}
     \doifnot {\currentbtxrighttext} {\empty} {
-      \doif{\btxfoundname{bookxref}}{incollectionxref} {
-        \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-        \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-          \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-            \textcite[alternative=short,printauthor=no,lefttext=,righttext=][\bookxreftag]
-          } {
-            \textcite[alternative=short,printauthor=yes,lefttext=,righttext=][\bookxreftag]
-          }
+      \doif{\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}}{incollection} {
+        \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
+        \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
+          \textcite[alternative=short,lefttext=,righttext=][\collectiontag]
           \btxspace
         } {
-          \textcite[alternative=title,lefttext=,righttext=][\bookxreftag]
+          \textcite[alternative=title,lefttext=,righttext=][\collectiontag]
           \btxcomma
         }
-        \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+        \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
         \btxcolon
         \removeunwantedspaces
       }
       \texdefinition{btx:sbl:short:righttext}
     }
-    \btxcomma
     \endgroup
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inline:inlexiconbookxref
-  \btxdoif{bookxref} {
-    \begingroup
-    % For lexicons, if the book or collection containing this entry has a shorthand, then use it, even in inline citations;
-    % if the book or collection does not have a shorthand, then use a full subcitation preceded by "in"
-    % In addition, since the lexicon entry itself is not added to the list, add the book or collection to the list instead
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
-    \doifelse{\btxfoundname{bookxref}}{incollectionxref} {
-      \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-      \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-        \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
-        \btxspace
-      } {
-        \btxlabeltext{sbl:in}
-        \btxspace
-        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-          \cite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
-        } {
-          \cite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
-        }
-        \btxcomma
-      }
-      \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
-      \btxcolon
-      \removeunwantedspaces
-      \btxusecommand[sbl:\s!list:pages]{
-        \btxflush{pages}%
-      }
-    } {
-      \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
-        \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
-        \btxcomma
-      } {
-        \btxlabeltext{sbl:in}
-        \btxspace
-        \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\bookxreftag}{
-          \cite[alternative=inlinesubcite,printauthor=no,lefttext=,righttext=][\bookxreftag]
-        } {
-          \cite[alternative=inlinesubcite,printauthor=yes,lefttext=,righttext=][\bookxreftag]
-        }
-        \btxcomma
-      }
-      \btxusecommand[sbl:\s!list:pages]{
-        \btxflush{pages}%
-      }
-    }
-    \btxcomma
-    \endgroup
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:short:inlexiconbookxref
-  \btxdoif{bookxref} {
-    \begingroup
-    % If this entry is in a multivolume lexicon, 
-    % then cite the shorthand (or, failing that, its title) and prefix any cited pages accordingly;
-    % otherwise, just cite the pages
-    % In addition, since the lexicon entry itself is not added to the list, add the book or collection to the list instead. 
-    \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
-    \doifnot {\currentbtxrighttext} {\empty} {
-      \doif{\btxfoundname{bookxref}}{incollectionxref} {
-        \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-        \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-          \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
-          \btxspace
-        } {
-          \cite[alternative=title,lefttext=,righttext=][\bookxreftag]
-          \btxcomma
-        }
-        \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
-        \btxcolon
-        \removeunwantedspaces
-      }
-      \texdefinition{btx:sbl:short:righttext}
-    }
-    \btxcomma
-    \endgroup
-  }
-\stoptexdefinition
-
-\starttexdefinition btx:sbl:inline:ancienttextbookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:inline:ancienttextcrossref
+  \btxdoif{crossref} {
     % Is this entry of type "PGM"?
     \doifelse{\btxflush{type}}{PGM}{
       % If so, then print the translator (if there is one) in parentheses,
@@ -2499,21 +2561,21 @@
       \startparen
       \begingroup
       % Do a full inline citation of the book or collection volume containing this text, adding it to the list
-      \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
-      \cite[alternative=inline,lefttext=,righttext=][\bookxreftag]
+      \def\crossreftag{\btxflush{crossref}}
+      \cite[alternative=inline,lefttext=,righttext=][\crossreftag]
       \btxcomma
       % If there are page numbers, then print them,
       % preceded by the book's volume and part number 
       % and the text's part number
       \btxdoifelse {pages} {
-        \doifelse {\btxfoundname{bookxref}} {incollectionxref} {
+        \doifelse{clf_btxfield{\currentbtxdataset}{\crossreftag}{category}} {incollection} {
           % If the volume containing this text is of type "inlineshort", then remove the preceding comma
-          \doif {\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {inlineshort} {
+          \doif {\clf_btxdirect{\currentbtxdataset}{\crossreftag}{type}} {inlineshort} {
             \removeunwantedspaces
             \removepunctuation
             \btxspace
           }
-          \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+          \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
           \btxdoif {part} {
             \btxperiod
             \removeunwantedspaces
@@ -2537,8 +2599,8 @@
       } {
         % If there is no full page range, then format any cited pages the same way
         \doifnot {\currentbtxrighttext} {\empty} {
-          \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{volume} {
-            \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+          \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{volume} {
+            \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
             \btxdoif {part} {
               \btxperiod
               \removeunwantedspaces
@@ -2567,8 +2629,8 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:short:ancienttextbookxref
-  \btxdoif{bookxref} {
+\starttexdefinition btx:sbl:short:ancienttextcrossref
+  \btxdoif{crossref} {
     % Is this entry of type "PGM"?
     \doifelse{\btxflush{type}}{PGM}{
       % If so, then print the translator (if there is one) in parentheses,
@@ -2594,19 +2656,19 @@
         \btxspace
         \startparen
         \begingroup
-        \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
-        \doifelse {\btxfoundname{bookxref}} {incollectionxref} {
+        \def\crossreftag{\btxflush{crossref}}
+        \doifelse{\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}} {incollection} {
           % If the collection entry has a shorthand, then cite it;
           % otherwise, just cite its author/editor
-          \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-          \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-            \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
+          \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
+          \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
+            \textcite[alternative=short,lefttext=,righttext=][\collectiontag]
             \btxspace
           } {
-            \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{author} {
+            \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{author} {
               \clf_btxauthor
                 {\currentbtxdataset}%
-                {\bookxreftag}%
+                {\crossreftag}%
                 {author}%
                 {%
                     combiner    {name}%
@@ -2620,7 +2682,7 @@
             } {
               \clf_btxauthor
                 {\currentbtxdataset}%
-                {\collectionxreftag}%
+                {\collectiontag}%
                 {author}%
                 {%
                     combiner    {name}%
@@ -2634,7 +2696,7 @@
             }
             \btxcomma
           }
-          \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+          \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
           \btxdoif {part} {
             \btxperiod
             \removeunwantedspaces
@@ -2647,8 +2709,8 @@
           % If the book containing this text is of type "seriesascollection", 
           % then remove the preceding comma and print the series and series entry numbers, 
           % followed by the part number of this entry (if it has one) and cited pages
-          \doifelse {\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {seriesascollection} {
-            \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
+          \doifelse {\clf_btxdirect{\currentbtxdataset}{\crossreftag}{type}} {seriesascollection} {
+            \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
             \removeunwantedspaces
             \removepunctuation
             \btxdoif {part} {
@@ -2660,12 +2722,12 @@
             \removeunwantedspaces
           } {
             % Otherwise, cite the shorthand (or, failing that, the author/editor) of the book
-            \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
-              \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
+            \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
+              \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
             } {
               \clf_btxauthor
                 {\currentbtxdataset}%
-                {\bookxreftag}%
+                {\crossreftag}%
                 {author}%
                 {%
                     combiner    {name}%
@@ -2696,7 +2758,7 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inline:classictextbookxref
+\starttexdefinition btx:sbl:inline:classictextcrossref
   % If this entry is of type "seriesascollection", then cite the series (and number), followed by any cited page numbers
   \doifelse {\btxflush{type}} {seriesascollection} {
     % The book cross-reference will always be in parentheses/brackets:
@@ -2717,22 +2779,22 @@
     \stopparen
     \btxcomma
   } {
-    \btxdoif {bookxref} {
+    \btxdoif {crossref} {
       % The book cross-reference will always be in parentheses/brackets, and it must include a righttext or a translator
       % If there is a translator, then print their last name
-      \btxdoif {translator} {
+      \texdefinition{btx:sbl:doifownfield} {translator} {
         \removeunwantedspaces
         \removepunctuation
         \btxspace
         \startparen
         \btxflushauthorname{translator}
         \begingroup
-        \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+        \def\crossreftag{\btxflush{crossref}}
         % If the collection, volume, or book containing this text uses the shorthand of its series (e.g., LCL), then cite it here,
         % followed by any cited page numbers
-        \doif{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{type}} {useseriesshorthand} {
+        \doif{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{type}} {useseriesshorthand} {
           \btxcomma
-          \cite[alternative=short,lefttext=,righttext=][\bookxreftag]
+          \cite[alternative=short,lefttext=,righttext=][\crossreftag]
           \doifnot {\currentbtxrighttext} {\empty} {
             \btxcomma
             \texdefinition{btx:sbl:inline:righttext}
@@ -2752,7 +2814,7 @@
           \startparen
         }
         \begingroup
-        \def\bookxreftag{\btxdirect{\btxfoundname{bookxref}}}
+        \def\crossreftag{\btxflush{crossref}}
         % If this entry is of type "seriesascollection", then cite the series (and number), followed by any cited page numbers
         \doifelse {\btxflush{type}} {seriesascollection} {
           \texdefinition{btx:sbl:inline:seriesxref}
@@ -2764,24 +2826,25 @@
             \texdefinition{btx:sbl:inline:righttext}
           }
         } {
-          % Otherwise, cite the shorthand (if there is one) of the collection containing this text, followed by any cited page numbers
-          \doif {\btxfoundname{bookxref}} {collectionxref} {
-            \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
+          % Otherwise, cite the shorthand (if there is one) of the book or collection containing this text, followed by any cited page numbers
+          \doifinset {\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}} {collection} {
+            \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
             \btxspace
             \texdefinition{btx:sbl:inline:righttext}
           }
-          \doif {\btxfoundname{bookxref}} {incollectionxref} {
-            \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
+          \doifinset {\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}} {incollection} {
+            \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
+            \textcite[alternative=short,lefttext=,righttext=][\collectiontag]
             \btxspace
-            \textcite[alternative=volume,lefttext=,righttext=][\bookxreftag]
+            \textcite[alternative=volume,lefttext=,righttext=][\crossreftag]
             \btxcolon
             \removeunwantedspaces
             \texdefinition{btx:sbl:inline:righttext}
           }
-          \doif {\btxfoundname{bookxref}} {bookxref} {
+          \doifinset {\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}} {book} {
             % Only cite a standalone book if it has a shorthand
-            \clf_btxdoif{\currentbtxdataset}{\bookxreftag}{shorthand}{
-              \textcite[alternative=short,lefttext=,righttext=][\bookxreftag]
+            \clf_btxdoif{\currentbtxdataset}{\crossreftag}{shorthand}{
+              \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
               \btxcomma
               \texdefinition{btx:sbl:inline:righttext}
             }
@@ -2799,8 +2862,8 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:short:classictextbookxref
-  \texdefinition{btx:sbl:inline:classictextbookxref}
+\starttexdefinition btx:sbl:short:classictextcrossref
+  \texdefinition{btx:sbl:inline:classictextcrossref}
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:list:volume
@@ -2823,8 +2886,10 @@
   \texdefinition{btx:sbl:list:part}
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:list:collectionxref
-  \btxdoif{collectionxref} {
+\starttexdefinition btx:sbl:list:incollectioncrossref
+  \btxdoif{crossref} {
+    \begingroup
+    \def\crossreftag{\btxflush{crossref}}
     % If there is a volume number (and there should be, as it is a required field), then print it here
     \btxdoif {volume} {
       \btxoneorrange {volume} {
@@ -2849,38 +2914,47 @@
       \btxlabeltext{sbl:of}
       \btxspace
     }
-    % Recursively cite the collection, but do not save it to the list
-    \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag}{
-      \textcite[alternative=listsubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\collectionxreftag]
+    % If this entry has the same title as the collection containing it, then cite the collection, and add it to the list;
+    % otherwise, cite it, but do not add it to the list
+    \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag} {
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+        \cite[alternative=listsubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
+      } {
+        \cite[alternative=listsubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
+      }
     } {
-      \textcite[alternative=listsubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\collectionxreftag]
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+        \textcite[alternative=listsubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
+      } {
+        \textcite[alternative=listsubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
+      }
     }
     \endgroup
     \btxperiod
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:listsubcite:collectionxref
-  \btxdoif{collectionxref} {
+\starttexdefinition btx:sbl:listsubcite:incollectioncrossref
+  \btxdoif{crossref} {
+    \begingroup
+    \def\crossreftag{\btxflush{crossref}}
     % If there is a volume number (and there should be, as it is a required field), then print it here
     \btxdoif {volume} {
       \btxoneorrange {volume} {
-        % If the entry has a title, then we start a sentence with the volume (and part) here;
+        % If the entry has a different title than the collection containing it, then we start a sentence with the volume (and part) here;
         % otherwise, it is in the middle of a sentence
-        \btxdoifelse {title} {
-          \btxlabeltext{sbl:Volume}
-        } {
+        \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag} {
           \btxlabeltext{sbl:volume}
-        }   
-      } {
-        % If the entry has a title, then we start a sentence with the volume (and part) here;
-        % otherwise, it is in the middle of a sentence
-        \btxdoifelse {title} {
-          \btxlabeltext{sbl:Volumes}
         } {
+          \btxlabeltext{sbl:Volume}
+        }
+      } {
+        % If the entry has a different title than the collection containing it, then we start a sentence with the volume (and part) here;
+        % otherwise, it is in the middle of a sentence
+        \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag} {
           \btxlabeltext{sbl:volumes}
+        } {
+          \btxlabeltext{sbl:Volumes}
         }
       }
       \btxspace
@@ -2901,23 +2975,31 @@
       \btxspace
     }
     % Recursively cite the collection, but do not save it to the list
-    \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag}{
-      \textcite[alternative=listsubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\collectionxreftag]
+    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+      \textcite[alternative=listsubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
     } {
-      \textcite[alternative=listsubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\collectionxreftag]
+      \textcite[alternative=listsubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
     }
-    \endgroup
     \btxperiod
+    \endgroup
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inline:collectionxref
-  \btxdoif{collectionxref} {
-    % If this entry has its own title, then we can cite its volume (and part) here;
+\starttexdefinition btx:sbl:inline:incollectioncrossref
+  \btxdoif{crossref} {
+    % If this entry has a title distinct from its collection's title, then we can print its volume (and part) here;
     % otherwise, we do nothing, as the collection will be cited instead of this entry, and the volume and part numbers will prefix page numbers later
-    \btxdoif {title} {
+    \begingroup
+    \def\crossreftag{\btxflush{crossref}}
+    \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag}{
+      % If they are the same, then just recursively cite the collection, adding it to the list
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+        \cite[alternative=inline,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
+      } {
+        \cite[alternative=inline,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
+      }
+    } {
+      % Otherwise, print the volume and part, and cite the collection without adding it to the list
       \btxdoif {volume} {
         \btxoneorrange {volume} {
           \btxlabeltext{sbl:volume}
@@ -2942,54 +3024,65 @@
         \btxspace
       }
       % Recursively cite the collection, but do not add it to the list
-      \begingroup
-      \def\collectionxreftag{\btxflush{collectionxref}}
-      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag}{
-        \textcite[alternative=inlinesubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\collectionxreftag]
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+        \textcite[alternative=inlinesubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
       } {
-        \textcite[alternative=inlinesubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\collectionxreftag]
+        \textcite[alternative=inlinesubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
       }
-      \endgroup
       \btxcomma
     }
+    \endgroup
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inlinesubcite:collectionxref
-  \btxdoif{collectionxref} {
-    \btxdoif {volume} {
-      \btxoneorrange {volume} {
-        \btxlabeltext{sbl:volume}
+\starttexdefinition btx:sbl:inlinesubcite:incollectioncrossref
+  \btxdoif{crossref} {
+    % If this entry has a title distinct from its collection's title, then we can print its volume (and part) here;
+    % otherwise, we do nothing, as the collection will be cited instead of this entry, and the volume and part numbers will prefix page numbers later
+    \begingroup
+    \def\crossreftag{\btxflush{crossref}}
+    \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag}{
+      % If they are the same, then just recursively cite the collection
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+        \textcite[alternative=inlinesubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
       } {
-        \btxlabeltext{sbl:volumes}
+        \textcite[alternative=inlinesubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
       }
-      \btxspace
-      \texdefinition{btx:sbl:inline:volume}
-      % Is there a part number subdividing the volume?
-      \btxdoif {part} {
-        \btxcomma
-        \btxoneorrange {part} {
-          \btxlabeltext{sbl:part}
+      \btxcomma
+    } {
+      % Otherwise, print the volume and part, and cite the collection
+      \btxdoif {volume} {
+        \btxoneorrange {volume} {
+          \btxlabeltext{sbl:volume}
         } {
-          \btxlabeltext{sbl:parts}
+          \btxlabeltext{sbl:volumes}
         }
         \btxspace
-        \texdefinition{btx:sbl:inline:part}
+        \texdefinition{btx:sbl:inline:volume}
+        % Is there a part number subdividing the volume?
+        \btxdoif {part} {
+          \btxcomma
+          \btxoneorrange {part} {
+            \btxlabeltext{sbl:part}
+          } {
+            \btxlabeltext{sbl:parts}
+          }
+          \btxspace
+          \texdefinition{btx:sbl:inline:volume}
+        }
+        \btxspace
+        \btxlabeltext{sbl:of}
+        \btxspace
       }
-      \btxspace
-      \btxlabeltext{sbl:of}
-      \btxspace
-    }
-    % Recursively cite the collection, but do not add it to the list
-    \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag}{
-      \textcite[alternative=inlinesubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\collectionxreftag]
-    } {
-      \textcite[alternative=inlinesubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\collectionxreftag]
+      % Recursively cite the collection, but do not add it to the list
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+        \textcite[alternative=inlinesubcite,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
+      } {
+        \textcite[alternative=inlinesubcite,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
+      }
+      \btxcomma
     }
     \endgroup
-    \btxcomma
   }
 \stoptexdefinition
 
@@ -3190,7 +3283,6 @@
       \def\journalxreftag{\btxflush{journal}}
       \textcite[alternative=short,lefttext=,righttext=][\journalxreftag]
       \endgroup
-      \btxspace
     } {
       % Otherwise, this field just contains the journal name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:journal]
@@ -3198,7 +3290,6 @@
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
-      \btxspace
     }
     % Print the volume(s), number(s), date(s), and page range(s)
     \btx_sbl_serializevolumenumberdatepage{\btxflush{volume}}{\btxflush{number}}{\btxflush{date}}{\btxflush{pages}}
@@ -3215,7 +3306,6 @@
       \def\journalxreftag{\btxflush{journal}}
       \textcite[alternative=short,lefttext=,righttext=][\journalxreftag]
       \endgroup
-      \btxspace
     } {
       % Otherwise, this field just contains the journal name; print it with the appropriate formatting
       \btxstartstyleandcolor[sbl:\s!list:title:journal]
@@ -3223,7 +3313,6 @@
           \btxflush{journal}% set the journal name according to its style
         }
       \btxstopstyleandcolor
-      \btxspace
     }
     % Print the volume(s), number(s), date(s), and page range(s)
     \btx_sbl_serializevolumenumberdatepage{\btxflush{volume}}{\btxflush{number}}{\btxflush{date}}{\btxflush{pages}}
@@ -3905,7 +3994,7 @@
 \startsetups btx:sbl:list:incollection
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:collectionxref}
+  \texdefinition{btx:sbl:list:incollectioncrossref}
   \texdefinition{btx:sbl:list:editortranslator}
   \texdefinition{btx:sbl:list:edition}
   \texdefinition{btx:sbl:list:seriesxref}
@@ -3934,7 +4023,7 @@
 \startsetups btx:sbl:list:inbook
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:bookxref}
+  \texdefinition{btx:sbl:list:inbookcrossref}
   \texdefinition{btx:sbl:list:reprxref}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
@@ -3945,7 +4034,7 @@
 
 \startsetups btx:sbl:list:suppbook
   \texdefinition{btx:sbl:list:author}
-  \texdefinition{btx:sbl:list:suppbookbookxref}
+  \texdefinition{btx:sbl:list:suppbookcrossref}
   \texdefinition{btx:sbl:list:reprxref}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
@@ -3958,23 +4047,19 @@
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
-\startsetups btx:sbl:list:inlexicon
-  \fastsetup{btx:sbl:list:inbook}
-\stopsetups
-
-\startsetups btx:sbl:list:incommentary
-  \fastsetup{btx:sbl:list:inbook}
-\stopsetups
-
 \startsetups btx:sbl:list:inproceedings
   \fastsetup{btx:sbl:list:inbook}
 \stopsetups
 
 \startsetups btx:sbl:list:ancienttext
-  \texdefinition{btx:sbl:list:author}
+  % An ancienttext may not have an author, 
+  % so be sure not to use one inherited from a cross-referenced source
+  \texdefinition{btx:sbl:doifownfield} {author} {
+    \texdefinition{btx:sbl:list:author}
+  }
   \texdefinition{btx:sbl:list:title}
   \texdefinition{btx:sbl:list:editortranslator}
-  \texdefinition{btx:sbl:list:bookxref}
+  \texdefinition{btx:sbl:list:inbookcrossref}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
   \removeunwantedspaces
@@ -3983,10 +4068,14 @@
 \stopsetups
 
 \startsetups btx:sbl:list:classictext
-  \texdefinition{btx:sbl:list:author}
+  % A classictext may not have an author,
+  % so be sure not to use one inherited from a cross-referenced source
+  \texdefinition{btx:sbl:doifownfield} {author} {
+    \texdefinition{btx:sbl:list:author}
+  }
   \texdefinition{btx:sbl:list:title}
   \texdefinition{btx:sbl:list:editortranslator}
-  \texdefinition{btx:sbl:list:bookxref}
+  \texdefinition{btx:sbl:list:inbookcrossref}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
   \removeunwantedspaces
@@ -4024,7 +4113,7 @@
 \startsetups btx:sbl:list:review
   \texdefinition{btx:sbl:list:author}
   \texdefinition{btx:sbl:list:title}
-  \texdefinition{btx:sbl:list:reviewbookxref}
+  \texdefinition{btx:sbl:list:reviewcrossref}
   \texdefinition{btx:sbl:list:journalxref}
   \texdefinition{btx:sbl:list:doi}
   \texdefinition{btx:sbl:list:note}
@@ -4125,7 +4214,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:listsubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:listsubcite:editortranslator}
     \texdefinition{btx:sbl:list:volumes}
@@ -4140,22 +4229,20 @@
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:incollection
-  % If this entry does not have a title, then just cite its collection
-  \btxdoifelse {title} {
-    \texdefinition{btx:sbl:list:title}
+  % If this entry has the same title as its collection, then just cite its collection
+  \begingroup
+  \def\crossreftag{\btxflush{crossref}}
+  \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag} {
     % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection;
-    % otherwise, print it listsubcite format
-    \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag}{
-      \texdefinition{btx:sbl:listsubcite:collectionxref}
+    % otherwise, print it inline format
+    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+      \texdefinition{btx:sbl:listsubcite:incollectioncrossref}
       \texdefinition{btx:sbl:listsubcite:author}
     } {
-      \texdefinition{btx:sbl:listsubcite:author}
-      \texdefinition{btx:sbl:listsubcite:collectionxref}
+      \texdefinition{btx:sbl:inline:author}
+      \texdefinition{btx:sbl:listsubcite:incollectioncrossref}
     }
-    \endgroup
-    % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+    % Only recursively cite publication data if the printpubl option is set
     \doif {\btxparameter{printpubl}} {\v!yes} {
       \texdefinition{btx:sbl:listsubcite:editortranslator}
       \texdefinition{btx:sbl:list:edition}
@@ -4166,19 +4253,17 @@
       \texdefinition{btx:sbl:list:reprxref}
     }
   } {
+    \texdefinition{btx:sbl:list:title}
     % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection;
-    % otherwise, print it inline format
-    \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag}{
-      \texdefinition{btx:sbl:listsubcite:collectionxref}
+    % otherwise, print it listsubcite format
+    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+      \texdefinition{btx:sbl:listsubcite:incollectioncrossref}
       \texdefinition{btx:sbl:listsubcite:author}
     } {
-      \texdefinition{btx:sbl:inline:author}
-      \texdefinition{btx:sbl:listsubcite:collectionxref}
+      \texdefinition{btx:sbl:listsubcite:author}
+      \texdefinition{btx:sbl:listsubcite:incollectioncrossref}
     }
-    \endgroup
-    % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+    % Only recursively cite publication data if the printpubl option is set
     \doif {\btxparameter{printpubl}} {\v!yes} {
       \texdefinition{btx:sbl:listsubcite:editortranslator}
       \texdefinition{btx:sbl:list:edition}
@@ -4191,6 +4276,7 @@
   }
   \removeunwantedspaces
   \removepunctuation
+  \endgroup
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:series
@@ -4205,28 +4291,14 @@
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:inbook
-  % Titles are not necessary for booksupps, 
-  % so render the author correctly if there isn't one
-  \btxdoifelse {title} {
-    % "Title, by author."
-    \texdefinition{btx:sbl:list:title}
-    % Only cite the author if the printauthor option is set
-    \doif {\btxparameter{printauthor}} {\v!yes} {
-      \texdefinition{btx:sbl:listsubcite:author}
-    }
-  } {
-    % "Author."
-    % Only cite the author if the printauthor option is set
-    \doif {\btxparameter{printauthor}} {\v!yes} {
-      \texdefinition{btx:sbl:inline:author}
-      \removeunwantedspaces
-      \removepunctuation
-      \btxperiod
-    }
+  \texdefinition{btx:sbl:list:title}
+  % Only cite the author if the printauthor option is set
+  \doif {\btxparameter{printauthor}} {\v!yes} {
+    \texdefinition{btx:sbl:listsubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:list:inbookcrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:list:bookxref}
     \texdefinition{btx:sbl:list:reprxref}
     \texdefinition{btx:sbl:list:doi}
   }
@@ -4235,18 +4307,25 @@
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:suppbook
-  \fastsetup{btx:sbl:listsubcite:inbook}
+  % booksupps do not have titles, so print the author first in normal order, followed by the book cross-reference
+  % Only cite the author if the printauthor option is set
+  \doif {\btxparameter{printauthor}} {\v!yes} {
+    \texdefinition{btx:sbl:inline:author}
+    \removeunwantedspaces
+    \removepunctuation
+    \btxperiod
+  }
+  \texdefinition{btx:sbl:list:suppbookcrossref}
+  % Only recursively cite publication data if the printpubl option is set
+  \doif {\btxparameter{printpubl}} {\v!yes} {
+    \texdefinition{btx:sbl:list:reprxref}
+    \texdefinition{btx:sbl:list:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:listsubcite:inreference
-  \fastsetup{btx:sbl:listsubcite:inbook}
-\stopsetups
-
-\startsetups btx:sbl:listsubcite:inlexicon
-  \fastsetup{btx:sbl:listsubcite:inbook}
-\stopsetups
-
-\startsetups btx:sbl:listsubcite:incommentary
   \fastsetup{btx:sbl:listsubcite:inbook}
 \stopsetups
 
@@ -4259,12 +4338,20 @@
   \texdefinition{btx:sbl:list:title}
   % Only cite the author if the printauthor option is set
   \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:listsubcite:author}
+    % An ancienttext may not have an author, 
+    % so be sure not to use one inherited from a cross-referenced source
+    \texdefinition{btx:sbl:doifownfield} {author} {
+      \texdefinition{btx:sbl:listsubcite:author}
+    }
   }
-  \texdefinition{btx:sbl:listsubcite:editortranslator}
-  \btxdoif{location} {
-    \btxflush{location}
-    \btxperiod
+  \doif {\btxparameter{printpubl}} {\v!yes} {
+    \texdefinition{btx:sbl:listsubcite:editortranslator}
+    \btxdoif{location} {
+      \btxflush{location}
+      \btxperiod
+    }
+    \texdefinition{btx:sbl:list:reprxref}
+    \texdefinition{btx:sbl:list:doi}
   }
   \removeunwantedspaces
   \removepunctuation
@@ -4274,7 +4361,11 @@
   \texdefinition{btx:sbl:list:title}
   % Only cite the author if the printauthor option is set
   \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:listsubcite:author}
+    % A classictext may not have an author, 
+    % so be sure not to use one inherited from a cross-referenced source
+    \texdefinition{btx:sbl:doifownfield} {author} {
+      \texdefinition{btx:sbl:listsubcite:author}
+    }
   }
   \texdefinition{btx:sbl:listsubcite:editortranslator}
 \stopsetups
@@ -4289,7 +4380,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:listsubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:list:journalxref}
     \texdefinition{btx:sbl:list:doi}
@@ -4330,8 +4421,8 @@
       \btxperiod
     }
   }
-  \texdefinition{btx:sbl:list:bookxref}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:list:reviewcrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:list:journalxref}
     \texdefinition{btx:sbl:list:doi}
@@ -4346,7 +4437,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:listsubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:listsubcite:editortranslator}
     \texdefinition{btx:sbl:list:institution}
@@ -4370,7 +4461,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:listsubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:list:presentedat}
     \texdefinition{btx:sbl:list:doi}
@@ -4385,7 +4476,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:listsubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:list:editortranslator}
     \texdefinition{btx:sbl:list:eprint}
@@ -4402,7 +4493,7 @@
     \texdefinition{btx:sbl:inline:author}
   }
   \texdefinition{btx:sbl:inline:title}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:editortranslator}
     \texdefinition{btx:sbl:inline:edition}
@@ -4432,7 +4523,7 @@
     \texdefinition{btx:sbl:inline:author}
   }
   \texdefinition{btx:sbl:inline:title}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:editortranslator}
     \texdefinition{btx:sbl:inline:volumes}
@@ -4449,61 +4540,71 @@
 \stopsetups
 
 \startsetups btx:sbl:inline:incollection
-  % If this entry does not have a title, then just cite its collection
-  \btxdoifelse {title} {
-    % Only cite the author if the printauthor option is set
-    \doif {\btxparameter{printauthor}} {\v!yes} {
-      \texdefinition{btx:sbl:inline:author}
-    }
-    \texdefinition{btx:sbl:inline:title}
-    % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
-    \doif {\btxparameter{printpubl}} {\v!yes} {
-      \texdefinition{btx:sbl:inline:collectionxref}
-      \texdefinition{btx:sbl:inline:editortranslator}
-      \texdefinition{btx:sbl:inline:edition}
-      \texdefinition{btx:sbl:inline:seriesxref}
-      \texdefinition{btx:sbl:inline:publisher}
-      \texdefinition{btx:sbl:inline:ebook}
-      \texdefinition{btx:sbl:inline:doi}
-      \texdefinition{btx:sbl:inline:reprxref}
-    }
-    \texdefinition{btx:sbl:inline:note}
-    \texdefinition{btx:sbl:inline:righttext}
-  } {
+  \btxdoif {crossref} {
     \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \textcite[alternative=inline,printauthor=yes,printpubl=no,lefttext=,righttext=][\collectionxreftag]
-    \endgroup
-    \btxcomma
-    % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
-    \doif {\btxparameter{printpubl}} {\v!yes} {
-      \texdefinition{btx:sbl:inline:editortranslator}
-      \texdefinition{btx:sbl:inline:edition}
-      \texdefinition{btx:sbl:inline:seriesxref}
-      \texdefinition{btx:sbl:inline:publisher}
-      \texdefinition{btx:sbl:inline:ebook}
-      \texdefinition{btx:sbl:inline:doi}
-      \texdefinition{btx:sbl:inline:reprxref}
-    }
-    \doifnot {\currentbtxrighttext} {\empty} {
-      \btxflush{volume}% a required field for this category
-      \btxdoif {part} {
-        \btxperiod
-        \removeunwantedspaces
-        \btxflush{part}
+    \def\crossreftag{\btxflush{crossref}}
+    % If this entry has the same title as the collection containing it, then just cite its collection, adding it to the list
+    \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag} {
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
+        \cite[alternative=inline,printauthor=yes,printpubl=no,lefttext=,righttext=][\crossreftag]
+      } {
+        % Only cite the author if the printauthor option is set
+        \doif {\btxparameter{printauthor}} {\v!yes} {
+          \texdefinition{btx:sbl:inline:author}
+        }
+        \cite[alternative=inline,printauthor=no,printpubl=no,lefttext=,righttext=][\crossreftag]
       }
-      \btxcolon
-      \removeunwantedspaces
+      \btxcomma
+      % Only recursively cite publication data if the printpubl option is set
+      \doif {\btxparameter{printpubl}} {\v!yes} {
+        \texdefinition{btx:sbl:inline:editortranslator}
+        \texdefinition{btx:sbl:inline:edition}
+        \texdefinition{btx:sbl:inline:seriesxref}
+        \texdefinition{btx:sbl:inline:publisher}
+        \texdefinition{btx:sbl:inline:ebook}
+        \texdefinition{btx:sbl:inline:doi}
+        \texdefinition{btx:sbl:inline:reprxref}
+      }
+      \doifnot {\currentbtxrighttext} {\empty} {
+        \btxflush{volume}% a required field for this category
+        \btxdoif {part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+        }
+        \btxcolon
+        \removeunwantedspaces
+        \texdefinition{btx:sbl:inline:righttext}
+      }
+    } {
+      % Only cite the author if the printauthor option is set
+      \doif {\btxparameter{printauthor}} {\v!yes} {
+        \texdefinition{btx:sbl:inline:author}
+      }
+      \texdefinition{btx:sbl:inline:title}
+      \texdefinition{btx:sbl:inline:incollectioncrossref}
+      % Only recursively cite publication data if the printpubl option is set
+      \doif {\btxparameter{printpubl}} {\v!yes} {
+        \texdefinition{btx:sbl:inline:editortranslator}
+        \texdefinition{btx:sbl:inline:edition}
+        \texdefinition{btx:sbl:inline:seriesxref}
+        \texdefinition{btx:sbl:inline:publisher}
+        \texdefinition{btx:sbl:inline:ebook}
+        \texdefinition{btx:sbl:inline:doi}
+        \texdefinition{btx:sbl:inline:reprxref}
+      }
+      \texdefinition{btx:sbl:inline:note}
       \texdefinition{btx:sbl:inline:righttext}
     }
+    \endgroup
+    \removeunwantedspaces
+    \removepunctuation
   }
-  \removeunwantedspaces
-  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:inline:series
   \texdefinition{btx:sbl:inline:title}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:editortranslator}
     \texdefinition{btx:sbl:inline:volumes}
@@ -4522,9 +4623,9 @@
     \texdefinition{btx:sbl:inline:author}
   }
   \texdefinition{btx:sbl:inline:title}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:inline:inbookcrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:bookxref}
     \texdefinition{btx:sbl:inline:doi}
     \texdefinition{btx:sbl:inline:reprxref}
   }
@@ -4539,8 +4640,8 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:inline:author}
   }
-  \texdefinition{btx:sbl:inline:suppbookbookxref}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:inline:suppbookcrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:doi}
     \texdefinition{btx:sbl:inline:reprxref}
@@ -4557,8 +4658,8 @@
     \texdefinition{btx:sbl:inline:author}
   }
   \texdefinition{btx:sbl:inline:title}
-  \texdefinition{btx:sbl:inline:inreferencebookxref}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:inline:inreferencecrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:doi}
     \texdefinition{btx:sbl:inline:reprxref}
@@ -4567,28 +4668,6 @@
   \texdefinition{btx:sbl:inline:righttext}
   \removeunwantedspaces
   \removepunctuation
-\stopsetups
-
-\startsetups btx:sbl:inline:inlexicon
-  % Only cite the author if the printauthor option is set
-  \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:author}
-  }
-  \texdefinition{btx:sbl:inline:title}
-  \texdefinition{btx:sbl:inline:inlexiconbookxref}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
-  \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:doi}
-    \texdefinition{btx:sbl:inline:reprxref}
-  }
-  \texdefinition{btx:sbl:inline:note}
-  \texdefinition{btx:sbl:inline:righttext}
-  \removeunwantedspaces
-  \removepunctuation
-\stopsetups
-
-\startsetups btx:sbl:inline:incommentary
-  \fastsetup{btx:sbl:inline:inreference}
 \stopsetups
 
 \startsetups btx:sbl:inline:inproceedings
@@ -4598,11 +4677,15 @@
 \startsetups btx:sbl:inline:ancienttext
   % Only cite the author if the printauthor option is set
   \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:author}
+    % An ancienttext may not have an author, 
+    % so be sure not to use one inherited from a cross-referenced source
+    \texdefinition{btx:sbl:doifownfield} {author} {
+      \texdefinition{btx:sbl:inline:author}
+    }
   }
   \texdefinition{btx:sbl:inline:ancienttexttitle} % lefttext is handled in here
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
-  \texdefinition{btx:sbl:inline:ancienttextbookxref} % righttext is handled in here
+  % Only recursively cite publication data if the printpubl option is set
+  \texdefinition{btx:sbl:inline:ancienttextcrossref} % righttext is handled in here
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:doi}
     \texdefinition{btx:sbl:inline:reprxref}
@@ -4615,12 +4698,16 @@
 \startsetups btx:sbl:inline:classictext
   % Only cite the author if the printauthor option is set
   \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:author}
+    % A classictext may not have an author,
+    % so be sure not to use one inherited from a cross-referenced source
+    \texdefinition{btx:sbl:doifownfield} {author} {
+      \texdefinition{btx:sbl:inline:author}
+    }
   }
   \texdefinition{btx:sbl:inline:classictexttitle} % lefttext is handled in here
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:classictextbookxref} % righttext is handled in here
+    \texdefinition{btx:sbl:inline:classictextcrossref} % righttext is handled in here
     \texdefinition{btx:sbl:inline:doi}
     \texdefinition{btx:sbl:inline:reprxref}
   }
@@ -4665,7 +4752,7 @@
     \texdefinition{btx:sbl:inline:author}
   }
   \texdefinition{btx:sbl:inline:title}
-  \texdefinition{btx:sbl:inline:reviewbookxref}
+  \texdefinition{btx:sbl:inline:reviewcrossref}
   \texdefinition{btx:sbl:inline:journalxref}
   \texdefinition{btx:sbl:inline:doi}
   \texdefinition{btx:sbl:inline:note}
@@ -4680,7 +4767,7 @@
     \texdefinition{btx:sbl:inline:author}
   }
   \texdefinition{btx:sbl:inline:title}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:editortranslator}
     \texdefinition{btx:sbl:inline:institution}
@@ -4720,7 +4807,7 @@
     \texdefinition{btx:sbl:inline:author}
   }
   \texdefinition{btx:sbl:inline:title}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:editortranslator}
     \texdefinition{btx:sbl:inline:eprint}
@@ -4741,7 +4828,7 @@
     \doif {\btxparameter{printauthor}} {\v!yes} {
       \texdefinition{btx:sbl:inlinesubcite:author}
     }
-    % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+    % Only recursively cite publication data if the printpubl option is set
     \doif {\btxparameter{printpubl}} {\v!yes} {
       \texdefinition{btx:sbl:inlinesubcite:editortranslator}
       \texdefinition{btx:sbl:inline:edition}
@@ -4773,7 +4860,7 @@
     \doif {\btxparameter{printauthor}} {\v!yes} {
       \texdefinition{btx:sbl:inlinesubcite:author}
     }
-    % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+    % Only recursively cite publication data if the printpubl option is set
     \doif {\btxparameter{printpubl}} {\v!yes} {
       \texdefinition{btx:sbl:inlinesubcite:editortranslator}
       \texdefinition{btx:sbl:inline:volumes}
@@ -4789,59 +4876,59 @@
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:incollection
-  \btxdoifelse{title} {
-    \texdefinition{btx:sbl:inline:title}
-    % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection;
-    % otherwise, print it inlinesubcite format
+  \btxdoif{crossref} {
     \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag} {
-      \texdefinition{btx:sbl:inlinesubcite:collectionxref}
-      % Only cite the author if the printauthor option is set
-      \doif {\btxparameter{printauthor}} {\v!yes} {
-        \texdefinition{btx:sbl:inlinesubcite:author}
+    \def\crossreftag{\btxflush{crossref}}
+    % If this entry has the same title as the collection containing it, then just cite the collection
+    \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag} {
+      % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection;
+      % otherwise, print it inline format
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag} {
+        \texdefinition{btx:sbl:inlinesubcite:incollectioncrossref}
+        % Only cite the author if the printauthor option is set
+        \doif {\btxparameter{printauthor}} {\v!yes} {
+          \texdefinition{btx:sbl:inlinesubcite:author}
+        }
+      } {
+        % Only cite the author if the printauthor option is set
+        \doif {\btxparameter{printauthor}} {\v!yes} {
+          \texdefinition{btx:sbl:inline:author}
+        }
+        \texdefinition{btx:sbl:inlinesubcite:incollectioncrossref}
       }
     } {
-      % Only cite the author if the printauthor option is set
-      \doif {\btxparameter{printauthor}} {\v!yes} {
-        \texdefinition{btx:sbl:inlinesubcite:author}
+      \texdefinition{btx:sbl:inline:title}
+      % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection;
+      % otherwise, print it inlinesubcite format
+      \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag} {
+        \texdefinition{btx:sbl:inlinesubcite:incollectioncrossref}
+        % Only cite the author if the printauthor option is set
+        \doif {\btxparameter{printauthor}} {\v!yes} {
+          \texdefinition{btx:sbl:inlinesubcite:author}
+        }
+      } {
+        % Only cite the author if the printauthor option is set
+        \doif {\btxparameter{printauthor}} {\v!yes} {
+          \texdefinition{btx:sbl:inlinesubcite:author}
+        }
+        \texdefinition{btx:sbl:inlinesubcite:incollectioncrossref}
       }
-      \texdefinition{btx:sbl:inlinesubcite:collectionxref}
     }
-    \endgroup
-  } {
-    % If this entry has the same author as the collection to which it belongs, then print the author after subciting the collection;
-    % otherwise, print it inline format
-    \begingroup
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\collectionxreftag} {
-      \texdefinition{btx:sbl:inlinesubcite:collectionxref}
-      % Only cite the author if the printauthor option is set
-      \doif {\btxparameter{printauthor}} {\v!yes} {
-        \texdefinition{btx:sbl:inlinesubcite:author}
-      }
-    } {
-      % Only cite the author if the printauthor option is set
-      \doif {\btxparameter{printauthor}} {\v!yes} {
-        \texdefinition{btx:sbl:inline:author}
-      }
-      \texdefinition{btx:sbl:inlinesubcite:collectionxref}
+    % Only recursively cite publication data if the printpubl option is set
+    \doif {\btxparameter{printpubl}} {\v!yes} {
+      \texdefinition{btx:sbl:inline:editortranslator}
+      \texdefinition{btx:sbl:inline:edition}
+      \texdefinition{btx:sbl:inline:seriesxref}
+      \texdefinition{btx:sbl:inline:publisher}
+      \texdefinition{btx:sbl:inline:ebook}
+      \texdefinition{btx:sbl:inline:doi}
+      \texdefinition{btx:sbl:inline:reprxref}
     }
+    \texdefinition{btx:sbl:inline:note}
     \endgroup
+    \removeunwantedspaces
+    \removepunctuation
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
-  \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:editortranslator}
-    \texdefinition{btx:sbl:inline:edition}
-    \texdefinition{btx:sbl:inline:seriesxref}
-    \texdefinition{btx:sbl:inline:publisher}
-    \texdefinition{btx:sbl:inline:ebook}
-    \texdefinition{btx:sbl:inline:doi}
-    \texdefinition{btx:sbl:inline:reprxref}
-  }
-  \texdefinition{btx:sbl:inline:note}
-  \removeunwantedspaces
-  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:series
@@ -4861,9 +4948,9 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:inlinesubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:inline:inbookcrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:bookxref}
     \texdefinition{btx:sbl:inline:reprxref}
     \texdefinition{btx:sbl:inline:doi}
   }
@@ -4872,17 +4959,19 @@
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:suppbook
-  % For booksupps, cite the title if there is one,
-  % and if not, then cite the type (e.g., "introduction", "foreword", "preface")
-  \btxdoifelse {title} {
-    \texdefinition{btx:sbl:inline:title}
-  } {
-    \btxflush{type}
-    \btxcomma
-  }
+  % booksupps do not have titles, so print the author first in normal order, followed by the book cross-reference
   % Only cite the author if the printauthor option is set
   \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:inlinesubcite:author}
+    \texdefinition{btx:sbl:inline:author}
+    \removeunwantedspaces
+    \removepunctuation
+    \btxcomma
+  }
+  \texdefinition{btx:sbl:inline:suppbookcrossref}
+  % Only recursively cite publication data if the printpubl option is set
+  \doif {\btxparameter{printpubl}} {\v!yes} {
+    \texdefinition{btx:sbl:list:reprxref}
+    \texdefinition{btx:sbl:list:doi}
   }
   \removeunwantedspaces
   \removepunctuation
@@ -4894,34 +4983,14 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:inlinesubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:inline:inreferencecrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:inreferencebookxref}
     \texdefinition{btx:sbl:inline:reprxref}
     \texdefinition{btx:sbl:inline:doi}
   }
   \removeunwantedspaces
   \removepunctuation
-\stopsetups
-
-\startsetups btx:sbl:inlinesubcite:inlexicon
-  \texdefinition{btx:sbl:inline:title}
-  % Only cite the author if the printauthor option is set
-  \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:inlinesubcite:author}
-  }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
-  \doif {\btxparameter{printpubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inline:inlexiconbookxref}
-    \texdefinition{btx:sbl:inline:reprxref}
-    \texdefinition{btx:sbl:inline:doi}
-  }
-  \removeunwantedspaces
-  \removepunctuation
-\stopsetups
-
-\startsetups btx:sbl:inlinesubcite:incommentary
-  \fastsetup{btx:sbl:inlinesubcite:inbook}
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:inproceedings
@@ -4929,11 +4998,43 @@
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:ancienttext
-  \fastsetup{btx:sbl:inlinesubcite:inbook}
+  \texdefinition{btx:sbl:inline:title}
+  % Only cite the author if the printauthor option is set
+  \doif {\btxparameter{printauthor}} {\v!yes} {
+    % An ancienttext may not have an author, 
+    % so be sure not to use one inherited from a cross-referenced source
+    \texdefinition{btx:sbl:doifownfield} {author} {
+      \texdefinition{btx:sbl:inlinesubcite:author}
+    }
+  }
+  \texdefinition{btx:sbl:inline:ancienttextcrossref}
+  % Only recursively cite publication data if the printpubl option is set
+  \doif {\btxparameter{printpubl}} {\v!yes} {
+    \texdefinition{btx:sbl:inline:reprxref}
+    \texdefinition{btx:sbl:inline:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:classictext
-  \fastsetup{btx:sbl:inlinesubcite:inbook}
+  \texdefinition{btx:sbl:inline:title}
+  % Only cite the author if the printauthor option is set
+  \doif {\btxparameter{printauthor}} {\v!yes} {
+    % A classictext may not have an author,
+    % so be sure not to use one inherited from a cross-referenced source
+    \texdefinition{btx:sbl:doifownfield} {author} {
+      \texdefinition{btx:sbl:inline:author}
+    }
+  }
+  \texdefinition{btx:sbl:inline:classictextcrossref}
+  % Only recursively cite publication data if the printpubl option is set
+  \doif {\btxparameter{printpubl}} {\v!yes} {
+    \texdefinition{btx:sbl:inline:reprxref}
+    \texdefinition{btx:sbl:inline:doi}
+  }
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:inlinesubcite:journal
@@ -4979,8 +5080,8 @@
       \texdefinition{btx:sbl:inline:author}
     }
   }
-  \texdefinition{btx:sbl:inline:bookxref}
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  \texdefinition{btx:sbl:inline:reviewcrossref}
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:journalxref}
     \texdefinition{btx:sbl:inline:doi}
@@ -4995,7 +5096,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:inlinesubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inlinesubcite:editortranslator}
     \texdefinition{btx:sbl:inline:institution}
@@ -5019,7 +5120,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:inlinesubcite:author}
   }
-  % Only recursively cite publication data if the \btx_sbl_printpubl variable is set
+  % Only recursively cite publication data if the printpubl option is set
   \doif {\btxparameter{printpubl}} {\v!yes} {
     \texdefinition{btx:sbl:inline:presentedat}
     \texdefinition{btx:sbl:inline:doi}
@@ -5125,10 +5226,10 @@
   }
   % Otherwise, proceed normally
   \doifnotinset{\btxflush{type}}{seriesascollection, useseriesshorthand} {
-    \def\collectionxreftag{\btxflush{collectionxref}}
-    \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
+    \def\crossreftag{\btxflush{crossref}}
+    \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
       % If the collection containing this entry has a shorthand, then cite it;
-      \textcite[alternative=short,lefttext=,righttext=][\collectionxreftag]
+      \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
       \btxcomma
       % If there are any cited page numbers, then prefix them with the volume and part of this entry
       \doifnot {\currentbtxrighttext} {\empty} {
@@ -5156,7 +5257,7 @@
         \texdefinition{btx:sbl:short:title}
         \texdefinition{btx:sbl:short:righttext}
       } {
-        \textcite[alternative=short,lefttext=,righttext=][\collectionxreftag]
+        \textcite[alternative=short,lefttext=,righttext=][\crossreftag]
         % If there are any cited page numbers, then prefix them with the volume and part of this entry
         \doifnot {\currentbtxrighttext} {\empty} {
           \removeunwantedspaces
@@ -5205,7 +5306,7 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:short:author}
   }
-  \texdefinition{btx:sbl:short:suppbookbookxref}
+  \texdefinition{btx:sbl:short:suppbookcrossref}
   \texdefinition{btx:sbl:short:righttext}
   \removeunwantedspaces
   \removepunctuation
@@ -5216,44 +5317,29 @@
   \doif {\btxparameter{printauthor}} {\v!yes} {
     \texdefinition{btx:sbl:short:author}
   }
-  \texdefinition{btx:sbl:short:title}
-  \texdefinition{btx:sbl:short:inreferencebookxref} % righttext is handled in here
-  \removeunwantedspaces
-  \removepunctuation
-\stopsetups
-
-\startsetups btx:sbl:short:inlexicon
-  % Only cite the author if the printauthor option is set
-  \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:short:author}
-  }
-  % If the book or collection containing this entry has a shorthand, then cite it;
-  % otherwise, use the title of this entry
-  \begingroup
-  \def\bookxreftag{\btxflush{bookxref}}
-  \doifelse{\btxfoundname{bookxref}}{incollectionxref} {
-    \def\collectionxreftag{\clf_btxdirect{\currentbtxdataset}{\bookxreftag}{collectionxref}}
-    \clf_btxdoifelse{\currentbtxdataset}{\collectionxreftag}{shorthand} {
-      \texdefinition{btx:sbl:short:inreferencebookxref} % righttext is handled in here
+  % If this is part of a multivolume reference with a shorthand, then don't print the title
+  \btxdoifelse{crossref} {
+    \begingroup
+    \def\crossreftag{\btxflush{crossref}}
+    \doifelse{\clf_btxfield{\currentbtxdataset}{\crossreftag}{category}} {incollection} {
+      \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
+      \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
+        \texdefinition{btx:sbl:short:inreferencecrossref} % righttext is handled in here
+      } {
+        \texdefinition{btx:sbl:short:title}
+        \texdefinition{btx:sbl:short:righttext}
+      }
     } {
       \texdefinition{btx:sbl:short:title}
       \texdefinition{btx:sbl:short:righttext}
     }
+    \endgroup
   } {
-    \clf_btxdoifelse{\currentbtxdataset}{\bookxreftag}{shorthand} {
-      \texdefinition{btx:sbl:short:inreferencebookxref} % righttext is handled in here
-    } {
-      \texdefinition{btx:sbl:short:title}
-      \texdefinition{btx:sbl:short:righttext}
-    }
+    \texdefinition{btx:sbl:short:title}
+    \texdefinition{btx:sbl:short:righttext}
   }
-  \endgroup
   \removeunwantedspaces
   \removepunctuation
-\stopsetups
-
-\startsetups btx:sbl:short:incommentary
-  \fastsetup{btx:sbl:short:inlexicon}
 \stopsetups
 
 \startsetups btx:sbl:short:inproceedings
@@ -5263,10 +5349,16 @@
 \startsetups btx:sbl:short:ancienttext
   % Only cite the author if the printauthor option is set
   \doif {\btxparameter{printauthor}} {\v!yes} {
-    \texdefinition{btx:sbl:short:author}
+    % An ancienttext may not have an author, 
+    % so be sure not to use one inherited from a cross-referenced source
+    \texdefinition{btx:sbl:doifownfield} {author} {
+      \texdefinition{btx:sbl:short:author}
+    }
   }
   \texdefinition{btx:sbl:short:ancienttexttitle} % lefttext is handled in here
-  \texdefinition{btx:sbl:short:ancienttextbookxref} % righttext is handled in here
+  \texdefinition{btx:sbl:short:ancienttextcrossref} % righttext is handled in here
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:short:classictext
@@ -5284,8 +5376,10 @@
       \texdefinition{btx:sbl:short:author}
     }
     \texdefinition{btx:sbl:short:classictexttitle} % lefttext is handled in here
-    \texdefinition{btx:sbl:short:classictextbookxref} % righttext is handled in here
+    \texdefinition{btx:sbl:short:classictextcrossref} % righttext is handled in here
   }
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:short:journal
@@ -5317,7 +5411,7 @@
   \btxdoifelse{title} {
     \texdefinition{btx:sbl:short:title}
   } {
-    \texdefinition{btx:sbl:short:reviewbookxref}
+    \texdefinition{btx:sbl:short:reviewcrossref}
   }
   \texdefinition{btx:sbl:short:righttext}
   \removeunwantedspaces
@@ -5449,6 +5543,13 @@
         \fastsetup{btx:sbl:cite:inline}
         \btxperiod
     \stopendnote
+\stopsetups
+
+% Title citation setup
+\startsetups btx:sbl:cite:title
+  \texdefinition{btx:sbl:inline:title}
+  \removeunwantedspaces
+  \removepunctuation
 \stopsetups
 
 % Volume (and part) number citation setup
