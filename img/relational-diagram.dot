@@ -15,23 +15,29 @@ digraph relational_diagram {
 			<tr><td>title</td></tr>
 		</table>
 	>]
-	collection [label = <
+	mvbook [label = <
 		<table border="0" cellborder="1" cellspacing="0">
-			<tr><td port="collection"><b>@collection</b></td></tr>
+			<tr><td port="mvbook"><b>@mvbook</b></td></tr>
+			<tr><td port="mvreference"><b>@mvreference</b></td></tr>
+			<tr><td port="mvcollection"><b>@mvcollection</b></td></tr>
+			<tr><td port="mvproceedings"><b>@mvproceedings</b></td></tr>
 			<tr><td>author</td></tr>
 			<tr><td>title</td></tr>
 			<tr><td>publisher</td></tr>
-			<tr><td>volumes</td></tr>
-			<tr><td port="collectionseriesxref">seriesxref</td></tr>
+			<tr><td port="mvbookseriesxref">seriesxref</td></tr>
 		</table>
 	>]
 	book [label = <
 		<table border="0" cellborder="1" cellspacing="0">
-			<tr><td port="book"><b>@book</b></td></tr>
-			<tr><td>author</td></tr>
-			<tr><td>title</td></tr>
-			<tr><td>publisher</td></tr>
-			<tr><td port="bookseriesxref">seriesxref</td></tr>
+			<tr><td colspan="2" port="book"><b>@book</b></td></tr>
+			<tr><td colspan="2" port="reference"><b>@reference</b></td></tr>
+			<tr><td colspan="2" port="collection"><b>@collection</b></td></tr>
+			<tr><td colspan="2" port="proceedings"><b>@proceedings</b></td></tr>
+			<tr><td colspan="2">author</td></tr>
+			<tr><td rowspan="2">title</td><td port="bookcrossref">crossref</td></tr>
+			<tr><td>volume</td></tr>
+			<tr><td colspan="2">publisher</td></tr>
+			<tr><td colspan="2" port="bookseriesxref">seriesxref</td></tr>
 		</table>
 	>]
 	manual [label = <
@@ -42,35 +48,16 @@ digraph relational_diagram {
 			<tr><td port="manualseriesxref">seriesxref</td></tr>
 		</table>
 	>]
-	proceedings [label = <
-		<table border="0" cellborder="1" cellspacing="0">
-			<tr><td port="proceedings"><b>@proceedings</b></td></tr>
-			<tr><td>title</td></tr>
-			<tr><td>publisher</td></tr>
-			<tr><td port="proceedingsseriesxref">seriesxref</td></tr>
-		</table>
-	>]
-	incollection [label = <
-		<table border="0" cellborder="1" cellspacing="0">
-			<tr><td port="incollection"><b>@incollection</b></td></tr>
-			<tr><td>author</td></tr>
-			<tr><td>volume</td></tr>
-			<tr><td port="incollectioncollectionxref">collectionxref</td></tr>
-			<tr><td>publisher</td></tr>
-			<tr><td port="incollectionseriesxref">seriesxref</td></tr>
-		</table>
-	>]
 	inbook [label = <
 		<table border="0" cellborder="1" cellspacing="0">
 			<tr><td port="inbook"><b>@inbook</b></td></tr>
-			<tr><td><b>@inreference</b></td></tr>
-			<tr><td><b>@inlexicon</b></td></tr>
-			<tr><td><b>@incommentary</b></td></tr>
+			<tr><td port="inreference"><b>@inreference</b></td></tr>
+			<tr><td port="incollection"><b>@incollection</b></td></tr>
+			<tr><td port="inproceedings"><b>@inproceedings</b></td></tr>
 			<tr><td>author</td></tr>
 			<tr><td>title</td></tr>
 			<tr><td>pages</td></tr>
-			<tr><td port="inbookbookxref">bookxref</td></tr>
-			<tr><td port="inbookincollectionxref">incollectionxref</td></tr>
+			<tr><td port="inbookcrossref">crossref</td></tr>
 		</table>
 	>]
 	suppbook [label = <
@@ -78,35 +65,21 @@ digraph relational_diagram {
 			<tr><td port="suppbook"><b>@suppbook</b></td></tr>
 			<tr><td>author</td></tr>
 			<tr><td>type</td></tr>
-			<tr><td port="suppbookbookxref">bookxref</td></tr>
-			<tr><td port="suppbookincollectionxref">incollectionxref</td></tr>
-		</table>
-	>]
-	inproceedings [label = <
-		<table border="0" cellborder="1" cellspacing="0">
-			<tr><td port="inproceedings"><b>@inproceedings</b></td></tr>
-			<tr><td>author</td></tr>
-			<tr><td>title</td></tr>
-			<tr><td>pages</td></tr>
-			<tr><td port="inproceedingsbookxref">bookxref</td></tr>
+			<tr><td port="suppbookcrossref">crossref</td></tr>
 		</table>
 	>]
 	ancienttext [label = <
 		<table border="0" cellborder="1" cellspacing="0">
 			<tr><td port="ancienttext"><b>@ancienttext</b></td></tr>
 			<tr><td>title</td></tr>
-			<tr><td port="ancienttextbookxref">bookxref</td></tr>
-			<tr><td port="ancienttextincollectionxref">incollectionxref</td></tr>
+			<tr><td port="ancienttextcrossref">crossref</td></tr>
 		</table>
 	>]
 	classictext [label = <
 		<table border="0" cellborder="1" cellspacing="0">
 			<tr><td port="classictext"><b>@classictext</b></td></tr>
 			<tr><td>title</td></tr>
-			<tr><td port="classictextbookxref">bookxref</td></tr>
-			<tr><td port="classictextincollectionxref">incollectionxref</td></tr>
-			<tr><td port="classictextcollectionxref">collectionxref</td></tr>
-			<tr><td port="classictextseriesxref">seriesxref</td></tr>
+			<tr><td port="classictextcrossref">crossref</td></tr>
 		</table>
 	>]
 	article [label = <
@@ -121,8 +94,7 @@ digraph relational_diagram {
 		<table border="0" cellborder="1" cellspacing="0">
 			<tr><td port="review"><b>@review</b></td></tr>
 			<tr><td>author</td></tr>
-			<tr><td port="reviewbookxref">bookxref</td></tr>
-			<tr><td port="reviewincollectionxref">incollectionxref</td></tr>
+			<tr><td port="reviewcrossref">crossref</td></tr>
 			<tr><td port="reviewjournalxref">journalxref</td></tr>
 		</table>
 	>]
@@ -154,29 +126,21 @@ digraph relational_diagram {
 	>]
 
 	{rank=same; series, journal}
-	{rank=same; collection}
-	{rank=same; book, manual, proceedings, incollection, thesis, mastersthesis}
-	{rank=same; inbook, suppbook, inproceedings, ancienttext, classictext, article, review, conferencepaper}
+	{rank=same; mvbook}
+	{rank=same; book, manual, thesis, mastersthesis}
+	{rank=same; inbook, suppbook, ancienttext, classictext, article, review, conferencepaper}
 	
-	collection:collectionseriesxref -> series:series[style=dashed];
+	mvbook:mvbookseriesxref -> series:series[style=dashed];
 	book:bookseriesxref -> series:series[style=dashed];
+	book:bookcrossref -> mvbook:mvbook[style=dashed];
 	manual:manualseriesxref -> series:series[style=dashed];
-	proceedings:proceedingsseriesxref -> series:series[style=dashed];
-	incollection:incollectionseriesxref -> series:series[style=dashed];
+	inbook:inbookcrossref -> book:book[style=solid];
+	suppbook:suppbookcrossref -> book:book[style=solid];
+	ancienttext:ancienttextcrossref -> book:book[style=dashed];
 	classictext:classictextseriesxref -> series:series[style=dashed];
-	incollection:incollectioncollectionxref -> collection:collection[style=solid];
-	classictext:classictextcollectionxref -> collection:collection[style=dashed];
-	inbook:inbookincollectionxref -> incollection:incollection[style=solid];
-	suppbook:suppbookincollectionxref -> incollection:incollection[style=solid];
-	ancienttext:ancienttextincollectionxref -> incollection:incollection[style=dashed];
-	classictext:classictextincollectionxref -> incollection:incollection[style=dashed];
-	review:reviewincollectionxref -> incollection:incollection[style=solid];
-	inbook:inbookbookxref -> book:book[style=solid];
-	suppbook:suppbookbookxref -> book:book[style=solid];
-	ancienttext:ancienttextbookxref -> book:book[style=dashed];
-	classictext:classictextbookxref -> book:book[style=dashed];
-	review:reviewbookxref -> book:book[style=solid];
-	inproceedings:inproceedingsbookxref -> proceedings:proceedings[style=solid];
+	classictext:classictextcrossref -> mvbook:mvbook[style=dashed];
+	classictext:classictextcrossref -> book:book[style=dashed];
 	article:articlejournalxref -> journal:journal[style=solid];
+	review:reviewcrossref -> book:book[style=solid];
 	review:reviewjournalxref -> journal:journal[style=solid];
 }

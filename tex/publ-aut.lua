@@ -1001,8 +1001,8 @@ publications.sortmethods.authortitle = {
         { field = "title",     default = "",           unknown = "" },
         { field = "booktitle", default = "",           unknown = "" }, -- if this is an untitled section (e.g., introduction, foreword, preface) of a book or a review of a book (todo: define a getter for this if the entry uses a crossref to its book?)
         { field = "maintitle", default = "",           unknown = "" }, -- if this is an untitled volume in a multivolume collection (todo: define a getter for this if the entry uses a crossref to its collection?)
-        { field = "volume",    default = "",           unknown = "" },
-        { field = "part",      default = "",           unknown = "" },
+        { field = "volume",    default = "",           unknown = "" }, -- TODO: this may only sort correctly if it is zero-padded
+        { field = "part",      default = "",           unknown = "" }, -- TODO: this may only sort correctly if it is zero-padded
         { field = "date",      default = "9998-13-32", unknown = "9999-14-33" }, -- some specifications allow date instead of year, month, day
         { field = "year",      default = "9998",       unknown = "9999" },
         { field = "month",     default = "13",         unknown = "14" },

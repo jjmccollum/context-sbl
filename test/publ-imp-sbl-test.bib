@@ -55,7 +55,8 @@
     location = {Edinburgh},
     publisher = {Black},
     date = {1885},
-    transxref = {wellhausen:1883}
+    related = {wellhausen:1883},
+    relatedtype = {translationof}
 }
 @book{wellhausen:1957,
     author = {Wellhausen, Julius},
@@ -63,7 +64,8 @@
     location = {New York},
     publisher = {Meridian Books},
     date = {1957},
-    reprxref = {wellhausen:1885}
+    related = {wellhausen:1885},
+    relatedtype = {reprintof}
 }
 
 @book{tigay:1985,
@@ -253,7 +255,7 @@
     pubstate = {forthcoming}
 }
 
-@collection{harnack:1896-1905,
+@mvbook{harnack:1896-1905,
     author = {Harnack, Adolf},
     title = {History of Dogma},
     translator = {Buchanan, Neil},
@@ -264,7 +266,7 @@
     date = {1896--1905}
 }
 
-@collection{winter:1993-1996,
+@mvcollection{winter:1993-1996,
     title = {The Book of Acts in Its First Century Setting},
     editor = {Winter, Bruce W.},
     volumes = {5},
@@ -273,7 +275,7 @@
     date = {1993--1996}
 }
 
-@incollection{winter+clarke:1993,
+@collection{winter+clarke:1993,
     editor = {Winter, Bruce W. and Clarke, Andrew D.},
     title = {The Book of Acts in Its Ancient Literary Setting},
     shorttitle = {Book of Acts},
@@ -284,7 +286,15 @@
     date = {1993}
 }
 
-@collection{saebo:1996-2014,
+@incollection{peterson:1993,
+    author = {Peterson, David},
+    title = {The Motif of Fulfilment and the Purpose of Luke-Acts},
+    shorttitle = {Motif of Fulfilment},
+    pages = {83--104},
+    crossref = {winter+clarke:1993}
+}
+
+@mvcollection{saebo:1996-2014,
     title = {Hebrew Bible/Old Testament: The History of Its Interpretation},
     editor = {Sæbø, Magne},
     volumes = {5},
@@ -293,7 +303,7 @@
     date = {1996--2014}
 }
 
-@incollection{saebo:1996,
+@collection{saebo:1996,
     editor = {Sæbø, Magne},
     volume = {1},
     part = {1},
@@ -303,19 +313,11 @@
     date = {1996}
 }
 
-@inbook{mason:1996,
+@incollection{mason:1996,
     author = {Mason, Steve},
     title = {Josephus on Canon and Scriptures},
     pages = {217--235},
     crossref = {saebo:1996}
-}
-
-@inbook{peterson:1993,
-    author = {Peterson, David},
-    title = {The Motif of Fulfilment and the Purpose of Luke-Acts},
-    shorttitle = {Motif of Fulfilment},
-    pages = {83--104},
-    crossref = {winter+clarke:1993}
 }
 
 @series{WUNT,
@@ -350,7 +352,7 @@
     date = {1967}
 }
 
-@collection{reventlow:2009-2010,
+@mvbook{reventlow:2009-2010,
     author = {Reventlow, Henning Graf},
     title = {History of Biblical Interpretation},
     translator = {Perdue, Leo G. and Duke, James O.},
@@ -360,7 +362,7 @@
     date = {2009--2010}
 }
 
-@incollection{reventlow:2009,
+@book{reventlow:2009,
     author = {Reventlow, Henning Graf},
     title = {From the Old Testament to Origen},
     volume = {1},
@@ -466,7 +468,7 @@
     pages = {5--26}
 }
 
-@book{freedman:pottery-poetry-prophecy-book,
+@book{freedman:1980,
     author = {Freedman, David Noel},
     title = {Pottery, Poetry, and Prophecy: Studies in Early Hebrew Poetry},
     shorttitle = {Pottery, Poetry, and Prophecy},
@@ -475,11 +477,11 @@
     date = {1980}
 }
 
-@inbook{freedman:1980,
+@inbook{freedman:1980-pottery-poetry-prophecy,
     author = {Freedman, David Noel},
     title = {Pottery, Poetry, and Prophecy: An Essay on Biblical Poetry},
     shorttitle = {Pottery, Poetry, and Prophecy},
-    crossref = {freedman:pottery-poetry-prophecy-book},
+    crossref = {freedman:1980},
     pages = {1--22}
 }
 
@@ -550,7 +552,7 @@
     date = {1988}
 }
 
-@collection{IDB,
+@mvreference{IDB,
     editor = {Buttrick, George A.},
     title = {The Interpreter's Dictionary of the Bible},
     shorttitle = {IDB},
@@ -561,7 +563,7 @@
     shorthand = {IDB}
 }
 
-@incollection{IDB-1,
+@reference{IDB-1,
     editor = {Buttrick, George A.},
     volume = {1},
     crossref = {IDB},
@@ -578,7 +580,7 @@
     crossref = {IDB-1}
 }
 
-@book{DOTP,
+@reference{DOTP,
     editor = {Alexander, T. Desmond and Baker, David W.},
     title = {Dictionary of the Old Testament: Pentateuch},
     shorttitle = {DOTP},
@@ -596,7 +598,7 @@
     crossref = {DOTP}
 }
 
-@collection{NIDNTT,
+@mvreference{NIDNTT,
     editor = {Brown, Colin},
     title = {New International Dictionary of New Testament Theology},
     shorttitle = {NIDNTT},
@@ -607,7 +609,7 @@
     shorthand = {NIDNTT}
 }
 
-@incollection{NIDNTT-3,
+@reference{NIDNTT-3,
     editor = {Brown, Colin},
     volume = {3},
     crossref = {NIDNTT},
@@ -632,7 +634,7 @@
     entrysubtype = {inlexicon}
 }
 
-@collection{TDNT,
+@mvreference{TDNT,
     editor = {Kittel, Gerhard and Friedrich, Gerhard},
     title = {Theological Dictionary of the New Testament},
     shorttitle = {TDNT},
@@ -644,7 +646,7 @@
     shorthand = {TDNT}
 }
 
-@incollection{TDNT-2,
+@reference{TDNT-2,
     editor = {Kittel, Gerhard and Friedrich, Gerhard},
     volume = {2},
     crossref = {TDNT},
@@ -669,7 +671,7 @@
     entrysubtype = {inlexicon}
 }
 
-@collection{TLNT,
+@mvreference{TLNT,
     author = {Spicq, Ceslas},
     title = {Theological Lexicon of the New Testament},
     shorttitle = {TLNT},
@@ -682,7 +684,7 @@
     shorthand = {TLNT}
 }
 
-@incollection{TLNT-1,
+@reference{TLNT-1,
     author = {Spicq, Ceslas},
     volume = {1},
     crossref = {TLNT},
@@ -774,7 +776,7 @@
     url = {http://www.jstor.org/stable/27638428}
 }
 
-@collection{COS,
+@mvcollection{COS,
     editor = {Hallo, William W.},
     title = {The Context of Scripture},
     shorthand = {COS},
@@ -784,27 +786,25 @@
     date = {1997--2002}
 }
 
-@incollection{hallo:1997,
+@collection{hallo:1997,
     editor = {Hallo, William W.},
     title = {Canonical Compositions from the Biblical World},
     volume = {1},
     crossref = {COS},
     location = {Leiden},
     publisher = {Brill},
-    date = {1997},
-    type = {inlineshort}
+    date = {1997}
 }
 
 @ancienttext{greathymnaten,
     title = {The Great Hymn to the Aten},
-    shorttitle = {Great Hymn to the Aten},
     translator = {Lichtheim, Miriam},
     part = {26},
     pages = {44--46},
     crossref = {hallo:1997}
 }
 
-@book{ANET,
+@collection{ANET,
     editor = {Pritchard, James B.},
     title = {Ancient Near Eastern Texts Relating to the Old Testament},
     shorttitle = {Ancient Near Eastern Texts},
@@ -835,17 +835,16 @@
     crossref = {dalley:1991}
 }
 
-@collection{foster:1993,
+@mvbook{foster:1993,
     author = {Foster, Benjamin},
     title = {Before the Muses: An Anthology of Akkadian Literature},
-    shorttitle = {Muses},
     volumes = {2},
     location = {Bethesda, MD},
     publisher = {CDL},
     date = {1993}
 }
 
-@incollection{foster:1993-1,
+@book{foster:1993-1,
     author = {Foster, Benjamin},
     volume = {1},
     crossref = {foster:1993},
@@ -860,7 +859,7 @@
     crossref = {foster:1993-1}
 }
 
-@collection{AEL,
+@mvbook{AEL,
     author = {Lichtheim, Miriam},
     title = {Ancient Egyptian Literature},
     shorttitle = {AEL},
@@ -871,7 +870,7 @@
     date = {1971--1980}
 }
 
-@incollection{AEL-2,
+@book{AEL-2,
     author = {Lichtheim, Miriam},
     volume = {2},
     crossref = {AEL},
@@ -927,7 +926,7 @@
     title = {Ashur Inscription},
     pages = {143--144},
     crossref = {grayson:1991},
-    type = {plaintitle}
+    entrysubtype = {inscription}
 }
 
 @series{TCS,
@@ -949,7 +948,7 @@
 @ancienttext{esarhaddonchronicle,
     title = {Esarhaddon Chronicle},
     crossref = {ABC},
-    type = {plaintitle}
+    entrysubtype = {chronicle}
 }
 
 @series{ARM,
@@ -990,7 +989,7 @@
     shorthand = {LCL}
 }
 
-@collection{josephus,
+@mvbook{josephus,
     title = {Josephus},
     translator = {Thackeray, Henry St. J. and others},
     volumes = {10},
@@ -1016,7 +1015,7 @@
     crossref = {josephus}
 }
 
-@collection{tacitus,
+@mvbook{tacitus,
     author = {Tacitus},
     title = {The Histories and The Annals},
     translator = {Clifford H. Moore and John Jackson},
@@ -1052,34 +1051,27 @@
     seriesxref = {LCL},
     location = {Cambridge},
     publisher = {Harvard University Press},
-    date = {1930--1965}
-}
-
-@ancienttext{p.cair.zen.,
-    editor = {Edgar, C. C.},
-    title = {Zenon Papyri, Catalogue général des antiquités égyptiennes du Musée du Caire},
-    location = {Cairo},
-    shorthand = {P.Cair.Zen.},
-    type = {plainshorthand}
+    date = {1930--1965},
+    crossref = {josephus},
+    options = {skipbib}
 }
 
 @book{hunt+edgar:1932,
     author = {Hunt, Arthur S. and Edgar, Campbell C.},
     title = {Select Papyri},
-    series = {Loeb Classical Library},
-    shortseries = {LCL},
+    seriesxref = {LCL},
     location = {Cambridge},
     publisher = {Harvard University Press},
     date = {1932}
 }
-@ancienttext{p.cair.zen.:hunt+edgar,
+
+@ancienttext{p.cair.zen.,
     editor = {Edgar, C. C.},
-    title = {Zenon Papyri, Catalogue général des antiquités égyptiennes du Musée
-    du Caire},
+    title = {Zenon Papyri, Catalogue général des antiquités égyptiennes du Musée du Caire},
     crossref = {hunt+edgar:1932},
     location = {Cairo},
     shorthand = {P.Cair.Zen.},
-    type = {plainshorthand}
+    entrysubtype = {manuscript}
 }
 
 @book{preisendaz:1973-1974,
@@ -1088,13 +1080,14 @@
     edition = {2},
     location = {Stuttgart},
     publisher = {Teubner},
-    date = {1973--1974}
+    date = {1973--1974},
+    shorthand = {PGM}
 }
 
 @ancienttext{PGM,
     title = {PGM},
     crossref = {preisendaz:1973-1974},
-    type = {PGM}
+    entrysubtype = {PGM}
 }
 
 @book{betz:1996,
@@ -1103,15 +1096,14 @@
     edition = {2},
     location = {Chicago},
     publisher = {University of Chicago Press},
-    date = {1996},
-    transxref = {preisendaz:1973-1974}
+    date = {1996}
 }
 
 @ancienttext{PGM:betz,
     title = {PGM},
     translator = {Betz},
     crossref = {betz:1996},
-    type = {PGM}
+    entrysubtype = {PGM}
 }
 
 @classictext{heraclitus:epistle1,
@@ -1143,7 +1135,7 @@
     type = {listcite}
 }
 
-@collection{ANF,
+@mvcollection{ANF,
     title = {The Ante-Nicene Fathers},
     editor = {Roberts, Alexander and Donaldson, James},
     origdate = {1885--1887},
@@ -1159,7 +1151,7 @@
     crossref = {ANF}
 }
 
-@collection{NPNF1,
+@mvcollection{NPNF1,
     editor = {Schaff, Philip},
     title = {The Nicene and Post-Nicene Fathers, \emph{Series 1}},
     origdate = {1886--1889},
@@ -1170,21 +1162,12 @@
     shorthand = {NPNF\textsuperscript{1}},
 }
 
-@incollection{NPNF1-1,
-    editor = {Schaff, Philip},
-    volume = {1},
-    crossref = {NPNF1},
-    location = {Peabody, MA},
-    publisher = {Hendrickson},
-    date = {1994}
-}
-
 @classictext{augustine:letters,
     author = {Augustine},
     title = {The Letters of St. Augustin},
     shorttitle = {Letters of St. Augustin},
-    crossref = {NPNF1-1},
-    type = {listcite}
+    crossref = {NPNF1},
+    options = {skipbib=false}
 }
 
 @series{PL,
@@ -1213,7 +1196,7 @@
     type = {seriesascollection}
 }
 
-@collection{Str-B,
+@mvbook{Str-B,
     author = {Strack, Hermann L. and Billerbeck, Paul},
     title = {Kommentar zum Neuen Testament aus Talmud und Midrasch},
     volumes = {6},
@@ -1224,7 +1207,7 @@
     type = {plainshorthand}
 }
 
-@collection{ANRW,
+@mvreference{ANRW,
     editor = {Temporini, Hildegard and Haase, Wolfgang},
     title = {Aufstieg und Niedergang der römischen Welt: Geschichte und Kultur Roms im Spiegel der neueren Forschung. Part 2, \emph{Principat}},
     shorttitle = {ANRW},
@@ -1234,7 +1217,7 @@
     shorthand = {ANRW}
 }
 
-@incollection{ANRW-33-1,
+@reference{ANRW-33-1,
     editor = {Temporini, Hildegard and Haase, Wolfgang},
     crossref = {ANRW},
     volume = {33},
@@ -1290,7 +1273,7 @@
     date = {1995}
 }
 
-@inreference{partain:1995,
+@inbook{partain:1995,
     author = {Partain, Jack G.},
     title = {Numbers},
     pages = {175--179},
@@ -1303,7 +1286,7 @@
     shorthand = {AB}
 }
 
-@collection{dahood:1965-1970,
+@mvbook{dahood:1965-1970,
     author = {Dahood, Mitchell},
     title = {Psalms},
     volumes = {3},
@@ -1314,7 +1297,7 @@
     date = {1965--1970}
 }
 
-@incollection{dahood:1965,
+@book{dahood:1965,
     author = {Dahood, Mitchell},
     title = {Psalms I: 1--50},
     volume = {1},
@@ -1326,7 +1309,7 @@
     date = {1965}
 }
 
-@incollection{dahood:1968,
+@book{dahood:1968,
     author = {Dahood, Mitchell},
     title = {Psalms II: 51--100},
     volume = {2},
@@ -1338,7 +1321,7 @@
     date = {1968}
 }
 
-@collection{NIB,
+@mvreference{NIB,
     editor = {Keck, Leander E.},
     title = {The New Interpreter's Bible},
     shorttitle = {NIB},
@@ -1349,7 +1332,7 @@
     shorthand = {NIB}
 }
 
-@incollection{NIB-6,
+@reference{NIB-6,
     editor = {Keck, Leander E.},
     title = {Introduction to Prophetic Literature, Isaiah, Jeremiah, Baruch, Letter of Jeremiah, Lamentations, Ezekiel},
     volume = {6},
@@ -1433,38 +1416,38 @@
     url = {http://ntweblog.blogspot.com}
 }
 
-@book{BDAG,
+@reference{BDAG,
     author = {Danker, Frederick W. and Bauer, Walter and Arndt, William F. and Gingrich, F. Wilbur},
     title = {Greek-English Lexicon of the New Testament and Other Early Christian Literature},
     edition = {3},
     location = {Chicago},
     publisher = {University of Chicago Press},
     date = {2000},
-    type = {inlineshort},
-    shorthand = {BDAG}
+    shorthand = {BDAG},
+    type = {plainshorthand}
 }
 
-@book{BDB,
+@reference{BDB,
     author = {Brown, Francis and Driver, S. R. and Briggs, Charles A.},
     title = {A Hebrew and English Lexicon of the Old Testament},
     location = {Oxford},
     publisher = {Oxford University Press},
     date = {1906},
-    type = {inlineshort},
-    shorthand = {BDB}
+    shorthand = {BDB},
+    type = {plainshorthand}
 }
 
-@book{BDF,
+@reference{BDF,
     author = {Blass, Friedrich and Debrunner, Albert and Funk, Robert W.},
     title = {A Greek Grammar of the New Testament and Other Early Christian Literature},
     location = {Chicago},
     publisher = {University of Chicago Press},
     date = {1961},
-    type = {inlineshort},
-    shorthand = {BDF}
+    shorthand = {BDF},
+    type = {plainshorthand}
 }
 
-@collection{HALOT,
+@mvreference{HALOT,
     author = {Koehler, Ludwig and Baumgartner, Walter and Stamm, Johann J.},
     title = {The Hebrew and Aramaic Lexicon of the Old Testament},
     shorttitle = {HALOT},
@@ -1474,11 +1457,10 @@
     location = {Leiden},
     publisher = {Brill},
     date = {1994--1999},
-    type = {inlineshort},
     shorthand = {HALOT}
 }
 
-@collection{TLOT,
+@mvreference{TLOT,
     title = {Theological Lexicon of the Old Testament},
     shorttitle = {TLOT},
     editor = {Jenni, Ernst},
@@ -1489,7 +1471,6 @@
     location = {Peabody, MA},
     publisher = {Hendrickson},
     date = {1997},
-    type = {inlineshort},
     shorthand = {TLOT}
 }
 
@@ -1500,6 +1481,5 @@
     location = {Atlanta, GA},
     publisher = {SBL Press},
     date = {2014},
-    type = {inlineshort},
     shorthand = {SBLHS}
 }

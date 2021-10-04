@@ -73,7 +73,6 @@ local generic = {
     date = { "date", "year", "pubstate" }, -- prefer the more specific field, and prefer any date to publication state (e.g., "forthcoming")
     crossref = { "crossref", "xref" }, -- the presence of any of these fields indicates that the entry is cross-referenced to a book or collection containing it
     pages = { "pages", "page" }, -- interchangeable
-    reprxref = { "reprxref", "transxref" }, -- the presence of any of these fields indicates that the entry is a reprint or translation of another work
     doi = { "doi", "url" }, -- prefer DOI to arbitrary URL
 }
 
@@ -121,18 +120,13 @@ categories.series = {
 -- a journal
 categories.journal = categories.series
 
--- a multivolume work (§6.2.20)
--- a multivolume encyclopedia or dictionary (§6.3.6.2)
--- a multivolume collection (§6.4.1)
--- a multivolume commentary (§6.4.10)
--- a multivolume lexicon (§7.2)
-categories.collection = {
+-- a multivolume book (§6.2.20)
+categories.mvbook = {
     sets = {
-        author = { "author", "editor" }, -- a collection may have an editor instead of an author
+        author = { "author", "editor" }, -- a book may have an editor instead of an author
         series = generic.series,
         location = generic.location,
         date = generic.date,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = { 
@@ -150,12 +144,57 @@ categories.collection = {
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
+        "edition",
+        "volumes",
         "parts",
         "series", "seriesseries", "number",
         "origlocation", "origpublisher", "origdate",
         "location",
         "date",
-        "reprxref",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
+        "eprint",
+        "doi",
+        "entrysubtype", -- (for subdivisions like "mvcommentary" or "mvlexicon")
+        "type",
+        "note",
+    },
+}
+
+-- a multivolume encyclopedia or dictionary (§6.3.6.2)
+-- a multivolume commentary (§6.4.10)
+-- a multivolume lexicon (§7.2)
+categories.mvreference = categories.mvbook
+
+-- a multivolume collection of contributions by multiple authors (§6.4.1)
+categories.mvcollection = {
+    sets = {
+        author = { "editor" }, -- a collection has an editor instead of an author
+        series = generic.series,
+        location = generic.location,
+        date = generic.date,
+        doi = generic.doi,
+    },
+    required = { 
+        "author", -- an alias for editor
+        "title",
+        "publisher",
+    },
+    optional = {
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
+        "subtitle",
+        "editortype",
+        "witheditor", "witheditortype",
+        "translator", "origlanguage", 
+        "withtranslator", "withtranslatortype",
+        "edition",
+        "volumes",
+        "parts",
+        "series", "seriesseries", "number",
+        "origlocation", "origpublisher", "origdate",
+        "location",
+        "date",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
         "eprint",
         "doi",
         "type", -- (for exceptional cases that require special formatting)
@@ -163,66 +202,64 @@ categories.collection = {
     },
 }
 
--- a single-volume book not in a collection (§6.2)
--- a single-volume encyclopedia or dictionary (§6.3.6.1)
--- a single-volume commentary (§6.4.9)
--- a single-volume lexicon (§7.1)
-categories.book = {
+-- the published proceedings of a conference (§6.4.11), in multiple volumes
+categories.mvproceedings = {
     sets = {
-        author = { "author", "editor" }, -- a book may have an editor instead of an author
+        author = { "editor", "organization" }, -- no "author"!
         series = generic.series,
+        publisher = { "publisher", "organization" },
         location = generic.location,
         date = generic.date,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
-    required = { 
-        "author", -- a set
+    required = {
         "title",
         "publisher",
     },
     optional = {
+        "author", -- referring to the set above
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "subtitle",
-        "withauthor", "withauthortype",
         "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
         "edition",
+        "volumes",
+        "parts",
         "series", "seriesseries", "number",
         "origlocation", "origpublisher", "origdate",
         "location",
         "date",
-        "reprxref",
-        "transxref",
-        "eprint",
-        "doi",
-        "type", -- (for exceptional cases that require special formatting, like "inlineshort")
+        "doi", 
         "note",
     },
 }
 
--- a manual (§7.3; identical to a book, except that the author set is optional, and can consist of an author, editor, or organization) 
-categories.manual = {
+-- a single-volume book (§6.2)
+-- or a book in a multivolume set
+categories.book = {
     sets = {
-        author = { "author", "editor", "organization" },
+        author = { "author", "editor" }, -- a book may have an editor instead of an author
+        titleorcrossref = { "title", "crossref", "xref" }, -- if a book has no title of its own, then it must refer to the mvbook containing it
+        titleorvolume = { "title", "volume" }, -- if a book has no title of its own, then it must have a volume number
+        crossref = generic.crossref,
         series = generic.series,
         location = generic.location,
         date = generic.date,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = { 
-        "title",
+        "author", -- a set
+        "titleorcrossref", -- a set
+        "titleorvolume", -- a set
         "publisher",
     },
     optional = {
         "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "subtitle",
-        "author",
         "withauthor", "withauthortype",
         "editor", "editortype",
         "witheditor", "witheditortype",
@@ -233,10 +270,58 @@ categories.manual = {
         "origlocation", "origpublisher", "origdate",
         "location",
         "date",
-        "reprxref",
-        "transxref",
+        "volume",
+        "part",
+        "crossref",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
         "eprint",
-        "doi", 
+        "doi",
+        "entrysubtype", -- (for subdivisions like "mvcommentary" or "mvlexicon")
+        "type",
+        "note",
+    },
+}
+
+-- a single-volume encyclopedia or dictionary (§6.3.6.1)
+-- a single-volume commentary (§6.4.9)
+-- a single-volume lexicon (§7.1)
+-- or any of the above in a multivolume set
+categories.reference = categories.book
+
+-- a single-volume collection of contributions by multiple authors (§6.4.1)
+-- or an edited collection of contributions by multiple authors in a multivolume set
+categories.collection = {
+    sets = {
+        author = { "editor" }, -- a collection has an editor instead of an author
+        titleorcrossref = { "title", "crossref", "xref" }, -- if a collection has no title of its own, then it must refer to the mvcollection containing it
+        titleorvolume = { "title", "volume" }, -- if a collection has no title of its own, then it must have a volume number
+        crossref = generic.crossref,
+        series = generic.series,
+        location = generic.location,
+        date = generic.date,
+        doi = generic.doi,
+    },
+    required = { 
+        "author", -- an alias for editor
+        "titleorcrossref", -- a set
+        "titleorvolume", -- a set
+        "publisher",
+    },
+    optional = {
+        "shorthand", -- to abbreviate in subcites
+        "shorttitle", -- for short citations
+        "subtitle",
+        "editortype",
+        "witheditor", "witheditortype",
+        "translator", "origlanguage",
+        "withtranslator", "withtranslatortype",
+        "series", "seriesseries", "number",
+        "origlocation", "origpublisher", "origdate",
+        "location",
+        "date",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
+        "eprint",
+        "doi",
         "type", -- (for exceptional cases that require special formatting)
         "note",
     },
@@ -274,53 +359,50 @@ categories.proceedings = {
     },
 }
 
--- a volume in a multivolume collection
--- (hence, a volume number and collection reference are required instead of a title, although a title may also be specified).
--- note that this differs from the @incollection category used by biblatex-sbl,
--- which refers to a chapter or article in an untitled multivolume work.
-categories.incollection = {
+-- a manual (§7.3; identical to a book, except that the author set is optional, and can consist of an author, editor, or organization)
+-- TODO: Its options field should equal {skipbib=true} by default, as it does not necessarily have an author.
+categories.manual = {
     sets = {
-        author = { "author", "editor" }, -- a book may have an editor instead of an author
+        author = { "author", "editor", "organization" },
         series = generic.series,
         location = generic.location,
         date = generic.date,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
-    required = {
-        "author", -- a set
-        "collectionxref", -- reference to the collection
-        "volume", -- volume number of this book in the collection
+    required = { 
+        "title",
         "publisher",
     },
     optional = {
-        "title", -- optional for this category
+        "shorthand", -- to abbreviate in subcites
         "shorttitle", -- for short citations
         "subtitle",
+        "author",
+        "withauthor", "withauthortype",
         "editor", "editortype",
         "witheditor", "witheditortype",
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
-        "part",
+        "edition",
         "series", "seriesseries", "number",
         "origlocation", "origpublisher", "origdate",
         "location",
         "date",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
         "eprint",
-        "doi",
+        "doi", 
         "type", -- (for exceptional cases that require special formatting)
         "note",
     },
 }
 
 -- a part of a book identified by an explicit page or page range
--- in either a single-volume book (§6.2.12-13) or a volume in a collection (§6.2.22-23)
+-- in either a single-volume book (§6.2.12-13) or a volume in a multivolume set (§6.2.22-23)
 -- an article or note in a study Bible (§6.4.9.1)
 categories.inbook = {
     sets = {
         crossref = generic.crossref,
         pages = generic.pages,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = {
@@ -335,7 +417,7 @@ categories.inbook = {
         "withauthor", "withauthortype",
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",
-        "reprxref",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
         "doi",
         "type", -- (for exceptional cases that require special formatting)
         "entrysubtype", -- (for subdivisions such as "inlexicon" or "incommentary")
@@ -348,10 +430,13 @@ categories.inbook = {
 -- an article in a commentary on the entire Bible (§6.4.9.2, 6.4.10.2)
 categories.inreference = categories.inbook
 
+-- a part of an edited collection identified by an explicit page or page range
+categories.incollection = categories.inbook
+
 -- a seminar paper (§6.4.11)
 categories.inproceedings = categories.inbook
 
--- not covered by SBL, but treated as interchangeable with inproceedings in other ConTeXt citation .lua files
+-- a legacy alias
 categories.conference = categories.inproceedings
 
 -- an introduction, preface, or foreword to a book written by someone other than the author (§6.2.14)
@@ -360,17 +445,15 @@ categories.suppbook = {
     sets = {
         crossref = generic.crossref,
         pages = generic.pages,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = {
-        "author", -- author of the introduction/preface/foreword (a set)
+        "author", -- author of the introduction/preface/foreword
         "type", -- e.g., "introduction", "preface", "foreword"
         "crossref", -- a set
     },
     optional = {
         "withauthor", "withauthortype",
-        "pages",
         "translator", "origlanguage",
         "withtranslator", "withtranslatortype",
         "doi",
@@ -381,18 +464,18 @@ categories.suppbook = {
 -- a text from the Ancient Near East (or anywhere, really; see §6.4.1)
 -- a papyrus or ostracon (§6.4.3)
 -- almost identical to inbook, but no author is required
+-- TODO: Its options field should equal {skipbib=true} by default.
 categories.ancienttext = {
     sets = {
         crossref = generic.crossref,
         pages = generic.pages,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = {
         "title", -- title of the ancient text
     },
     optional = {
-        "shorthand", -- to abbreviate (e.g., for papyri, ostraca, and epigraphica)
+        "shorthand", -- to abbreviate (generally for manuscripts)
         "shorttitle", -- for short citations
         "subtitle",
         "author", -- author of the ancient text (if known)
@@ -406,19 +489,20 @@ categories.ancienttext = {
         "pages",
         "location", -- for artifact provenance, not publication
         "doi",
-        "type", -- (for exceptional cases that require special formatting, like "PGM", "plaintitle" or "plainshorthand")
+        "entrysubtype", -- (for exceptional cases that require special formatting, like "PGM", "inscription", "chronicle", "manuscript")
+        "type",
         "note",
     },
 }
 
 -- a classical text (§6.4.2)
 -- an ancient work by a church father (§6.4.4-6)
+-- TODO: Its options field should equal {skipbib=true} by default.
 categories.classictext = {
     sets = {
         crossref = generic.crossref,
         pages = generic.pages,
         series = generic.series,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = {
@@ -436,6 +520,7 @@ categories.classictext = {
         "part",
         "pages",
         "doi",
+        "entrysubtype", -- (for exceptional cases that require special formatting)
         "type", -- (for exceptional cases that require special formatting, like "seriesascollection")
         "note",
     },
@@ -539,8 +624,9 @@ categories.thesis = {
     required = {
         "author",
         "title",
-        "institution", -- a set
         "type", -- typically a category name, like "mastersthesis" or "phdthesis"
+        "institution", -- a set
+        "date", -- a set
     },
     optional = {
         "shorttitle", -- for short citations
@@ -549,7 +635,6 @@ categories.thesis = {
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
         "location",
-        "date",
         "doi", 
         "note",
     },
@@ -567,6 +652,7 @@ categories.mastersthesis = {
         "author",
         "title",
         "institution", -- a set
+        "date", -- a set
     },
     optional = {
         "shorttitle", -- for short citations
@@ -575,7 +661,6 @@ categories.mastersthesis = {
         "translator", "origlanguage", 
         "withtranslator", "withtranslatortype",
         "location",
-        "date",
         "doi", 
         "note",
     },
@@ -637,7 +722,7 @@ categories.online = {
     },
 }
 
--- electronic sources are not addressed by SBL, so their category will be treated as an alias of @online
+-- a legacy alias
 categories.electronic = categories.online
 
 -- use this type when nothing else fits.
@@ -652,7 +737,6 @@ categories.misc = {
         institution = generic.institution,
         location = generic.location,
         date = generic.date,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = {
@@ -682,7 +766,7 @@ categories.misc = {
         "journal",
         "institution",
         "howpublished",
-        "reprxref",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
         "eprint",
         "doi", 
         "note",
@@ -702,7 +786,6 @@ categories.literal = {
         institution = generic.institution,
         location = generic.location,
         date = generic.date,
-        reprxref = generic.reprxref,
         doi = generic.doi,
     },
     required = {
@@ -715,7 +798,7 @@ categories.literal = {
         "subtitle",
         "shorttitle", -- for short citations
         "shorthand", -- to abbreviate in subcites
-        "collectionxref", "volume", "part",
+        "volume", "part",
         "crossref",
         "pages",
         "editor", "editortype",
