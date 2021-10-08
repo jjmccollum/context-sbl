@@ -339,10 +339,10 @@
    % TODO: the following fields are not language-sensitive and probably should be
    useibid=\v!no, % useibid=yes will enable abbreviation of consecutive citations of the same entry as "ibid."
    useidem=\v!no, % useidem=yes will enable abbreviation of an author cited multiple times consecutively as "idem"
-   printauthor=\v!yes, % printauthor=no will skip printing the author
-   printpubl=\v!yes, % printpubl=no will skip printing the publication fields
    synonym=\v!abbreviation, % TODO: this can determine which synonyms set we will use for shorthands
    synonyms=\v!abbreviations, % TODO: this can determine which synonyms set we will use for shorthands
+   printauthor=\v!yes, % printauthor=no will skip printing the author
+   printpubl=\v!yes, % printpubl=no will skip printing the publication fields
    \c!sorttype=normal, % \v!normal ?
    \c!style=, % do not apply any styles across the whole citation
    \c!compress=\v!yes] % note that cite sorts only work with compress=yes.
@@ -586,16 +586,10 @@
   [\c!left={\startparen},
    \c!right={\stopparen}]
 
-% Citations in footnotes should be rendered exactly like citations in the text, 
+% Citations in footnotes (and endnotes, for the philistines who use them) should be rendered exactly like citations in the text, 
 % but followed by a period and placed in footnotes
 \definebtx
   [sbl:\s!cite:footnote]
-  [sbl:\s!cite:inline]
-
-% Citations in endnotes (for the philistines who use them) should be rendered exactly like citations in the text, 
-% but followed by a period and placed in endnotes
-\definebtx
-  [sbl:\s!cite:endnote]
   [sbl:\s!cite:inline]
 
 % By default, SBL uses inline format for in-text citations
