@@ -34,6 +34,8 @@
 	%useidem=yes, %uncomment to test idem
 ]
 
+\setupsynonyms[abbreviation][textstyle=normal, synonymstyle=normal, criterium=all] % don't force capitalization
+
 \starttext
 \title{6 Notes and Bibliographies}
 \subject{6.2 General Examples: Books}
@@ -362,7 +364,10 @@ to indicate the medium in the citation.
 \cite[righttext={§6.2.1}][SBLHS]\blank
 \cite[entry][SBLHS]\blank
 \page
-
+\startsubject[title=Abbreviations]
+	\placelistofabbreviations
+\stopsubject
+\page
 \startsubject[title=Bibliography]
 	\placelistofpublications
 \stopsubject
