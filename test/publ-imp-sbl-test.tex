@@ -29,339 +29,339 @@
 \define[1]\textsuperscript{{\feature[+][superscript]#1}}
 
 \setupbtx[sbl:cite][
-	alternative=inline, % comment to use footnote variant as default
+	alternative=inline] % comment to use footnote variant as default
 	%useibid=yes, %uncomment to test ibid.
 	%useidem=yes, %uncomment to test idem
-]
+%]
 
-\setupsynonyms[abbreviation][textstyle=normal, synonymstyle=normal, criterium=all] % don't force capitalization
+\setupsynonyms[abbreviation][textstyle=normal, synonymstyle=normal] % don't force capitalization
 
 \starttext
 \title{6 Notes and Bibliographies}
 \subject{6.2 General Examples: Books}
 \subsubject{6.2.1 A Book by a Single Author}
-\cite[righttext={127}][talbert:1992]\blank
-\cite[alternative=short, righttext={22}][talbert:1992]\blank
+\autocite[127]{talbert:1992}\blank
+\autocite[22]{talbert:1992}\blank
 \cite[entry][talbert:1992]\blank
 \subsubject{6.2.2 A Book by Two or Three Authors}
-\cite[righttext={237}][robinson+koester:1971]\blank
-\cite[alternative=short, righttext={23}][robinson+koester:1971]\blank
+\autocite[237]{robinson+koester:1971}\blank
+\autocite[23]{robinson+koester:1971}\blank
 \cite[entry][robinson+koester:1971]\blank
 \subsubject{6.2.3 A Book by More than Three Authors}
-\cite[righttext={53}][scott+etal:1993]\blank
-\cite[alternative=short, righttext={42}][scott+etal:1993]\blank
+\autocite[53]{scott+etal:1993}\blank
+\autocite[42]{scott+etal:1993}\blank
 \cite[entry][scott+etal:1993]\blank
 \subsubject{6.2.4 A Translated Volume}
-\cite[righttext={28}][egger:1996]\blank
-\cite[alternative=short, righttext={291}][egger:1996]\blank
+\autocite[28]{egger:1996}\blank
+\autocite[291]{egger:1996}\blank
 \cite[entry][egger:1996]\blank
 \subsubject{6.2.5 The Full History of a Translated Volume}
-\cite[righttext={296}][wellhausen:1957]\blank
-\cite[short][wellhausen:1957]\blank
+\autocite[296]{wellhausen:1957}\blank
+\autocite{wellhausen:1957}\blank
 \cite[entry][wellhausen:1957]\blank
 \subsubject{6.2.6 A Book with One Editor}
-\cite[righttext={35}][tigay:1985]\blank
-\cite[alternative=short, righttext={38}][tigay:1985]\blank
+\autocite[35]{tigay:1985}\blank
+\autocite[38]{tigay:1985}\blank
 \cite[entry][tigay:1985]\blank
 \subsubject{6.2.7 A Book with Two or Three Editors}
-\cite[righttext={xii}][kaltner+mckenzie:2002]\blank
-\cite[alternative=short, righttext={viii}][kaltner+mckenzie:2002]\blank
+\autocite[xii]{kaltner+mckenzie:2002}\blank
+\autocite[viii]{kaltner+mckenzie:2002}\blank
 \cite[entry][kaltner+mckenzie:2002]\blank
 \subsubject{6.2.8 A Book with Four or More Editors}
-\cite[righttext={10}][oates+etal:2001]\blank
-\cite[short][oates+etal:2001]\blank
+\autocite[10]{oates+etal:2001}\blank
+\autocite{oates+etal:2001}\blank
 \cite[entry][oates+etal:2001]\blank
 \subsubject{6.2.9 A Book with Both Author and Editor}
-\cite[righttext={20}][schillebeeckx:1986]\blank
-\cite[short][schillebeeckx:1986]\blank
+\autocite[20]{schillebeeckx:1986}\blank
+\autocite{schillebeeckx:1986}\blank
 \cite[entry][schillebeeckx:1986]\blank
 \subsubject{6.2.10 A Book with Author, Editor, and Translator}
-\cite[righttext={40}][blass+debrunner:1982]\blank
-\cite[short][blass+debrunner:1982]\blank
+\autocite[40]{blass+debrunner:1982}\blank
+\autocite{blass+debrunner:1982}\blank
 \cite[entry][blass+debrunner:1982]\blank
 \subsubject{6.2.11 A Title in a Modern Work Citing a Nonroman Alphabet}
-\cite[irvine:2014]\blank
-\cite[short][irvine:2014]\blank
+\autocite{irvine:2014}\blank
+\autocite{irvine:2014}\blank
 \cite[entry][irvine:2014]\blank
 \subsubject{6.2.12 An Article in an Edited Volume}
-\cite[attridge:1986]\blank
-\cite[alternative=short, righttext={311--343}][attridge:1986]\blank
+\autocite{attridge:1986}\blank
+\autocite[311--343]{attridge:1986}\blank
 \cite[entry][attridge:1986]\blank
 \subsubject{6.2.13 An Article in a Festschrift}
-\cite[vanseters:1995]\blank
-\cite[alternative=short, righttext={222}][vanseters:1995]\blank
+\autocite{vanseters:1995}\blank
+\autocite[222]{vanseters:1995}\blank
 \cite[entry][vanseters:1995]\blank
 \subsubject{6.2.14 An Introduction, Preface, or Foreword Written by Someone Other Than the Author}
-\cite[righttext={xi--xxi}][boers:1996]\blank
-\cite[alternative=short, righttext={xi--xx}][boers:1996]\blank
+\autocite[xi--xxi]{boers:1996}\blank
+\autocite[xi--xx]{boers:1996}\blank
 \cite[entry][boers:1996]\blank
 \subsubject{6.2.15 Multiple Publishers for a Single Book}
-\cite[gerhardsson:1961]\blank
-\cite[short][gerhardsson:1961]\blank
+\autocite{gerhardsson:1961}\blank
+\autocite{gerhardsson:1961}\blank
 \cite[entry][gerhardsson:1961]\blank
 \subsubject{6.2.16 A Revised Edition}
-\cite[righttext={xxi}][pritchard:1969]\blank
-\cite[short][pritchard:1969]\blank
+\autocite[xxi]{pritchard:1969}\blank
+\autocite{pritchard:1969}\blank
 \cite[entry][pritchard:1969]\blank
-\cite[righttext={81}][blenkinsopp:1996]\blank
-\cite[short][blenkinsopp:1996]\blank
+\autocite[81]{blenkinsopp:1996}\blank
+\autocite{blenkinsopp:1996}\blank
 \cite[entry][blenkinsopp:1996]\blank
 \subsubject{6.2.17 A Recent Reprint Title}
-\cite[righttext={35}][vanseters:1997]\blank
-\cite[short][vanseters:1997]\blank
+\autocite[35]{vanseters:1997}\blank
+\autocite{vanseters:1997}\blank
 \cite[entry][vanseters:1997]\blank
 \subsubject{6.2.18 A Reprint Title in the Public Domain}
-\cite[righttext={55}][deissmann:1995]\blank
-\cite[short][deissmann:1995]\blank
+\autocite[55]{deissmann:1995}\blank
+\autocite{deissmann:1995}\blank
 \cite[entry][deissmann:1995]\blank
 \subsubject{6.2.19 A Forthcoming Book}
-\cite[harrison+welborn:forthcoming]\blank
-\cite[alternative=short, righttext={201}][harrison+welborn:forthcoming]\blank
+\autocite{harrison+welborn:forthcoming}\blank
+\autocite[201]{harrison+welborn:forthcoming}\blank
 \cite[entry][harrison+welborn:forthcoming]\blank
 \subsubject{6.2.20 A Multivolume Work}
-\cite[harnack:1896-1905]\blank
-\cite[alternative=short, righttext={2:126}][harnack:1896-1905]\blank
+\autocite{harnack:1896-1905}\blank
+\autocite[2:126]{harnack:1896-1905}\blank
 \cite[entry][harnack:1896-1905]\blank
 \subsubject{6.2.21 A Titled Volume in a Multivolume, Edited Work}
-\cite[righttext={25}][winter+clarke:1993]\blank
-\cite[alternative=short, righttext={25}][winter+clarke:1993]\blank
+\autocite[25]{winter+clarke:1993}\blank
+\autocite[25]{winter+clarke:1993}\blank
 \cite[entry][winter+clarke:1993]\blank
 \subsubject{6.2.22 A Chapter within a Multivolume Work}
-\cite[mason:1996]\blank
-\cite[alternative=short, righttext={224}][mason:1996]\blank
+\autocite{mason:1996}\blank
+\autocite[224]{mason:1996}\blank
 \cite[entry][mason:1996]\blank
 \subsubject{6.2.23 A Chapter within a Titled Volume in a Multivolume Work}
-\cite[peterson:1993]\blank
-\cite[alternative=short, righttext={92}][peterson:1993]\blank
+\autocite{peterson:1993}\blank
+\autocite[92]{peterson:1993}\blank
 \cite[entry][peterson:1993]\blank
 \subsubject{6.2.24 A Work in a Series}
-\cite[righttext={122}][hofius:1989]\blank
-\cite[alternative=short, righttext={124}][hofius:1989]\blank
+\autocite[122]{hofius:1989}\blank
+\autocite[124]{hofius:1989}\blank
 \cite[entry][hofius:1989]\blank
-\cite[righttext={123--127}][jeremias:1967]\blank
-\cite[alternative=short, righttext={126}][jeremias:1967]\blank
+\autocite[123--127]{jeremias:1967}\blank
+\autocite[126]{jeremias:1967}\blank
 \cite[entry][jeremias:1967]\blank
 \subsubject{6.2.25 Electronic Book}
-\cite[righttext={ch.~1.3}][reventlow:2009]\blank
-\cite[alternative=short, righttext={ch.~1.3}][reventlow:2009]\blank
+\autocite[ch.~1.3]{reventlow:2009}\blank
+\autocite[ch.~1.3]{reventlow:2009}\blank
 \cite[entry][reventlow:2009]\blank
-\cite[righttext={ch.~3\btxcomma \quotation{Introducing David}}][wright:2014]\blank
-\cite[alternative=short, righttext={ch.~5\btxcomma \quotation{Evidence from Qumran}}][wright:2014]\blank
+\autocite[ch.~3\btxcomma \quotation{Introducing David}]{wright:2014}\blank
+\autocite[ch.~5\btxcomma \quotation{Evidence from Qumran}]{wright:2014}\blank
 \cite[entry][wright:2014]\blank
-\cite[killebrew+steiner:2014]\blank
-\cite[short][killebrew+steiner:2014]\blank
+\autocite{killebrew+steiner:2014}\blank
+\autocite{killebrew+steiner:2014}\blank
 \cite[entry][killebrew+steiner:2014]\blank
-\cite[kaufman:1974]\blank
-\cite[alternative=short, righttext={123}][kaufman:1974]\blank
+\autocite{kaufman:1974}\blank
+\autocite[123]{kaufman:1974}\blank
 \cite[entry][kaufman:1974]\blank
 \subject{6.3 General Examples: Journal Articles, Reviews, and Dissertations}
 \subsubject{6.3.1 A Journal Article}
-\cite[leyerle:1993]\blank
-\cite[alternative=short, righttext={161}][leyerle:1993]\blank
+\autocite{leyerle:1993}\blank
+\autocite[161]{leyerle:1993}\blank
 \cite[entry][leyerle:1993]\blank
 \subsubject{6.3.2 A Journal Article with Multiple Page Locations and Volumes}
-\cite[wildberger:1965]\blank
-\cite[short][wildberger:1965]\blank
+\autocite{wildberger:1965}\blank
+\autocite{wildberger:1965}\blank
 \cite[entry][wildberger:1965]\blank
-\cite[wellhausen:1876-1877]\blank
-\cite[short][wellhausen:1876-1877]\blank
+\autocite{wellhausen:1876-1877}\blank
+\autocite{wellhausen:1876-1877}\blank
 \cite[entry][wellhausen:1876-1877]\blank
 \subsubject{6.3.3 A Journal Article Republished in a Collected Volume}
-\cite[righttext={20}][freedman:1977]\blank
-\cite[short][freedman:1977]\blank
+\autocite[20]{freedman:1977}\blank
+\autocite{freedman:1977}\blank
 \cite[entry][freedman:1977]\blank
-\cite[alternative=short, righttext={14}][freedman:1980-pottery-poetry-prophecy]\blank
-\cite[short][freedman:1980-pottery-poetry-prophecy]\blank
+\autocite[14]{freedman:1980-pottery-poetry-prophecy}\blank
+\autocite{freedman:1980-pottery-poetry-prophecy}\blank
 \cite[entry][freedman:1980-pottery-poetry-prophecy]\blank
 \subsubject{6.3.4 A Book Review}
-\cite[teeple:1966]\blank
-\cite[alternative=short, righttext={369}][teeple:1966]\blank
+\autocite{teeple:1966}\blank
+\autocite[369]{teeple:1966}\blank
 \cite[entry][teeple:1966]\blank
-\cite[pelikan:1992]\blank
-\cite[short][pelikan:1992]\blank
+\autocite{pelikan:1992}\blank
+\autocite{pelikan:1992}\blank
 \cite[entry][pelikan:1992]\blank
-\cite[petersen:1988]\blank
-\cite[alternative=short, righttext={8}][petersen:1988]\blank
+\autocite{petersen:1988}\blank
+\autocite[8]{petersen:1988}\blank
 \cite[entry][petersen:1988]\blank
 \subsubject{6.3.5 An Unpublished Dissertation or Thesis}
-\cite[righttext={22--44}][klosinski:1988]\blank
-\cite[alternative=short, righttext={23}][klosinski:1988]\blank
+\autocite[22--44]{klosinski:1988}\blank
+\autocite[23]{klosinski:1988}\blank
 \cite[entry][klosinski:1988]\blank
 \subsubject{6.3.6 An Article in an Encyclopaedia or a Dictionary}
 \subsubsubject{6.3.6.1 An Article in a Multivolume Encyclopaedia or Dictionary}
-\cite[stendahl:1962]\blank
-\cite[alternative=short, righttext={419}][stendahl:1962]\blank
+\autocite{stendahl:1962}\blank
+\autocite[419]{stendahl:1962}\blank
 \cite[entry][stendahl:1962]\blank
 \subsubsubject{6.3.6.2 An Article in a Single-Volume Encyclopaedia or Dictionary}
-\cite[olson:2003]\blank
-\cite[alternative=short, righttext={612}][olson:2003]\blank
+\autocite{olson:2003}\blank
+\autocite[612]{olson:2003}\blank
 \cite[entry][olson:2003]\blank
 \subsubject{6.3.7 An Article in a Lexicon or Theological Dictionary}
-\cite[dahn:horao]\blank
-\cite[alternative=short, righttext={511}][dahn:horao]\blank
-\cite[dahn+liefeld:see+vision+eye]\blank
-\cite[alternative=short, righttext={511}][dahn+liefeld:see+vision+eye]\blank
-\cite[beyer:diakoneo]\blank
-\cite[alternative=short, righttext={81}][beyer:diakoneo]\blank
-\cite[beyer:diakoneo+diakonia+ktl]\blank
-\cite[alternative=short, righttext={83}][beyer:diakoneo+diakonia+ktl]\blank
-\cite[spicq:amoibe]\blank
-\cite[alternative=short, righttext={95}][spicq:amoibe]\blank
-\cite[spicq:atakteo+ataktos+ataktos]\blank
-\cite[alternative=short, righttext={223}][spicq:atakteo+ataktos+ataktos]\blank
+\autocite{dahn:horao}\blank
+\autocite[511]{dahn:horao}\blank
+\autocite{dahn+liefeld:see+vision+eye}\blank
+\autocite[511]{dahn+liefeld:see+vision+eye}\blank
+\autocite{beyer:diakoneo}\blank
+\autocite[81]{beyer:diakoneo}\blank
+\autocite{beyer:diakoneo+diakonia+ktl}\blank
+\autocite[83]{beyer:diakoneo+diakonia+ktl}\blank
+\autocite{spicq:amoibe}\blank
+\autocite[95]{spicq:amoibe}\blank
+\autocite{spicq:atakteo+ataktos+ataktos}\blank
+\autocite[223]{spicq:atakteo+ataktos+ataktos}\blank
 \subsubject{6.3.8 A Paper Presented at a Professional Society}
-\cite[righttext={13--17}][niditch:1994]\blank
-\cite[alternative=short, righttext={14}][niditch:1994]\blank
+\autocite[13--17]{niditch:1994}\blank
+\autocite[14]{niditch:1994}\blank
 \cite[entry][niditch:1994]\blank
 \subsubject{6.3.9 An Article in a Magazine}
-\cite[saldarini:1998]\blank
-\cite[alternative=short, righttext={28}][saldarini:1998]\blank
+\autocite{saldarini:1998}\blank
+\autocite[28]{saldarini:1998}\blank
 \cite[entry][saldarini:1998]\blank
 \subsubject{6.3.10 An Electronic Journal Article}
-\cite[springer:2014]\blank
-\cite[alternative=short, righttext={158}][springer:2014]\blank
+\autocite{springer:2014}\blank
+\autocite[158]{springer:2014}\blank
 \cite[entry][springer:2014]\blank
-\cite[truehart:1996]\blank
-\cite[alternative=short, righttext={37}][truehart:1996]\blank
+\autocite{truehart:1996}\blank
+\autocite[37]{truehart:1996}\blank
 \cite[entry][truehart:1996]\blank
-\cite[kirk:2007]\blank
-\cite[alternative=short, righttext={186}][kirk:2007]\blank
+\autocite{kirk:2007}\blank
+\autocite[186]{kirk:2007}\blank
 \cite[entry][kirk:2007]\blank
 \subject{6.4 Special Examples}
 \subsubject{6.4.1 Texts from the Ancient Near East}
 \subsubsubject{6.4.1.1 Citing \emph{COS}}
-\cite[greathymnaten]\blank
-\cite[alternative=short, righttext={44--46}][greathymnaten]\blank
+\autocite{greathymnaten}\blank
+\autocite[44--46]{greathymnaten}\blank
 \subsubsubject{6.4.1.2 Citing Other Texts}
-\cite[suppiluliumas]\blank
-\cite[alternative=short, righttext={319}][suppiluliumas]\blank
-\cite[erraandishum:dalley]\blank
-\cite[alternative=short,righttext={282}][erraandishum:dalley]\blank
-\cite[erraandishum:foster]\blank
-\cite[alternative=short,righttext={771}][erraandishum:foster]\blank
-\cite[doomedprince]\blank
-\cite[alternative=short, righttext={200--203}][doomedprince]\blank
-\cite[lefttext={§3 \paren{A I 11--17}}, righttext={26}][disappearanceofsungod]\blank
-\cite[alternative=short][disappearanceofsungod]\blank
-\cite[lefttext={\btxcomma obv. lines 10--17}][ashurinscription]\blank
-\cite[alternative=short, lefttext={\btxcomma obv. lines 10--17}, righttext={143--144}][ashurinscription]\blank
-\cite[esarhaddonchronicle]\blank
-\cite[alternative=short, lefttext={\btxcomma lines 3--4}, righttext={125}][esarhaddonchronicle]\blank
-\cite[alternative=short,righttext={1.3}][ARM1]\blank
+\autocite{suppiluliumas}\blank
+\autocite[319]{suppiluliumas}\blank
+\autocite{erraandishum:dalley}\blank
+\autocite[282]{erraandishum:dalley}\blank
+\autocite{erraandishum:foster}\blank
+\autocite[771]{erraandishum:foster}\blank
+\autocite{doomedprince}\blank
+\autocite[200--203]{doomedprince}\blank
+\autocite{disappearanceofsungod}\blank
+\autocite[§3 \paren{A I 11--17}][26]{disappearanceofsungod}\blank
+\autocite[obv. lines 10--17][]{ashurinscription}\blank
+\autocite[obv. lines 10--17][143--144]{ashurinscription}\blank
+\autocite{esarhaddonchronicle}\blank
+\autocite[lines 3--4][125]{esarhaddonchronicle}\blank
+\autocite[1.3]{ARM1}\blank
 \cite[entry][ARM1]\blank
-\cite[alternative=short, righttext={1.3}][ARMT1]\blank
+\autocite[1.3]{ARMT1}\blank
 \cite[entry][ARMT1]\blank
 \subsubject{6.4.2 Loeb Classical Library (Greek and Latin)}
-\cite[lefttext={2.233--235}][josephus:ant]\blank
-\cite[alternative=short,lefttext={2.233--235}][josephus:ant]\blank
-\cite[lefttext={2.233--235}][josephus:ant:thackeray]\blank
-\cite[alternative=short,lefttext={2.233--235}][josephus:ant:thackeray]\blank
-\cite[lefttext={15.18--19}][tacitus:ann]\blank
-\cite[alternative=short,lefttext={15.18--19}][tacitus:ann]\blank
-\cite[lefttext={15.18--19}][tacitus:ann:jackson]\blank
-\cite[alternative=short,lefttext={15.18--19}][tacitus:ann:jackson]\blank
-\cite[josephus:ant1-19]\blank
-\cite[alternative=short][josephus:ant1-19]\blank
+\autocite[2.233--235][]{josephus:ant}\blank
+\autocite[2.233--235][]{josephus:ant}\blank
+\autocite[2.233--235][]{josephus:ant:thackeray}\blank
+\autocite[2.233--235][]{josephus:ant:thackeray}\blank
+\autocite[15.18--19][]{tacitus:ann}\blank
+\autocite[15.18--19][]{tacitus:ann}\blank
+\autocite[15.18--19][]{tacitus:ann:jackson}\blank
+\autocite[15.18--19][]{tacitus:ann:jackson}\blank
+\autocite{josephus:ant1-19}\blank
+\autocite{josephus:ant1-19}\blank
 \cite[entry][josephus:ant1-19]\blank
 \subsubject{6.4.3 Papyri, Ostraca, and Epigraphica}
 \subsubsubject{6.4.3.1 Papyri and Ostraca in General}
-\cite[lefttext={59003}][p.cair.zen.]\blank
-\cite[alternative=short,lefttext={59003}][p.cair.zen.]\blank
-\cite[lefttext={59003},righttext={1:96}][p.cair.zen.]\blank
-\cite[alternative=short,lefttext={59003},righttext={§31}][p.cair.zen.]\blank
+\autocite[59003][]{p.cair.zen.}\blank
+\autocite[59003][]{p.cair.zen.}\blank
+\autocite[59003][1:96]{p.cair.zen.}\blank
+\autocite[59003][§31]{p.cair.zen.}\blank
 \subsubsubject{6.4.3.2 Epigraphica}
 \subsubsubject{6.4.3.3 Greek Magical Papyri}
-\cite[lefttext={III. 1--164}][PGM]\blank
-\cite[lefttext={III. 1--164}][PGM:betz]\blank
+\autocite[III. 1--164][]{PGM}\blank
+\autocite[III. 1--164][]{PGM:betz}\blank
 \subsubject{6.4.4 Ancient Epistles and Homilies}
-\cite[lefttext={\btxcomma10}][heraclitus:epistle1]\blank
-\cite[alternative=short,lefttext={\btxcomma10}][heraclitus:epistle1]\blank
-\cite[lefttext={\btxcomma10}][heraclitus:epistle1:worley]\blank
-\cite[alternative=short,lefttext={\btxcomma10}][heraclitus:epistle1:worley]\blank
+\autocite[10][]{heraclitus:epistle1}\blank
+\autocite[10][]{heraclitus:epistle1}\blank
+\autocite[10][]{heraclitus:epistle1:worley}\blank
+\autocite[10][]{heraclitus:epistle1:worley}\blank
 \cite[entry][heraclitus:epistle1:worley]\blank
 \subsubject{6.4.5 ANF and NPNF, First and Second Series}
-\cite[lefttext={1.3},righttext={8:223}][clementinehomilies]\blank
-\cite[alternative=short,lefttext={1.3},righttext={8:223}][clementinehomilies]\blank
+\autocite[1.3][8:223]{clementinehomilies}\blank
+\autocite[1.3][8:223]{clementinehomilies}\blank
 \cite[entry][clementinehomilies]\blank
-\cite[lefttext={28.3.5},righttext={1:252}][augustine:letters]\blank
-\cite[alternative=short,lefttext={28.3.5},righttext={1:252}][augustine:letters]\blank
+\autocite[28.3.5][1:252]{augustine:letters}\blank
+\autocite[28.3.5][1:252]{augustine:letters}\blank
 \cite[entry][augustine:letters]\blank
 \subsubject{6.4.6 J.-P. Migne's \italic{Patrologia Latina} and \italic{Patrologia Graeca}}
-\cite[lefttext={4},righttext={12c}][gregory:orationestheologicae]\blank
-\cite[alternative=short,lefttext={4},righttext={12c}][gregory:orationestheologicae]\blank
+\autocite[4][12c]{gregory:orationestheologicae}\blank
+\autocite[4][12c]{gregory:orationestheologicae}\blank
 \subsubject{6.4.7 Strack-Billerbeck, \italic{Kommentar zum Neuen Testament}}
-See the discussion of ἐκρατοῦντο in \cite[short][Str-B] 2:271.\blank
+\autocite[See the discussion of ἐκρατοῦντο in][2:271]{Str-B}.\blank
 \subsubject{6.4.8 \italic{Aufstieg und Niedergang der römischen Welt} (\italic{ANRW})}
-\cite[anderson:pepaideumenos]\blank
-\cite[alternative=short, righttext={86}][anderson:pepaideumenos]\blank
+\autocite{anderson:pepaideumenos}\blank
+\autocite[86]{anderson:pepaideumenos}\blank
 \cite[entry][anderson:pepaideumenos]\blank
 \subsubject{6.4.9 Bible Commentaries}
-\cite[righttext={223}][hooker:1991]\blank
-\cite[short][hooker:1991]\blank
+\autocite[223]{hooker:1991}\blank
+\autocite{hooker:1991}\blank
 \cite[entry][hooker:1991]\blank
 \subsubsubject{6.4.9.1 Articles and Notes in Study Bibles}
-\cite[righttext={1096}][petersen:2006]\blank
-\cite[alternative=short,righttext={1096}][petersen:2006]\blank
+\autocite[1096]{petersen:2006}\blank
+\autocite[1096]{petersen:2006}\blank
 \cite[entry][petersen:2006]\blank
 \subsubsubject{6.4.9.2 Single-Volume Commentaries on the Entire Bible}
-\cite[partain:1995]\blank
-\cite[alternative=short,righttext={175}][partain:1995]\blank
+\autocite{partain:1995}\blank
+\autocite[175]{partain:1995}\blank
 \cite[entry][partain:1995]\blank
 \subsubject{6.4.10 Multivolume Commentaries}
 \subsubsubject{6.4.10.1 Multivolume Commentaries on a Single Biblical Book by One Author}
-\cite[righttext={3:127}][dahood:1965-1970]\blank
-\cite[alternative=short,righttext={2:121}][dahood:1965-1970]\blank
+\autocite[3:127]{dahood:1965-1970}\blank
+\autocite[2:121]{dahood:1965-1970}\blank
 \cite[entry][dahood:1965-1970]\blank
-\cite[righttext={44}][dahood:1965]\blank
-\cite[alternative=short,righttext={78}][dahood:1965]\blank
+\autocite[44]{dahood:1965}\blank
+\autocite[78]{dahood:1965}\blank
 \cite[entry][dahood:1965]\blank
-\cite[righttext={374}][dahood:1968]\blank
-\cite[short][dahood:1968]\blank
+\autocite[374]{dahood:1968}\blank
+\autocite{dahood:1968}\blank
 \cite[entry][dahood:1968]\blank
 \subsubsubject{6.4.10.2 Multivolume Commentaries for the Entire Bible by Multiple Authors}
-\cite[miller:2001]\blank
-\cite[alternative=short,righttext={577}][miller:2001]\blank
+\autocite{miller:2001}\blank
+\autocite[577]{miller:2001}\blank
 \cite[entry][miller:2001]\blank
 \subsubject{6.4.11 SBL Seminar Papers}
-\cite[crenshaw:2001]\blank
-\cite[short][crenshaw:2001]\blank
+\autocite{crenshaw:2001}\blank
+\autocite{crenshaw:2001}\blank
 \cite[entry][crenshaw:2001]\blank
 \subsubject{6.4.12 A CD-ROM Reference (with a Corresponding Print Edition)}
 Books on CD-ROM should be cited according to the print edition. It is not necessary
 to indicate the medium in the citation.
 \subsubject{6.4.13 Text Editions Published Online with No Print Counterpart}
-\cite[wilhelm:2013]\blank
-\cite[short][wilhelm:2013]\blank
+\autocite{wilhelm:2013}\blank
+\autocite{wilhelm:2013}\blank
 \cite[entry][wilhelm:2013]\blank
 \subsubject{6.4.14 Online Database}
-\cite[cobb:figurines]\blank
-\cite[short][cobb:figurines]\blank
+\autocite{cobb:figurines}\blank
+\autocite{cobb:figurines}\blank
 \cite[entry][cobb:figurines]\blank
-\cite[caraher:2013]\blank
-\cite[short][caraher:2013]\blank
+\autocite{caraher:2013}\blank
+\autocite{caraher:2013}\blank
 \cite[entry][caraher:2013]\blank
 \subsubject{6.4.15 Websites and Blogs}
-\cite[100cuneiform]\blank
-\cite[short][100cuneiform]\blank
+\autocite{100cuneiform}\blank
+\autocite{100cuneiform}\blank
 \cite[entry][100cuneiform]\blank
-\cite[goodacre:2014]\blank
-\cite[short][goodacre:2014]\blank
+\autocite{goodacre:2014}\blank
+\autocite{goodacre:2014}\blank
 \cite[entry][goodacre:2014]\blank
 \title{7 Other Examples}
 \subject{7.1 BDAG, BDB, BDF}
-\cite[righttext={35}][BDAG]\blank
+\autocite[35]{BDAG}\blank
 \cite[entry][BDAG]\blank
-\cite[righttext={432}][BDB]\blank
+\autocite[432]{BDB}\blank
 \cite[entry][BDB]\blank
-\cite[righttext={§441}][BDF]\blank
+\autocite[§441]{BDF}\blank
 \cite[entry][BDF]\blank
 \subject{7.2 HALOT, TLOT}
-\cite[righttext={2:223}][HALOT]\blank
+\autocite[2:223]{HALOT}\blank
 \cite[entry][HALOT]\blank
-\cite[righttext={1:24}][TLOT]\blank
+\autocite[1:24]{TLOT}\blank
 \cite[entry][TLOT]\blank
 \subject{7.3 SBLHS}
-\cite[righttext={§6.2.1}][SBLHS]\blank
+\autocite[§6.2.1]{SBLHS}\blank
 \cite[entry][SBLHS]\blank
 \page
 \startsubject[title=Abbreviations]
