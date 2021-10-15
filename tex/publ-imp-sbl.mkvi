@@ -3027,8 +3027,8 @@
 
 \starttexdefinition btx:sbl:list:howpublished
   \btxdoif {howpublished} {
-    % Print the how-published statement
-    \btxflush{howpublished}
+    % Print the how-published statement, making sure to captialize it
+    \Word{\btxflush{howpublished}}
     \btxperiod
   }
 \stoptexdefinition
@@ -4268,8 +4268,11 @@
     \texdefinition{btx:sbl:list:edition}
     \texdefinition{btx:sbl:list:volumes}
     \texdefinition{btx:sbl:list:seriesxref}
+    \texdefinition{btx:sbl:list:journalxref}
     \texdefinition{btx:sbl:list:howpublished}
     \texdefinition{btx:sbl:list:publisher}
+    \texdefinition{btx:sbl:list:institution}
+    \texdefinition{btx:sbl:list:presentedat}
     \texdefinition{btx:sbl:list:doi}
     \texdefinition{btx:sbl:list:related}
   }
@@ -4774,8 +4777,11 @@
     \texdefinition{btx:sbl:inlinelong:edition}
     \texdefinition{btx:sbl:inlinelong:volumes}
     \texdefinition{btx:sbl:inlinelong:seriesxref}
+    \texdefinition{btx:sbl:inlinelong:journalxref}
     \texdefinition{btx:sbl:inlinelong:howpublished}
     \texdefinition{btx:sbl:inlinelong:publisher}
+    \texdefinition{btx:sbl:inlinelong:institution}
+    \texdefinition{btx:sbl:inlinelong:presentedat}
     \texdefinition{btx:sbl:inlinelong:doi}
     \texdefinition{btx:sbl:inlinelong:related}
   }

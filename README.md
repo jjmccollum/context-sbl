@@ -38,8 +38,9 @@ Since some of the entry types that Purton adds on top of the basic `biblatex` ty
 - `@unpublished`: An unpublished work of some other form. Required fields are `author` (referring to a proper author, an editor, or a responsible organization), `title`, and `note` (ideally explaining how the work has been made available).
 - `@online`: A document published online with no print counterpart (§6.4.13), an online database (§6.4.14), or a website or blog entry (§6.4.15). The only required field is `title`, although typically `doi` or `url` is included.
 - `@electronic`: Legacy alias of `@online`. Note that per §6.4.12, works on electronic media (such as CD-ROMs) that have a counterpart in part should just be cited as the print counterpart.
+- `@misc`: For everything else. No fields are required. This is basically a "last-resort" category; as such, it has not been extensively tested.
 
-Other basic `biblatex` entry types, such as `@unpublished`, `@electronic`, and `@misc`, are also supported, although they should only be used if the entry does not fit into a more specific category. A relational diagram between the categories is shown below.
+A relational diagram between the most commonly used categories is shown below.
 
 ![Relational diagram of entry categories in SBL rendering](https://github.com/jjmccollum/context-sbl/blob/main/img/relational-diagram.png)
 
@@ -75,7 +76,7 @@ The SBL specification also includes the following alternatives, although they ar
 
 For more details, see https://www.mail-archive.com/ntg-context@ntg.nl/msg98667.html.
 
-### biblatex-style Citation Macros
+### `biblatex`-style Citation Macros
 
 Following the conventions of `biblatex`, the SBL specification also supports the following high-level commands that allow for more concise usage:
 - `\autocite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the default citation alternative. (This is `footnote` by default, but you can set it to, say, `inline` via `\setupbtx[sbl:cite][alternative=inline]`.) The first two arguments (in brackets) are optional. If only one is specified, it is assumed to contain a postnote (a single `righttext` value for one source, or multiple `righttext` values enclosed in braces and separated by commas for multiple sources). If both are specified, then the first is treated as the prenote (i.e., `lefttext`) and the second as the postnote (i.e., `righttext`). If you wish to cite a source with only a prenote, then use something like `\autocite[See][]{talbert:1992}`. The last `punct` argument is not expected to be explicitly specified; it is listed here because this macro (and the others described below) store any trailing punctuation as a citation parameter so that some setups (specifically, `footnote`) can intelligently move trailing punctuation before the footnote.
