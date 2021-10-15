@@ -4131,6 +4131,32 @@
   \btxperiod
 \stopsetups
 
+\startsetups btx:sbl:list:conferencepaper
+  % Only cite the author if the useauthor option is set
+  \doifelse {\btxparameter{useauthor}} {\v!yes} {
+    % If the titleauthor option is set, then cite the title first, followed by the author
+    \doifelse {\btxparameter{titleauthor}} {\v!yes} {
+      \texdefinition{btx:sbl:list:title}
+      \texdefinition{btx:sbl:list:author-after-title}
+    } {
+      \texdefinition{btx:sbl:list:author}
+      \texdefinition{btx:sbl:list:title}
+    }
+  } {
+    \texdefinition{btx:sbl:list:title}
+  }
+  % Only cite publication data if the usepubl option is set
+  \doif {\btxparameter{usepubl}} {\v!yes} {
+    \texdefinition{btx:sbl:list:presentedat}
+    \texdefinition{btx:sbl:list:doi}
+    \texdefinition{btx:sbl:list:related}
+  }
+  \texdefinition{btx:sbl:list:note}
+  \removeunwantedspaces
+  \removepunctuation
+  \btxperiod
+\stopsetups
+
 \startsetups btx:sbl:list:thesis
   % Only cite the author if the useauthor option is set
   \doifelse {\btxparameter{useauthor}} {\v!yes} {
@@ -4164,32 +4190,6 @@
 
 \startsetups btx:sbl:list:phdthesis
   \fastsetup{btx:sbl:list:thesis}
-\stopsetups
-
-\startsetups btx:sbl:list:conferencepaper
-  % Only cite the author if the useauthor option is set
-  \doifelse {\btxparameter{useauthor}} {\v!yes} {
-    % If the titleauthor option is set, then cite the title first, followed by the author
-    \doifelse {\btxparameter{titleauthor}} {\v!yes} {
-      \texdefinition{btx:sbl:list:title}
-      \texdefinition{btx:sbl:list:author-after-title}
-    } {
-      \texdefinition{btx:sbl:list:author}
-      \texdefinition{btx:sbl:list:title}
-    }
-  } {
-    \texdefinition{btx:sbl:list:title}
-  }
-  % Only cite publication data if the usepubl option is set
-  \doif {\btxparameter{usepubl}} {\v!yes} {
-    \texdefinition{btx:sbl:list:presentedat}
-    \texdefinition{btx:sbl:list:doi}
-    \texdefinition{btx:sbl:list:related}
-  }
-  \texdefinition{btx:sbl:list:note}
-  \removeunwantedspaces
-  \removepunctuation
-  \btxperiod
 \stopsetups
 
 \startsetups btx:sbl:list:unpublished
@@ -4637,6 +4637,32 @@
   \removepunctuation
 \stopsetups
 
+\startsetups btx:sbl:inlinelong:conferencepaper
+  % Only cite the author if the useauthor option is set
+  \doifelse {\btxparameter{useauthor}} {\v!yes} {
+    % If the titleauthor option is set, then cite the title first, followed by the author
+    \doifelse {\btxparameter{titleauthor}} {\v!yes} {
+      \texdefinition{btx:sbl:inlinelong:title}
+      \texdefinition{btx:sbl:inlinelong:author-after-title}
+    } {
+      \texdefinition{btx:sbl:inlinelong:author}
+      \texdefinition{btx:sbl:inlinelong:title}
+    }
+  } {
+    \texdefinition{btx:sbl:inlinelong:title}
+  }
+  % Only recursively cite publication data if the usepubl option is set
+  \doif {\btxparameter{usepubl}} {\v!yes} {
+    \texdefinition{btx:sbl:inlinelong:presentedat}
+    \texdefinition{btx:sbl:inlinelong:doi}
+    \texdefinition{btx:sbl:inlinelong:related}
+  }
+  \texdefinition{btx:sbl:inlinelong:note}
+  \texdefinition{btx:sbl:inlinelong:righttext}
+  \removeunwantedspaces
+  \removepunctuation
+\stopsetups
+
 \startsetups btx:sbl:inlinelong:thesis
   % Only cite the author if the useauthor option is set
   \doifelse {\btxparameter{useauthor}} {\v!yes} {
@@ -4670,32 +4696,6 @@
 
 \startsetups btx:sbl:inlinelong:phdthesis
   \fastsetup{btx:sbl:inlinelong:thesis}
-\stopsetups
-
-\startsetups btx:sbl:inlinelong:conferencepaper
-  % Only cite the author if the useauthor option is set
-  \doifelse {\btxparameter{useauthor}} {\v!yes} {
-    % If the titleauthor option is set, then cite the title first, followed by the author
-    \doifelse {\btxparameter{titleauthor}} {\v!yes} {
-      \texdefinition{btx:sbl:inlinelong:title}
-      \texdefinition{btx:sbl:inlinelong:author-after-title}
-    } {
-      \texdefinition{btx:sbl:inlinelong:author}
-      \texdefinition{btx:sbl:inlinelong:title}
-    }
-  } {
-    \texdefinition{btx:sbl:inlinelong:title}
-  }
-  % Only recursively cite publication data if the usepubl option is set
-  \doif {\btxparameter{usepubl}} {\v!yes} {
-    \texdefinition{btx:sbl:inlinelong:presentedat}
-    \texdefinition{btx:sbl:inlinelong:doi}
-    \texdefinition{btx:sbl:inlinelong:related}
-  }
-  \texdefinition{btx:sbl:inlinelong:note}
-  \texdefinition{btx:sbl:inlinelong:righttext}
-  \removeunwantedspaces
-  \removepunctuation
 \stopsetups
 
 \startsetups btx:sbl:inlinelong:unpublished

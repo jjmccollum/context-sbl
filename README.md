@@ -35,7 +35,9 @@ Since some of the entry types that Purton adds on top of the basic `biblatex` ty
 - `@thesis`: An unpublished dissertation or thesis (§6.3.5). Required fields are `author` (referring to a proper author), `title`, `institution` (the name of the school where the thesis was undertaken), and `type` (assumed to be the name of another thesis category, like "mastersthesis" or "phdthesis"). Typically, the `date` field will accompany the `institution` field, but they are not required.
 - `@mastersthesis`: An unpublished Master's thesis (§6.3.5). Identical to `@thesis` with `type=mastersthesis`.
 - `@phdthesis`: An unpublished PhD dissertation (§6.3.5). Identical to `@thesis` with `type=phdthesis`.
+- `@unpublished`: An unpublished work of some other form. Required fields are `author` (referring to a proper author, an editor, or a responsible organization), `title`, and `note` (ideally explaining how the work has been made available).
 - `@online`: A document published online with no print counterpart (§6.4.13), an online database (§6.4.14), or a website or blog entry (§6.4.15). The only required field is `title`, although typically `doi` or `url` is included.
+- `@electronic`: Legacy alias of `@online`. Note that per §6.4.12, works on electronic media (such as CD-ROMs) that have a counterpart in part should just be cited as the print counterpart.
 
 Other basic `biblatex` entry types, such as `@unpublished`, `@electronic`, and `@misc`, are also supported, although they should only be used if the entry does not fit into a more specific category. A relational diagram between the categories is shown below.
 
@@ -45,13 +47,54 @@ In the diagram above, solid lines indicate required cross-reference relationship
 
 ### Citation Alternatives
 
-Given the hierarchical structure just described, it is natural to handle citations of lower-level entries that cross-reference higher-level entries recursively on the ConTeXt side. Because SBL formats bibliographic list entries, long- and short-form inline citations, subcitations in list entries, and subcitations in inline citations all slightly differently, I chose to develop multiple citation alternatives for the rendering:
-- `list` (or `entry`, if you want to reproduce it inline): variant for bibliographic list entries. Authors (or editors, if an entry has no authors) are printed before titles, with the first author's name in inverted order (i.e., last name first). Most fields are separated by periods and capitalized accordingly. If an entry's shorthand abbreviates its author names (which is assumed to be the case when the entry's `shorthand` field does not match its `shorttitle` field), then this variant is used for the full-form citations in the bibliographic abbreviations list.
-- `listsubcite`: variant for subcitations in bibliographic list entries. Titles are printed before authors, and authors are all printed in normal order (i.e., first name first). Most fields are separated by periods and capitalized accordingly. If the root citation includes publication information, then the subcitation typically will not do the same. If an entry's shorthand abbreviates its title (which is assumed to be the case if the entry's `shorthand` field matches its `shorttitle` field), then this title-first variant is used for the full-form citations in the bibliographic abbreviations list.
-- `inline`: variant for initial citations of entries in the text. Authors (or editors, if an entry has no authors) are printed before titles in normal order. Most fields are separated by commas, and publisher, institution, conference, etc. blocks are parenthesized.
-- `inlinesubcite`: variant for subcitations of `inline` citations. Titles are printed before authors, and authors are all printed in normal order. Most fields are separated by commas, and publisher, institution, conference, etc. blocks are parenthesized. If the root citation includes publication information, then the subcitation typically will not do the same.
-- `short`: variant for short-form citations (usually the default after the initial citation of an entry). If an entry has a `shorthand`, then that will be used. Failing that, if it has a `shorttitle` field, then that will be used (usually preceded by the author/editor, if there is one). Otherwise, the full `title` field will be used (usually preceded by the author/editor, if there is one). This overwrites the existing implementation of the `short` alternative in ConTeXt, which normally cites the list number of the entry in brackets. (This should be okay, since, to my knowledge, SBL style never cites sources this way.)
-- `volume`: variant for citing just the `volume` field (and `part` field, if there is one) of an entry. This was developed mostly for my convenience, since the output of this citation often prefixes page numbers for entries that are volumes in a collection.
+Given the hierarchical structure just described, it is natural to handle citations of lower-level entries that cross-reference higher-level entries recursively on the ConTeXt side. Because SBL formats bibliographic list entries, and long- and short-form inline citations all slightly differently, I chose to develop multiple citation alternatives for the rendering. The three main alternatives are the following:
+- `entry` (whose setups are defined in the `btx:sbl:list` namespace): variant for bibliographic list entries. Authors (or editors, if an entry has no authors) are printed before titles, with the first author's name in inverted order (i.e., last name first). Most fields are separated by periods and capitalized accordingly. If an entry's shorthand abbreviates its author names (which is assumed to be the case when the entry's `shorthand` field does not match its `shorttitle` field), then this variant is used for the full-form citations in the bibliographic abbreviations list.
+- `inlinelong`: the long-form citation alternative intended for the initial citation of a work in the text. Authors (or editors, if an entry has no authors) are printed before titles in normal order. Most fields are separated by commas, and publisher, institution, conference, etc. blocks are parenthesized.
+- `inlineshort`: the short-form citation alternative intended for subsequent citations of a work already cited in the text or for any citation of an entry with a `shorthand` field. If an entry has a `shorthand`, then that will be added to the abbreviations list and associated with an `entry`-style citation of the work, and the shorthand will be used as the in-text citation. Failing that, if it has a `shorttitle` field, then that will be used (usually preceded by the author/editor, if there is one). Otherwise, the `title` field will be used (usually preceded by the author/editor, if there is one), but any `subtitle` field will be ignored.
+
+The setups for these alternatives, in turn, are invoked in the setups for the following higher-level alternatives:
+- `inline`: high-level variant intended to cover all citations in the text. This setup intelligently determines if it should use a long-form or short-form citation based on previous citations and the fields of the entry being cited. For this reason, its setup is invoked by the other high-level citation alternatives described below.
+- `paren`: variant for parenthetical citations in the text. An `inline`-style citation is placed within parentheses using the `startparen` ... `stopparen` delimited-text environment, which will intelligently replace parentheses with brackets at alternating nesting levels. (If you want to take advantage of this feature in fields of your entries, make sure you enclose them in this environment or the `\paren` command.)
+- `footnote`: variant for citations in footnotes/endnotes. An `inline`-style citation is placed in a footnote via the `startfootnote` ... `stopfootnote` environment, with a period placed at the end of the footnote. If, for some reason, you want to use endnotes instead of footnotes, then you can use the following setup in your `.tex` file:
+
+```tex
+\setupnote
+  [footnote]
+  [location=none]
+
+...
+
+% Put this wherever you want endnotes to appear
+\placenotes [footnote]
+```
+
+The SBL specification also includes the following alternatives, although they are mostly intended for internal use:
+- `title`: variant for citing just the `title` field (and the `subtitle` field, if there is one) of an entry.
+- `shorthand`: variant for citing just the `shorthand` field of an entry. If the entry does not have a `shorthand` field, then nothing is printed.
+- `volume`: variant for citing just the `volume` field (and `part` field, if there is one) of an entry. If the entry does not have a `volume` field, then nothing is printed.
+
+For more details, see https://www.mail-archive.com/ntg-context@ntg.nl/msg98667.html.
+
+### biblatex-style Citation Macros
+
+Following the conventions of `biblatex`, the SBL specification also supports the following high-level commands that allow for more concise usage:
+- `\autocite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the default citation alternative. (This is `footnote` by default, but you can set it to, say, `inline` via `\setupbtx[sbl:cite][alternative=inline]`.) The first two arguments (in brackets) are optional. If only one is specified, it is assumed to contain a postnote (a single `righttext` value for one source, or multiple `righttext` values enclosed in braces and separated by commas for multiple sources). If both are specified, then the first is treated as the prenote (i.e., `lefttext`) and the second as the postnote (i.e., `righttext`). If you wish to cite a source with only a prenote, then use something like `\autocite[See][]{talbert:1992}`. The last `punct` argument is not expected to be explicitly specified; it is listed here because this macro (and the others described below) store any trailing punctuation as a citation parameter so that some setups (specifically, `footnote`) can intelligently move trailing punctuation before the footnote.
+- `\inlinecite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `inline` citation alternative. Everything else works as described above. (This corresponds to `biblatex`'s `\textcite` command, but uses a different name, as ConTeXt's publications support module already has a `\textcite` command that prints a citation without adding its entry to the list.)
+- `\parencite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `paren` citation alternative. Everything else works as described above.
+- `\footcite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `footnote` citation alternative. Everything else works as described above.
+
+### Other Options
+
+The SBL specification includes several customizable options intended to give users a degree of flexibility approximating that offered by `biblatex`. Most of the options are intended to be specified up front via `\setupbtx[sbl:cite]`, so that the `biblatex`-style citation macros can be used in place of ConTeXt's more verbose `\cite` commands. The most useful of these options are described below:
+- `useibid` (default: `no`): enable _ibidem_ tracking, which will abbreviate consecutive citations of the same entry as "ibid." (**TODO**: new helper functions need to be implemented for this and should take into account whether or not we're in footnote mode)
+- `useidem` (default: `no`): enable _idem_ tracking, which will abbreviate an author cited multiple times consecutively (even in different works) as "idem" (**TODO**: new helper functions need to be implemented for this and should take into account whether or not we're in footnote mode)
+- `synonym` (default: `abbreviation`): the singular name of the synonym set to use for shorthands (**TODO**: the infrastructure for this is in place, but I haven't gotten it to work)
+- `synonyms` (default: `abbreviations`): the plural name of the synonym set to use for shorthands (**TODO**: the infrastructure for this is in place, but I haven't gotten it to work)
+- `sameauthor` (default: `rule`): how to handle repeated printings of the same author name in the bibliographic list. Options include `rule` (use a horizontal rule), `empty` (use an empty space the length of the list's margin), `ditto` (use "idem"), and `none` (print the repeated author as-is)
+- `titleauthor` (default: `no`): if `yes`, print the author after the title (primarily used internally for subcitations and entries in the abbreviations list)
+- `useauthor` (default: `yes`): if `no`, then don't print the author (primarily used internally for subcitations) (**TODO**: define starred variants of the `biblatex`-style citation macros that set this to `no`?)
+- `usecrossref` (default: `yes`): if `no`, then don't print the cross-referenced source (primarily used internally for entries in the abbreviations list)
+- `usepubl` (default: `yes`): if `no`, then don't print the publication fields (non-author editor, translator, edition, volumes, series, publisher, institution, conference, DOI, e-print, etc.)
 
 ### Special Formatting Rules
 

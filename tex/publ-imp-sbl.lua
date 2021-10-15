@@ -672,6 +672,7 @@ categories.phdthesis = categories.mastersthesis
 -- a document having an author and title, but not formally published.
 categories.unpublished = {
     sets = {
+        author = { "author", "editor", "organization" },
         date = generic.date,
         doi = generic.doi,
     },
@@ -696,7 +697,7 @@ categories.unpublished = {
 -- a website or blog entry (§6.4.15)
 categories.online = {
     sets = {
-        author = { "author", "organization", "editor", },
+        author = { "author", "editor", "organization" },
         journal = generic.journal,
         location = generic.location,
         date = generic.date,
