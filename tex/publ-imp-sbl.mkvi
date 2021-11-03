@@ -665,6 +665,45 @@
   sbl:Translationof={Translation of},
   sbl:reprintof={repr. of},
   sbl:Reprintof={Reprint of}
+  % locator abbreviations (§8.1.3)
+  sbl:loc:book={bk.},
+  sbl:loc:books={bks.},
+  sbl:loc:chapter={ch.},
+  sbl:loc:chapters={chs.},
+  sbl:loc:column={col.},
+  sbl:loc:columns={cols.},
+  sbl:loc:episode={ep.},
+  sbl:loc:episodes={eps.},
+  sbl:loc:figure={fig.},
+  sbl:loc:figure={figs.},
+  sbl:loc:folio={fol.},
+  sbl:loc:folios={fols.},
+  sbl:loc:fragment={frg.},
+  sbl:loc:fragments={frgs.},
+  sbl:loc:line={line},
+  sbl:loc:lines={lines},
+  sbl:loc:note={n.},
+  sbl:loc:notes={nn.},
+  sbl:loc:number={no.},
+  sbl:loc:numbers={nos.},
+  sbl:loc:opus={op.},
+  sbl:loc:opera={opp.},
+  sbl:loc:page={p.},% this is not used in practice, as page numbers are printed without a locator prefix
+  sbl:loc:pages={pp.},% this is not used in practice, as page numbers are printed without a locator prefix
+  sbl:loc:paragraph={¶},
+  sbl:loc:paragraphs={¶¶},
+  sbl:loc:part={pt.},
+  sbl:loc:parts={pts.},
+  sbl:loc:recension={rec.},
+  sbl:loc:recensions={recs.},
+  sbl:loc:section={§},
+  sbl:loc:sections={§§},
+  sbl:loc:subverbo={s.v.},
+  sbl:loc:subverbi={s.vv.},
+  sbl:loc:verse={v.},
+  sbl:loc:verses={vv.},
+  sbl:loc:volume={vol.},
+  sbl:loc:volumes={vols.}
   ]
 
 % First some helpers:
@@ -691,6 +730,37 @@
 
   local sbl = {}
   publications.btx.sbl = sbl
+
+  function sbl.isrange(str)
+    if string.find(str, "-") then
+      return true
+    end
+    -- TODO: this may be language-dependent, as some languages may use commas instead of periods as section/subsection separators
+    if string.find(str, ",") then
+      return true
+    end
+    return false
+  end
+
+  function sbl.doifrange(str, ifyes)
+    if string.find(str, "-") then
+      return true
+    end
+    -- TODO: this may be language-dependent, as some languages may use commas instead of periods as section/subsection separators
+    if string.find(str, ",") then
+      return true
+    end
+    return false
+  end
+
+  function sbl.doifrangeelse(str, ifyes, ifno)
+    if sbl.isrange(str) then
+      context(ifyes)
+    else
+      context(ifno)
+    end
+    return
+  end
 
   function sbl.regexsplit(str, regex)
     -- by default, split on whitespace
@@ -1064,6 +1134,8 @@
     end
   end
 \stopluacode
+\def\btx_sbl_doifrange#1#2{\ctxlua{publications.btx.sbl.doifrange([==[#1]==],[==[#2]==])}}
+\def\btx_sbl_doifrangeelse#1#2#3{\ctxlua{publications.btx.sbl.doifrangeelse([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifprefix#1#2#3{\ctxlua{publications.btx.sbl.doifprefix([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifprefixelse#1#2#3#4{\ctxlua{publications.btx.sbl.doifprefixelse([==[#1]==],[==[#2]==],[==[#3]==],[==[#4]==])}}
 \def\btx_sbl_doifhasvolumepartprefix#1#2{\ctxlua{publications.btx.sbl.doifhasvolumepartprefix([==[#1]==],[==[#2]==])}}
