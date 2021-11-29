@@ -78,11 +78,43 @@ For more details, see https://www.mail-archive.com/ntg-context@ntg.nl/msg98667.h
 
 ### `biblatex`-style Citation Macros
 
-Following the conventions of `biblatex`, the SBL specification also supports the following high-level commands that allow for more concise usage:
-- `\autocite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the default citation alternative. (This is `footnote` by default, but you can set it to, say, `inline` via `\setupbtx[sbl:cite][alternative=inline]`.) The first two arguments (in brackets) are optional. If only one is specified, it is assumed to contain a postnote (a single `righttext` value for one source, or multiple `righttext` values enclosed in braces and separated by commas for multiple sources). If both are specified, then the first is treated as the prenote (i.e., `lefttext`) and the second as the postnote (i.e., `righttext`). If you wish to cite a source with only a prenote, then use something like `\autocite[See][]{talbert:1992}`. The last `punct` argument is not expected to be explicitly specified; it is listed here because this macro (and the others described below) store any trailing punctuation as a citation parameter so that some setups (specifically, `footnote`) can intelligently move trailing punctuation before the footnote.
-- `\inlinecite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `inline` citation alternative. Everything else works as described above. (This corresponds to `biblatex`'s `\textcite` command, but uses a different name, as ConTeXt's publications support module already has a `\textcite` command that prints a citation without adding its entry to the list.)
-- `\parencite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `paren` citation alternative. Everything else works as described above.
-- `\footcite[leftttext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `footnote` citation alternative. Everything else works as described above.
+Following the conventions of `biblatex` (but with some minor modifications to accommodate locators) the SBL specification also supports the following high-level commands that allow for more concise usage:
+- `\autocite[leftttext][altloctext][loctext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the default citation alternative. (This is `footnote` by default, but you can set it to, say, `inline` via `\setupbtx[sbl:cite][alternative=inline]`.) The first four arguments (in brackets) are optional. If only one is specified, it is assumed to contain a postnote (a single `righttext` value for one source, or multiple `righttext` values enclosed in braces and separated by commas for multiple sources). If two are specified, then the first is treated as the locator text (i.e., `loctext`) and the second as the postnote (i.e., `righttext`). If three are specified, then they are treated as an alternate locator text (`altloctext`), a locator text (`loctext`), and a postnote (`righttext`), respectively. If all four are specified, then they are taken to be a prenote (`lefttext`), an alternate locator text (`altloctext`), a locator text (`loctext`), and a postnote (`righttext`), respectively. If you wish to cite a source with only a prenote, then use something like `\autocite[See][][][]{talbert:1992}`. The last `punct` argument is not expected to be explicitly specified; it is listed here because this macro (and the others described below) store any trailing punctuation as a citation parameter so that some setups (specifically, `footnote`) can intelligently move trailing punctuation before the footnote.
+- `\inlinecite[leftttext][altloctext][loctext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `inline` citation alternative. Everything else works as described above. (This corresponds to `biblatex`'s `\textcite` command, but uses a different name, as ConTeXt's publications support module already has a `\textcite` command that prints a citation without adding its entry to the list.)
+- `\parencite[leftttext][altloctext][loctext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `paren` citation alternative. Everything else works as described above.
+- `\footcite[leftttext][altloctext][loctext][righttext]{tag}<punct>`: cite the source in the `tag` argument (or a comma-separated list of sources) using the `footnote` citation alternative. Everything else works as described above.
+
+### Support for CSL Locators
+
+The SBL rendering also includes support for page number and other references specified using Citation Style Language (CSL) locators (https://github.com/citation-style-language/locales). The `\loc` macro can be used in anywhere in the text of your document or specified in the `lefttext`, `altloctext`, `loctext`, or `righttext` parameters of a citation. The preferred usage is to specify all locators assignment-style (e.g., `\loc[vol=2,pt=1,p=12,fig=3]`), but raw text inputs (e.g., `\loc[1.3]`) are also supported. Some examples follow:
+
+```tex
+\loc[p=xii,n={4, 7}] % an inline locator involving a page number in Roman numerals and multiple footnote numbers
+
+\loc[fol={212\high{r}},col=2,l={18--20}] % an inline locator involving folio, column, and line numbers
+
+\loc[pl=5,col=2,l=20]--\loc[col=3,l=2] % an inline locator involving plate, column, and line numbers that spans multiple columns in the same plate
+
+\autocite[{\loc[127]][]{talbert:1992}
+
+\autocite[{\loc[p=127]][]{talbert:1992} % same as previous, but more portable over different bibliographic styles
+
+\autocite[{\loc[chap=1.3]}][]{reventlow:2009}
+
+\autocite[{\loc[chap=3]\btxcomma\quotation{Introducing David}}][]{wright:2014}
+
+\autocite[{\loc[sec=3] \paren{A I 11--17}}][{\loc[p=26]}][]{disappearanceofsungod} % "§ 3 (A I 11–17)" appears after the title of the ancient text, and "26" is cited as a page number in the book reproducing the text
+
+\autocite[{obv. \loc[l={10--17}]}][{\loc[p={143--144}]}][]{ashurinscription} % "obv. lines 10–17" appears after the title of the ancient text, and "143–44" is cited as a page number in the book reproducing the text
+
+\autocite[See the discussion of ἐκρατοῦντο in][][{\loc[vol=2,p=271]}][]{Str-B}.
+
+\autocite[{\loc[sec=6.2.1]}][]{SBLHS}
+
+\autocite[{\loc[sv={\quotation{ἐνθύημα}, \quotation{λεαίνω}}]}][]{LEH}
+
+\autocite[See][][p=8][; but there are also contradictory statements, e.g. \loc[p=12].]{Doe:Title} % locators can also be invoked in the lefttext or righttext
+```
 
 ### Other Options
 

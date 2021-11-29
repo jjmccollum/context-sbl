@@ -666,7 +666,7 @@
   sbl:translationof={trans. of},
   sbl:Translationof={Translation of},
   sbl:reprintof={repr. of},
-  sbl:Reprintof={Reprint of}
+  sbl:Reprintof={Reprint of},
   % locator abbreviations (§8.1.3)
   sbl:loc:book={bk.},
   sbl:loc:books={bks.},
@@ -677,7 +677,7 @@
   sbl:loc:episode={ep.},
   sbl:loc:episodes={eps.},
   sbl:loc:figure={fig.},
-  sbl:loc:figure={figs.},
+  sbl:loc:figures={figs.},
   sbl:loc:folio={fol.},
   sbl:loc:folios={fols.},
   sbl:loc:fragment={frag.},
@@ -686,8 +686,8 @@
   sbl:loc:lines={lines},
   sbl:loc:note={n.},
   sbl:loc:notes={nn.},
-  sbl:loc:number={no.},
-  sbl:loc:numbers={nos.},
+  sbl:loc:issue={no.},
+  sbl:loc:issues={nos.},
   sbl:loc:opus={op.},
   sbl:loc:opera={opp.},
   sbl:loc:page={p.},% this is not used in practice, as page numbers are printed without a locator prefix
@@ -791,16 +791,78 @@
     return splits
   end
 
+  function sbl.isprefix(prefix, str)
+    if string.find(str, "^" .. prefix) then
+      return true
+    end
+    return false
+  end
+
   function sbl.doifprefix(prefix, str, ifyes)
     -- if the given string is a prefix of the given string, then print the "ifyes" argument
-    if string.sub(str, 1, string.len(prefix)) == prefix then
+    if sbl.isprefix(prefix, str) then
       context(ifyes)
     end
   end
 
   function sbl.doifprefixelse(prefix, str, ifyes, ifno)
     -- if the given string is a prefix of the given string, then print the ifyes argument; otherwise, print the ifno argument
-    if string.sub(str, 1, string.len(prefix)) == prefix then
+    if sbl.isprefix(prefix, str) then
+      context(ifyes)
+    else
+      context(ifno)
+    end
+  end
+
+  function sbl.hasnumericprefix(str)
+    -- does the string begin with an Arabic numeral?
+    if string.match(str, "^%d") then
+      return(true)
+    end
+    -- if not, then does it consist of only Roman numerals before a space, comma, or period, or before the end of a string?
+    if string.count(str, "%s") > 0 then
+       if string.match(str, "^[IVXLCMivxlcm]+[,%.]*%s") then
+         return(true)
+       end
+       return(false)
+    else
+      if string.match(str, "^[IVXLCMivxlcm]+$") then
+        return(true)
+      end
+      return(false)
+    end
+  end
+
+  function sbl.doifhasnumericprefix(str, ifyes)
+    if sbl.hasnumericprefix(str) then
+      context(ifyes)
+    end
+  end
+
+  function sbl.doifhasnumericprefixelse(str, ifyes, ifno)
+    if sbl.hasnumericprefix(str) then
+      context(ifyes)
+    else
+      context(ifno)
+    end
+  end
+
+  function sbl.hasnumericsuffix(str)
+    -- does the string end with a string followed by an Arabic or Roman numeral?
+    if string.match(str, "%s[%dIVXLCMivxlcm]+$") then
+      return(true)
+    end
+    return(false)
+  end
+
+  function sbl.doifhasnumericsuffix(str, ifyes)
+    if sbl.hasnumericsuffix(str) then
+      context(ifyes)
+    end
+  end
+
+  function sbl.doifhasnumericsuffixelse(str, ifyes, ifno)
+    if sbl.hasnumericsuffix(str) then
       context(ifyes)
     else
       context(ifno)
@@ -808,7 +870,7 @@
   end
 
   function sbl.hasvolumepartprefix(str)
-    if string.match(str, "^[%d%.]*%d+:") then
+    if string.match(str, "^%d+[%.:]") then
       return(true)
     end
     return(false)
@@ -1141,6 +1203,10 @@
 \def\btx_sbl_doifrangeelse#1#2#3{\ctxlua{publications.btx.sbl.doifrangeelse([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifprefix#1#2#3{\ctxlua{publications.btx.sbl.doifprefix([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifprefixelse#1#2#3#4{\ctxlua{publications.btx.sbl.doifprefixelse([==[#1]==],[==[#2]==],[==[#3]==],[==[#4]==])}}
+\def\btx_sbl_doifhasnumericprefix#1#2{\ctxlua{publications.btx.sbl.doifhasnumericprefix([==[#1]==],[==[#2]==])}}
+\def\btx_sbl_doifhasnumericprefixelse#1#2#3{\ctxlua{publications.btx.sbl.doifhasnumericprefixelse([==[#1]==],[==[#2]==],[==[#3]==])}}
+\def\btx_sbl_doifhasnumericsuffix#1#2{\ctxlua{publications.btx.sbl.doifhasnumericsuffix([==[#1]==],[==[#2]==])}}
+\def\btx_sbl_doifhasnumericsuffixelse#1#2#3{\ctxlua{publications.btx.sbl.doifhasnumericsuffixelse([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifhasvolumepartprefix#1#2{\ctxlua{publications.btx.sbl.doifhasvolumepartprefix([==[#1]==],[==[#2]==])}}
 \def\btx_sbl_doifhasvolumepartprefixelse#1#2#3{\ctxlua{publications.btx.sbl.doifhasvolumepartprefixelse([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifpagerange#1#2{\ctxlua{publications.btx.sbl.doifpagerange([==[#1]==],[==[#2]==])}}
@@ -1322,7 +1388,7 @@
       \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
         #1
       } {
-        \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{crossref} {
+        \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{crossref} {
           \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
           \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
             #1
@@ -1334,8 +1400,9 @@
         }
       }
       \endgroup
-  } {
-    #2
+    } {
+      #2
+    }
   }
 \stoptexdefinition
 
@@ -1378,321 +1445,736 @@
   \btxflush{author}
 \stopsetups
 
-% Define macro for typesetting CSL locators
+% Define macro for typesetting CSL locators in text (or lefttext or righttext)
+% TODO: This would ideally be implemented in its own TeX module with default settings,
+% and this implementation would override it with SBL-specific settings
 \starttexdefinition loc [#1]
 	\doifassignmentelse{#1} {
 		% TODO: all parameters should be prefixed with \c! for multilingual support; 
 		% their equivalents in other languages should be assigned according to the mappings at https://github.com/citation-style-language/locales
-		\getparameters[btxsblloc][
-			#1% this will overwrite the empty defaults for all locators that are specified
-		]
+		\getparameters[btxsblloc][#1]
     % Was a volume number specified?
-    \doifdefined{btxsblvol} {
-      % Then replace the preceding punctuation with a space if the current entry or any of its cross-references has a shorthand
-      \texdefinition{btx:sbl:doifshorthand} {
-        \removeunwantedspaces
-        \removepunctuation
-        \btxspace
-      }
+    \doifdefined{btxsbllocvol} {
       % Then typeset the number without a CSL abbreviation, followed by a comma
-      \btxsblvol
+      \btxsbllocvol
       \btxcomma
-    }
-    % Was a number specified?
-    \doifdefined{btxsblno} {
-      % Was a volume number also specified?
-      \doifdefinedelse{btxsblvol} {
-        % If so, then add a period without surrounding space between this number and the previous number
-        % and typeset the number without a CSL abbreviation, followed by a comma
-        \removeunwantedspaces
-        \removepunctuation
-        \btxperiod
-        \removeunwantedspaces
-        \btxsblno
-        \btxcomma
-      } {
-        % Otherwise, typeset the number with its CSL abbreviation, followed by a comma
-        \texdefinition{btx:sbl:doifrangeelse}{\btxsblno} {
-          \btxlabeltext{sbl:loc:numbers}
-        } {
-          \btxlabeltext{sbl:loc:number}
-        }
-        \btxsblno
-        \btxcomma
-      }
-    }
-    % Was a part number specified?
-    \doifdefined{btxsblpt} {
-      % Was a volume number also specified?
-      \doifdefinedelse{btxsblvol} {
-        % If so, then add a period without surrounding space between this number and the previous number
-        % and typeset the number without a CSL abbreviation, followed by a comma
-        \removeunwantedspaces
-        \removepunctuation
-        \btxperiod
-        \removeunwantedspaces
-        \btxsblpt
-        \btxcomma
-      } {
-        % Otherwise, typeset the number with its CSL abbreviation, followed by a comma
-        \texdefinition{btx:sbl:doifrangeelse}{\btxsblpt} {
-          \btxlabeltext{sbl:loc:parts}
-        } {
-          \btxlabeltext{sbl:loc:part}
-        }
-        \btxsblpt
-        \btxcomma
-      }
-    }
-    % Was a page number specified?
-    \doifdefined{btxsblp} {
-      % Was a volume number also specified?
-      \doifdefinedelse{btxsblvol} {
-        % If so, then add a colon without surrounding space between this number and the previous number
-        % and typeset the number without a CSL abbreviation, followed by a comma
+      % If a page number is also specified, then replace the comma with a colon without surrounding space
+      \doifdefined{btxsbllocp} {
         \removeunwantedspaces
         \removepunctuation
         \btxcolon
         \removeunwantedspaces
-        \btx_sbl_abbreviatepagerange{\btxsblp} % abbreviate the page range according to SBL/Chicago rules
+      }
+      % If a part is also specified, then replace the comma with a period without surrounding space
+      \doifdefined{btxsbllocpt} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxperiod
+        \removeunwantedspaces
+      }
+      % If a number is also specified, then replace the comma with a period without surrounding space
+      \doifdefined{btxsbllocno} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxperiod
+        \removeunwantedspaces
+      }
+    }
+    % Was an issue number specified?
+    \doifdefined{btxsbllocno} {
+      % Was a volume number also specified?
+      \doifdefinedelse{btxsbllocvol} {
+        % If so, then typeset the number without a CSL abbreviation, followed by a comma
+        \btxsbllocno
         \btxcomma
+        % If a page number is also specified, then replace the comma with a colon without surrounding space
+        \doifdefined{btxsbllocp} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxcolon
+          \removeunwantedspaces
+        }
+        % If a part is also specified, then replace the comma with a period without surrounding space
+        \doifdefined{btxsbllocpt} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxperiod
+          \removeunwantedspaces
+        }
       } {
-        % Otherwise, typeset the number without a CSL abbreviation, followed by a comma
-        \btx_sbl_abbreviatepagerange{\btxsblp} % abbreviate the page range according to SBL/Chicago rules
+        % Otherwise, typeset the number with its CSL abbreviation, followed by a comma
+        \btx_sbl_doifrangeelse{\btxsbllocno} {
+          \btxlabeltext{sbl:loc:issues}
+        } {
+          \btxlabeltext{sbl:loc:issue}
+        }
+        \btxsbllocno
         \btxcomma
       }
     }
-    % Was a figure number specified?
-    \doifdefined{btxsblfig} {
-      % Was a page number also specified?
-      \doifdefined{btxsblp} {
-        % If so, then replace the preceding punctuation with a space
+    % Was a part number specified?
+    \doifdefined{btxsbllocpt} {
+      % Was a volume number also specified?
+      \doifdefinedelse{btxsbllocvol} {
+        % If so, typeset the number without a CSL abbreviation, followed by a comma
+        \btxsbllocpt
+        \btxcomma
+        % If a page number is also specified, then replace the comma with a colon without surrounding space
+        \doifdefined{btxsbllocp} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxcolon
+          \removeunwantedspaces
+        }
+      } {
+        % Otherwise, typeset the number with its CSL abbreviation, followed by a comma
+        \btx_sbl_doifrangeelse{\btxsbllocpt} {
+          \btxlabeltext{sbl:loc:parts}
+        } {
+          \btxlabeltext{sbl:loc:part}
+        }
+        \btxsbllocpt
+        \btxcomma
+      }
+    }
+    % Was a page number specified?
+    \doifdefined{btxsbllocp} {
+      % Typeset the number without a CSL abbreviation, followed by a comma
+      \btx_sbl_abbreviatepagerange{\btxsbllocp} % abbreviate the page range according to SBL/Chicago rules
+      \btxcomma
+      % If a note number is also specified, then replace the comma with a space
+      \doifdefined{btxsbllocn} {
         \removeunwantedspaces
         \removepunctuation
         \btxspace
       }
-      % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblfig} {
-        \btxlabeltext{sbl:loc:figures}
-      } {
-        \btxlabeltext{sbl:loc:figure}
-      }
-      \btxspace
-      \btxsblfig
-      \btxcomma
     }
     % Was a footnote number specified?
-    \doifdefined{btxsbln} {
-      % Was a page number also specified?
-      \doifdefined{btxsblp} {
-        % If so, then replace the preceding punctuation with a space
-        \removeunwantedspaces
-        \removepunctuation
-        \btxspace
-      }
+    \doifdefined{btxsbllocn} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsbln} {
+      \btx_sbl_doifrangeelse{\btxsbllocn} {
         \btxlabeltext{sbl:loc:notes}
       } {
         \btxlabeltext{sbl:loc:note}
       }
       \btxspace
-      \btxsbln
+      \btxsbllocn
       \btxcomma
     }
-    % Was a section number specified?
-    \doifdefined{btxsblsec} {
-      % Then replace the preceding punctuation with a space
-      % and typeset the number with its CSL abbreviation, followed by a comma
-      \removeunwantedspaces
-      \removepunctuation
-      \btxspace
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblsec} {
-        \btxlabeltext{sbl:loc:sections}
+    % Was a figure number specified?
+    \doifdefined{btxsbllocfig} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocfig} {
+        \btxlabeltext{sbl:loc:figures}
       } {
-        \btxlabeltext{sbl:loc:section}
+        \btxlabeltext{sbl:loc:figure}
       }
       \btxspace
-      \btxsblsec
-      \btxcomma
-    }
-    % Was a paragraph number specified?
-    \doifdefined{btxsblpara} {
-      % Then replace the preceding punctuation with a space
-      % and typeset the number with its CSL abbreviation, followed by a comma
-      \removeunwantedspaces
-      \removepunctuation
-      \btxspace
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblpara} {
-        \btxlabeltext{sbl:loc:paragraphs}
-      } {
-        \btxlabeltext{sbl:loc:paragraph}
-      }
-      \btxspace
-      \btxsblpara
+      \btxsbllocfig
       \btxcomma
     }
     % Was an opus number specified?
-    \doifdefined{btxsblop} {
+    \doifdefined{btxsbllocop} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblop} {
+      \btx_sbl_doifrangeelse{\btxsbllocop} {
         \btxlabeltext{sbl:loc:opera}
       } {
         \btxlabeltext{sbl:loc:opus}
       }
       \btxspace
-      \btxsblop
+      \btxsbllocop
       \btxcomma
     }
     % Was a book number specified?
-    \doifdefined{btxsblbk} {
+    \doifdefined{btxsbllocbk} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblbk} {
+      \btx_sbl_doifrangeelse{\btxsbllocbk} {
         \btxlabeltext{sbl:loc:books}
       } {
         \btxlabeltext{sbl:loc:book}
       }
       \btxspace
-      \btxsblbk
+      \btxsbllocbk
       \btxcomma
     }
     % Was an episode number specified?
-    \doifdefined{btxsblep} {
+    \doifdefined{btxsbllocep} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblep} {
+      \btx_sbl_doifrangeelse{\btxsbllocep} {
         \btxlabeltext{sbl:loc:episodes}
       } {
         \btxlabeltext{sbl:loc:episode}
       }
       \btxspace
-      \btxsblep
+      \btxsbllocep
       \btxcomma
     }
     % Was a chapter number specified?
-    \doifdefined{btxsblchap} {
+    \doifdefined{btxsbllocchap} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblchap} {
+      \btx_sbl_doifrangeelse{\btxsbllocchap} {
         \btxlabeltext{sbl:loc:chapters}
       } {
         \btxlabeltext{sbl:loc:chapter}
       }
       \btxspace
-      \btxsblchap
+      \btxsbllocchap
       \btxcomma
     }
     % Was a verse number specified?
-    \doifdefined{btxsblv} {
+    \doifdefined{btxsbllocv} {
       % Then typeset the chapter number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblv} {
+      \btx_sbl_doifrangeelse{\btxsbllocv} {
         \btxlabeltext{sbl:loc:verses}
       } {
         \btxlabeltext{sbl:loc:verse}
       }
       \btxspace
-      \btxsblv
+      \btxsbllocv
       \btxcomma
     }
     % Was a folio number specified?
-    \doifdefined{btxsblfol} {
+    \doifdefined{btxsbllocfol} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblfol} {
+      \btx_sbl_doifrangeelse{\btxsbllocfol} {
         \btxlabeltext{sbl:loc:folios}
       } {
         \btxlabeltext{sbl:loc:folio}
       }
       \btxspace
-      \btxsblfol
+      \btxsbllocfol
       \btxcomma
     }
     % Was a fragment number specified?
-    \doifdefined{btxsblfrag} {
+    \doifdefined{btxsbllocfrag} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblfrag} {
+      \btx_sbl_doifrangeelse{\btxsbllocfrag} {
         \btxlabeltext{sbl:loc:fragments}
       } {
         \btxlabeltext{sbl:loc:fragment}
       }
       \btxspace
-      \btxsblfrag
+      \btxsbllocfrag
       \btxcomma
     }
     % Was a plate number specified?
-    \doifdefined{btxsblpl} {
+    \doifdefined{btxsbllocpl} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblpl} {
+      \btx_sbl_doifrangeelse{\btxsbllocpl} {
         \btxlabeltext{sbl:loc:plates}
       } {
         \btxlabeltext{sbl:loc:plate}
       }
       \btxspace
-      \btxsblpl
+      \btxsbllocpl
       \btxcomma
     }
     % Was a column number specified?
-    \doifdefined{btxsblcol} {
+    \doifdefined{btxsblloccol} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblcol} {
+      \btx_sbl_doifrangeelse{\btxsblloccol} {
         \btxlabeltext{sbl:loc:columns}
       } {
         \btxlabeltext{sbl:loc:column}
       }
       \btxspace
-      \btxsblcol
+      \btxsblloccol
       \btxcomma
     }
     % Was a line number specified?
-    \doifdefined{btxsbll} {
+    \doifdefined{btxsbllocl} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsbll} {
+      \btx_sbl_doifrangeelse{\btxsbllocl} {
         \btxlabeltext{sbl:loc:lines}
       } {
         \btxlabeltext{sbl:loc:line}
       }
       \btxspace
-      \btxsbll
+      \btxsbllocl
       \btxcomma
     }
 		% Was a sub verbo entry specified?
-    \doifdefined{btxsblsv} {
+    \doifdefined{btxsbllocsv} {
       % Then typeset the number with its CSL abbreviation, followed by a comma
-      \texdefinition{btx:sbl:doifrangeelse}{\btxsblsv} {
+      \btx_sbl_doifrangeelse{\btxsbllocsv} {
         \btxlabeltext{sbl:loc:subverbi}
       } {
         \btxlabeltext{sbl:loc:subverbo}
       }
       \btxspace
-      \btxsblsv
+      \btxsbllocsv
+      \btxcomma
+    }
+    % Was a section number specified?
+    \doifdefined{btxsbllocsec} {
+      % If any of the preceding keys was specified, then replace any preceding punctuation with a space
+      % and typeset the number with its CSL abbreviation, followed by a comma
+      \ifdefined\btxsbllocvol
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocno
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocpt
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocp
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocn
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocfig
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocop
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocbk
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocep
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocchap
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocv
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocfol
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocfrag
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocpl
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsblloccol
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocl
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocsv
+        \removeunwantedspaces\removepunctuation\btxspace
+      \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi % in LMTX, only one \fi is necessary
+      \btx_sbl_doifrangeelse{\btxsbllocsec} {
+        \btxlabeltext{sbl:loc:sections}
+      } {
+        \btxlabeltext{sbl:loc:section}
+      }
+      \btxspace
+      \btxsbllocsec
+      \btxcomma
+    }
+    % Was a paragraph number specified?
+    \doifdefined{btxsbllocpara} {
+      % If any of the preceding keys was specified, then replace any preceding punctuation with a space
+      % and typeset the number with its CSL abbreviation, followed by a comma
+      \ifdefined\btxsbllocvol
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocno
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocpt
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocp
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocn
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocfig
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocop
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocbk
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocep
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocchap
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocv
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocfol
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocfrag
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocpl
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsblloccol
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocl
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocsv
+        \removeunwantedspaces\removepunctuation\btxspace
+      \orelse\ifdefined\btxsbllocsec
+        \removeunwantedspaces\removepunctuation\btxspace
+      \fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi\fi % in LMTX, only one \fi is necessary
+      \btx_sbl_doifrangeelse{\btxsbllocpara} {
+        \btxlabeltext{sbl:loc:paragraphs}
+      } {
+        \btxlabeltext{sbl:loc:paragraph}
+      }
+      \btxspace
+      \btxsbllocpara
       \btxcomma
     }
 	} {
 		% If the input is just a value and not an assignment list,
 		% then print it with minimal reformatting.
 		% TODO: Category-dependent default pagination settings would be enforced here.
-		
-    % Is the input subdivided into volumes/numbers/parts/chapters?
-    \texdefinition{btx:sbl:doifhasvolumepartprefix} {#1} {
-      % Then replace the preceding punctuation with a space if the current entry or any of its cross-references has a shorthand
-      \texdefinition{btx:sbl:doifshorthand} {
+    #1
+    \btxcomma
+	}
+  \removeunwantedspaces
+  \removepunctuation
+\stoptexdefinition
+
+% Define variables indicating which material precedes the loctext (or altloctext) in a citation;
+% these will be used for contextual formatting in the loctextloc macro
+\def\btxsblshorthandbeforeloctext{no}
+\def\btxsblvolumebeforeloctext{no}
+
+% Define macro for typesetting CSL locators in the loctext field,
+% with additional rules for removing or changing preceding punctuation.
+% TODO: This would ideally be implemented in its own TeX module with default settings,
+% and this implementation would override it with SBL-specific settings
+\starttexdefinition loctextloc [#1]
+	\doifassignmentelse{#1} {
+		% TODO: all parameters should be prefixed with \c! for multilingual support; 
+		% their equivalents in other languages should be assigned according to the mappings at https://github.com/citation-style-language/locales
+		\getparameters[btxsblloc][#1]
+    % Was a volume number specified?
+    \doifdefined{btxsbllocvol} {
+      % If the loctext is preceded by a shorthand, then remove the comma after the shorthand
+      \doif{\btxsblshorthandbeforeloctext}{yes} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxspace
+      }
+      % Then typeset the number without a CSL abbreviation, followed by a comma
+      \btxsbllocvol
+      \btxcomma
+      % If a page number is also specified, then replace the comma with a colon without surrounding space
+      \doifdefined{btxsbllocp} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxcolon
+        \removeunwantedspaces
+      }
+      % If a part is also specified, then replace the comma with a period without surrounding space
+      \doifdefined{btxsbllocpt} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxperiod
+        \removeunwantedspaces
+      }
+      % If a number is also specified, then replace the comma with a period without surrounding space
+      \doifdefined{btxsbllocno} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxperiod
+        \removeunwantedspaces
+      }
+    }
+    % Was an issue number specified?
+    \doifdefined{btxsbllocno} {
+      % If the loctext is preceded by a shorthand, then remove the comma after the shorthand
+      \doif{\btxsblshorthandbeforeloctext}{yes} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxspace
+      }
+      % Was a volume number also specified?
+      \doifdefinedelse{btxsbllocvol} {
+        % If so, then typeset the number without a CSL abbreviation, followed by a comma
+        \btxsbllocno
+        \btxcomma
+        % If a page number is also specified, then replace the comma with a colon without surrounding space
+        \doifdefined{btxsbllocp} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxcolon
+          \removeunwantedspaces
+        }
+        % If a part is also specified, then replace the comma with a period without surrounding space
+        \doifdefined{btxsbllocpt} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxperiod
+          \removeunwantedspaces
+        }
+      } {
+        % Otherwise, typeset the number with its CSL abbreviation, followed by a comma
+        \btx_sbl_doifrangeelse{\btxsbllocno} {
+          \btxlabeltext{sbl:loc:issues}
+        } {
+          \btxlabeltext{sbl:loc:issue}
+        }
+        \btxsbllocno
+        \btxcomma
+      }
+    }
+    % Was a part number specified?
+    \doifdefined{btxsbllocpt} {
+      % If the loctext is preceded by a shorthand, then remove the comma after the shorthand
+      \doif{\btxsblshorthandbeforeloctext}{yes} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxspace
+      }
+      % Was a volume number also specified?
+      \doifdefinedelse{btxsbllocvol} {
+        % If so, typeset the number without a CSL abbreviation, followed by a comma
+        \btxsbllocpt
+        \btxcomma
+        % If a page number is also specified, then replace the comma with a colon without surrounding space
+        \doifdefined{btxsbllocp} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxcolon
+          \removeunwantedspaces
+        }
+      } {
+        % Otherwise, typeset the number with its CSL abbreviation, followed by a comma
+        \btx_sbl_doifrangeelse{\btxsbllocpt} {
+          \btxlabeltext{sbl:loc:parts}
+        } {
+          \btxlabeltext{sbl:loc:part}
+        }
+        \btxsbllocpt
+        \btxcomma
+      }
+    }
+    % Was a page number specified?
+    \doifdefined{btxsbllocp} {
+      % If the loctext is preceded by a volume/part division, then replace the comma after it with a colon without surrounding spaces
+      \doif{\btxsblvolumebeforeloctext}{yes} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxcolon
+        \removeunwantedspaces
+      }
+      % Typeset the number without a CSL abbreviation, followed by a comma
+      \btx_sbl_abbreviatepagerange{\btxsbllocp} % abbreviate the page range according to SBL/Chicago rules
+      \btxcomma
+      % If a note number is also specified, then replace the comma with a space
+      \doifdefined{btxsbllocn} {
         \removeunwantedspaces
         \removepunctuation
         \btxspace
       }
     }
-    % Does the input start with a section mark?
+    % Was a footnote number specified?
+    \doifdefined{btxsbllocn} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocn} {
+        \btxlabeltext{sbl:loc:notes}
+      } {
+        \btxlabeltext{sbl:loc:note}
+      }
+      \btxspace
+      \btxsbllocn
+      \btxcomma
+    }
+    % Was a figure number specified?
+    \doifdefined{btxsbllocfig} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocfig} {
+        \btxlabeltext{sbl:loc:figures}
+      } {
+        \btxlabeltext{sbl:loc:figure}
+      }
+      \btxspace
+      \btxsbllocfig
+      \btxcomma
+    }
+    % Was an opus number specified?
+    \doifdefined{btxsbllocop} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocop} {
+        \btxlabeltext{sbl:loc:opera}
+      } {
+        \btxlabeltext{sbl:loc:opus}
+      }
+      \btxspace
+      \btxsbllocop
+      \btxcomma
+    }
+    % Was a book number specified?
+    \doifdefined{btxsbllocbk} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocbk} {
+        \btxlabeltext{sbl:loc:books}
+      } {
+        \btxlabeltext{sbl:loc:book}
+      }
+      \btxspace
+      \btxsbllocbk
+      \btxcomma
+    }
+    % Was an episode number specified?
+    \doifdefined{btxsbllocep} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocep} {
+        \btxlabeltext{sbl:loc:episodes}
+      } {
+        \btxlabeltext{sbl:loc:episode}
+      }
+      \btxspace
+      \btxsbllocep
+      \btxcomma
+    }
+    % Was a chapter number specified?
+    \doifdefined{btxsbllocchap} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocchap} {
+        \btxlabeltext{sbl:loc:chapters}
+      } {
+        \btxlabeltext{sbl:loc:chapter}
+      }
+      \btxspace
+      \btxsbllocchap
+      \btxcomma
+    }
+    % Was a verse number specified?
+    \doifdefined{btxsbllocv} {
+      % Then typeset the chapter number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocv} {
+        \btxlabeltext{sbl:loc:verses}
+      } {
+        \btxlabeltext{sbl:loc:verse}
+      }
+      \btxspace
+      \btxsbllocv
+      \btxcomma
+    }
+    % Was a folio number specified?
+    \doifdefined{btxsbllocfol} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocfol} {
+        \btxlabeltext{sbl:loc:folios}
+      } {
+        \btxlabeltext{sbl:loc:folio}
+      }
+      \btxspace
+      \btxsbllocfol
+      \btxcomma
+    }
+    % Was a fragment number specified?
+    \doifdefined{btxsbllocfrag} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocfrag} {
+        \btxlabeltext{sbl:loc:fragments}
+      } {
+        \btxlabeltext{sbl:loc:fragment}
+      }
+      \btxspace
+      \btxsbllocfrag
+      \btxcomma
+    }
+    % Was a plate number specified?
+    \doifdefined{btxsbllocpl} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocpl} {
+        \btxlabeltext{sbl:loc:plates}
+      } {
+        \btxlabeltext{sbl:loc:plate}
+      }
+      \btxspace
+      \btxsbllocpl
+      \btxcomma
+    }
+    % Was a column number specified?
+    \doifdefined{btxsblloccol} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsblloccol} {
+        \btxlabeltext{sbl:loc:columns}
+      } {
+        \btxlabeltext{sbl:loc:column}
+      }
+      \btxspace
+      \btxsblloccol
+      \btxcomma
+    }
+    % Was a line number specified?
+    \doifdefined{btxsbllocl} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocl} {
+        \btxlabeltext{sbl:loc:lines}
+      } {
+        \btxlabeltext{sbl:loc:line}
+      }
+      \btxspace
+      \btxsbllocl
+      \btxcomma
+    }
+		% Was a sub verbo entry specified?
+    \doifdefined{btxsbllocsv} {
+      % Then typeset the number with its CSL abbreviation, followed by a comma
+      \btx_sbl_doifrangeelse{\btxsbllocsv} {
+        \btxlabeltext{sbl:loc:subverbi}
+      } {
+        \btxlabeltext{sbl:loc:subverbo}
+      }
+      \btxspace
+      \btxsbllocsv
+      \btxcomma
+    }
+    % Was a section number specified?
+    \doifdefined{btxsbllocsec} {
+      % Remove any preceding comma
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+      \btx_sbl_doifrangeelse{\btxsbllocsec} {
+        \btxlabeltext{sbl:loc:sections}
+      } {
+        \btxlabeltext{sbl:loc:section}
+      }
+      \btxspace
+      \btxsbllocsec
+      \btxcomma
+    }
+    % Was a paragraph number specified?
+    \doifdefined{btxsbllocpara} {
+      % Remove any preceding comma
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+      \btx_sbl_doifrangeelse{\btxsbllocpara} {
+        \btxlabeltext{sbl:loc:paragraphs}
+      } {
+        \btxlabeltext{sbl:loc:paragraph}
+      }
+      \btxspace
+      \btxsbllocpara
+      \btxcomma
+    }
+	} {
+		% If the input is just a value and not an assignment list,
+		% then print it with minimal reformatting.
+		% TODO: Category-dependent default pagination settings would be enforced here.
+
+    % If the loctext is preceded by a shorthand
+    % and the input starts with a volume/part division, 
+    % then remove the comma after the shorthand
+    \doif{\btxsblshorthandbeforeloctext}{yes} {
+      \btx_sbl_doifhasvolumepartprefix{#1} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxspace
+      }
+    }
+    % If the loctext is preceded by a volume/part division
+    % and the input starts with a numeric prefix, 
+    % then replace the comma after it with a colon without surrounding spaces
+    \doif{\btxsblvolumebeforeloctext}{yes} {
+      \btx_sbl_doifhasnumericprefix{#1} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxcolon
+        \removeunwantedspaces
+      }
+    }
+    % If the loctext starts with a section or paragraph mark,
+    % then replace any preceding punctuation with a space
     \btx_sbl_doifprefix{§}{#1} {
-      % Then replace the preceding punctuation with a space
       \removeunwantedspaces
       \removepunctuation
       \btxspace
     }
-    % Does the input start with a paragraph mark?
     \btx_sbl_doifprefix{¶}{#1} {
-      % Then replace the preceding punctuation with a space
       \removeunwantedspaces
       \removepunctuation
       \btxspace
     }
     #1
+    \btxcomma
 	}
   \removeunwantedspaces
   \removepunctuation
@@ -2029,8 +2511,10 @@
 
 \starttexdefinition btx:sbl:inlinelong:ancienttexttitle
   \btxdoif {title} {
+    \begingroup
     % For PGM, typeset the shorthand PGM with book formatting
     \doifinset {\btxflush{entrysubtype}} {PGM} {
+      \def\btxsblshorthandbeforeloctext{yes}
       \btxstartstyleandcolor[sbl:\s!list:title:book]
         \btxusecommand[sbl:\s!list:title:book]{
           {PGM}%
@@ -2062,19 +2546,17 @@
       \btxstopstyleandcolor
       \btxcomma
     }
-    \doifnot{\currentbtxlefttext}{\empty} {
-      \removeunwantedspaces
-      \removepunctuation
-      \btxspace
-      \texdefinition{btx:sbl:inlinelong:lefttext}
-    }
+    \texdefinition{btx:sbl:inlinelong:altloctext}
+    \endgroup
   }
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:inlineshort:ancienttexttitle
   \btxdoif {title} {
+    \begingroup
     % For PGM, typeset the shorthand PGM with book formatting
     \doifinset {\btxflush{entrysubtype}} {PGM} {
+      \def\btxsblshorthandbeforeloctext{yes}
       \btxstartstyleandcolor[sbl:\s!list:title:book]
         \btxusecommand[sbl:\s!list:title:book]{
           {PGM}%
@@ -2104,12 +2586,8 @@
       \btxstopstyleandcolor
       \btxcomma
     }
-    \doifnot{\currentbtxlefttext}{\empty} {
-      \removeunwantedspaces
-      \removepunctuation
-      \btxspace
-      \texdefinition{btx:sbl:inlinelong:lefttext}
-    }
+    \texdefinition{btx:sbl:inlineshort:altloctext}
+    \endgroup
   }
 \stoptexdefinition
 
@@ -2118,14 +2596,8 @@
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:inlinelong:classictexttitle
-  \texdefinition{btx:sbl:inlineshort:title} % prefer the short title, even in inline citations
-  % If there is a lefttext containing a reference within the ancient text, then print it after the title
-  \doifnot {\currentbtxlefttext} {\empty} {
-    \removeunwantedspaces
-    \removepunctuation
-    \btxspace
-    \texdefinition{btx:sbl:inlinelong:lefttext}
-  }
+  \texdefinition{btx:sbl:inlineshort:title} % prefer the short title of classic texts, even in long citations
+  \texdefinition{btx:sbl:inlinelong:altloctext}
 \stoptexdefinition
 
 \starttexdefinition btx:sbl:inlineshort:classictexttitle
@@ -2156,6 +2628,8 @@
 
 \starttexdefinition btx:sbl:inlineshort:ancienttextshorthand
   \texdefinition{btx:sbl:doifownfield} {shorthand} {
+    \begingroup
+    \def\btxsblshorthandbeforeloctext{yes}
     % If the shorthand field matches the shorttitle field, then use title formatting;
     % otherwise, use no formatting
     \doifelse{\btxflush{shorthand}}{\btxflush{shorttitle}} {
@@ -2172,8 +2646,9 @@
     } {
       \btxflush{shorthand}
     }
-    \btxspace
-    \texdefinition{btx:sbl:inlinelong:lefttext}
+    \btxcomma
+    \texdefinition{btx:sbl:inlineshort:altloctext}
+    \endgroup
   }
 \stoptexdefinition
 
@@ -2464,12 +2939,12 @@
     % skipping the author in the cross-referenced source this entry has an author that matches it
     \texdefinition{btx:sbl:doifownfieldelse} {author} {
       \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
-        \textcite[alternative=entry,useauthor=no][\crossreftag]
+        \textcite[alternative=entry,useauthor=no,lefttext=,righttext=,loctext=,altloctext=][\crossreftag]
       } {
-        \textcite[alternative=entry,titleauthor=yes][\crossreftag]
+        \textcite[alternative=entry,titleauthor=yes,lefttext=,righttext=,loctext=,altloctext=][\crossreftag]
       }
     } {
-      \textcite[alternative=entry,titleauthor=yes][\crossreftag]
+      \textcite[alternative=entry,titleauthor=yes,lefttext=,righttext=,loctext=,altloctext=][\crossreftag]
     }
     \removeunwantedspaces
     \removepunctuation
@@ -2506,9 +2981,9 @@
         % If the volume and collection have the same name, then prefix the page numbers with the volume number
         \texdefinition{btx:sbl:doifsametitleelse}{\crossreftag}{\collectiontag} {
           \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag} {
-            \textcite[alternative=inlinelong,useauthor=no,punct=][\crossreftag]
+            \textcite[alternative=inlinelong,useauthor=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
           } {
-            \textcite[alternative=inlinelong,titleauthor=yes,punct=][\crossreftag]
+            \textcite[alternative=inlinelong,titleauthor=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
           }
           \btxcomma
           \textcite[alternative=volume][\crossreftag]
@@ -2525,9 +3000,9 @@
           }
         } {
           \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag} {
-            \textcite[alternative=inlinelong,useauthor=no,punct=][\crossreftag]
+            \textcite[alternative=inlinelong,useauthor=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
           } {
-            \textcite[alternative=inlinelong,titleauthor=yes,punct=][\crossreftag]
+            \textcite[alternative=inlinelong,titleauthor=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
           }
           \btxcomma
           % If this entry has a part number, then prefix the page range with the part number
@@ -2559,9 +3034,9 @@
         \btxlabeltext{sbl:in}
         \btxspace
         \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag} {
-          \textcite[alternative=inlinelong,useauthor=no,punct=][\crossreftag]
+          \textcite[alternative=inlinelong,useauthor=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
         } {
-          \textcite[alternative=inlinelong,titleauthor=yes,punct=][\crossreftag]
+          \textcite[alternative=inlinelong,titleauthor=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
         }
         \btxcomma
         % If this entry has a part number, then prefix the page range with the part number
@@ -2580,28 +3055,64 @@
   }
 \stoptexdefinition
 
-\starttexdefinition btx:sbl:inlineshort:inreferencecrossref
+\starttexdefinition btx:sbl:inlineshort:inbookcrossref
   \btxdoif{crossref} {
     \begingroup
-    % If this entry is in a multivolume reference, 
-    % then cite the shorthand (or, failing that, its title) and prefix any cited pages accordingly;
-    % otherwise, just cite the pages
+    % Does the book containing this entry belong to a multivolume set?
     \def\crossreftag{\btxflush{crossref}}
-    \doifnot {\currentbtxloctext} {\empty} {
-      \clf_btxdoif{\currentbtxdataset}{\crossreftag}{crossref} {
-        \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
-        \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
-          \textcite[alternative=inlineshort][\collectiontag]
+    \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{crossref} {
+      % If so, does the multivolume set have a shorthand?
+      \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
+      \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
+        % If so, then print the shorthand followed by the volume number (and any part numbers)
+        \textcite[alternative=inlineshort][\collectiontag]
+        \btxspace
+        \textcite[alternative=volume][\crossreftag]
+        \btxdoif {part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+        }
+        \btxcomma
+      } {
+        % If not, then print its title followed by the volume number (and any part numbers)
+        \textcite[alternative=title][\collectiontag]
+        \btxspace
+        \textcite[alternative=volume][\crossreftag]
+        \btxdoif {part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+        }
+        \btxcomma
+      }
+    } {
+      % If not, does the book containing this entry have a shorthand?
+      \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
+        % If so, then print the shorthand followed by any part numbers
+        \textcite[alternative=inlineshort][\crossreftag]
+        \btxcomma
+        % If this entry has a part number, then remove the preceding comma and prefix the page range with the part number
+        \btxdoif {part} {
+          \removeunwantedspaces
+          \removepunctuation
           \btxspace
-        } {
-          \textcite[alternative=title][\collectiontag]
+          \btxflush{part}
           \btxcomma
         }
-        \textcite[alternative=volume][\crossreftag]
-        \btxcolon
-        \removeunwantedspaces
+      } {
+        % If not, then print its title followed by any part numbers
+        \textcite[alternative=title][\crossreftag]
+        \btxcomma
+        % If this entry has a part number, then remove the preceding comma and prefix the page range with the part number
+        \btxdoif {part} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxspace
+          \btxflush{part}
+          \btxcomma
+        }
       }
-      \texdefinition{btx:sbl:inlineshort:loctext}
     }
     \endgroup
   }
@@ -2750,9 +3261,9 @@
     \btxspace
     % Recursively cite the book/collection
     \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag}{
-      \textcite[alternative=inlinelong,useauthor=no,punct=][\crossreftag]
+      \textcite[alternative=inlinelong,useauthor=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
     } {
-      \textcite[alternative=inlinelong,titleauthor=yes,punct=][\crossreftag]
+      \textcite[alternative=inlinelong,titleauthor=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
     }
     \btxcomma
     \endgroup
@@ -2817,7 +3328,7 @@
                 }
                 \btxcomma
               }
-              % If any specific page numbers were cited explicitly by the user, then print them next
+              % If a locator text was provided by the user, then print it next
               \texdefinition{btx:sbl:inlinelong:loctext}
               \removeunwantedspaces
               \removepunctuation
@@ -2846,7 +3357,7 @@
                 }
                 \btxcomma
               }
-              % If any specific page numbers were cited explicitly by the user, then print them next
+              % If a locator text was provided by the user, then print it next
               \texdefinition{btx:sbl:inlinelong:loctext}
               \removeunwantedspaces
               \removepunctuation
@@ -2876,7 +3387,7 @@
               }
               \btxcomma
             }
-            % If any specific page numbers were cited explicitly by the user, then print them next
+            % If a locator text was provided by the user, then print it next
             \texdefinition{btx:sbl:inlinelong:loctext}
             \removeunwantedspaces
             \removepunctuation
@@ -2909,7 +3420,7 @@
                 }
                 \btxcomma
               }
-              % If any specific page numbers were cited explicitly by the user, then print them next
+              % If a locator text was provided by the user, then print it next
               \texdefinition{btx:sbl:inlinelong:loctext}
               \removeunwantedspaces
               \removepunctuation
@@ -2921,7 +3432,8 @@
             \removepunctuation
             \btxspace
             \startparen
-            \cite[alternative=inlinelong,useauthor=yes,usepubl=yes,lefttext=,righttext=,punct=][\crossreftag]
+            %TODO: We should register the collection's entry to the list, but using \cite here doesn't print it
+            \textcite[alternative=inlinelong,useauthor=yes,usepubl=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
             \btxcomma
             \textcite[alternative=volume][\crossreftag]
             \btxdoif {part} {
@@ -2937,7 +3449,7 @@
               }
               \btxcomma
             }
-            % If any specific page numbers were cited explicitly by the user, then print them next
+            % If a locator text was provided by the user, then print it next
             \texdefinition{btx:sbl:inlinelong:loctext}
             \removeunwantedspaces
             \removepunctuation
@@ -2949,7 +3461,7 @@
           \removepunctuation
           \btxspace
           \startparen
-          \cite[alternative=inlinelong,useauthor=yes,usepubl=yes,lefttext=,righttext=,punct=][\crossreftag]
+          \cite[alternative=inlinelong,useauthor=yes,usepubl=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
           \btxcomma
           \btxdoif {part} {
             \btxflush{part}
@@ -2962,7 +3474,7 @@
             }
             \btxcomma
           }
-          % If any specific page numbers were cited explicitly by the user, then print them next
+          % If a locator text was provided by the user, then print it next
           \texdefinition{btx:sbl:inlinelong:loctext}
           \removeunwantedspaces
           \removepunctuation
@@ -2987,10 +3499,7 @@
         \btxspace
         \startparen
         \btxflush{translator}
-        \doifnot {\currentbtxloctext} {\empty} {
-          \btxcomma
-          \texdefinition{btx:sbl:inlineshort:loctext}
-        }
+        \texdefinition{btx:sbl:inlineshort:loctext}
         \stopparen
         \btxcomma
       }
@@ -3006,6 +3515,7 @@
         \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{crossref} {
           % If the collection entry has a shorthand, then cite it;
           % otherwise, just cite its author/editor
+          \def\btxsblvolumebeforeloctext{yes}
           \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
           \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
             \textcite[alternative=inlineshort][\collectiontag]
@@ -3032,28 +3542,38 @@
             \removeunwantedspaces
             \btxflush{part}
           }
-          \btxcolon
-          \removeunwantedspaces
+          \btxcomma
           \texdefinition{btx:sbl:inlineshort:loctext}
         } {
           % If the book containing this text is of type "seriesascollection", 
           % then remove the preceding comma and print the series and series entry numbers, 
           % followed by the part number of this entry (if it has one) and cited pages
           \doifelse {\clf_btxdirect{\currentbtxdataset}{\crossreftag}{type}} {seriesascollection} {
+            \def\btxsblvolumebeforeloctext{yes}
             \textcite[alternative=inlineshort][\crossreftag]
-            \removeunwantedspaces
-            \removepunctuation
+            \btxcomma
             \btxdoif {part} {
+              \removeunwantedspaces
+              \removepunctuation
               \btxperiod
               \removeunwantedspaces
               \btxflush{part}
+              \btxcomma
             }
-            \btxcolon
-            \removeunwantedspaces
           } {
             % Otherwise, cite the shorthand (or, failing that, the author/editor) of the book
             \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
               \textcite[alternative=inlineshort][\crossreftag]
+              \btxcomma
+              \btxdoifelse {part} {
+                \def\btxsblvolumebeforeloctext{yes}
+                \removeunwantedspaces
+                \removepunctuation
+                \btxflush{part}
+                \btxcomma
+              } {
+                \def\btxsblshorthandbeforeloctext{yes}
+              }
             } {
               \clf_btxauthor
                 {\currentbtxdataset}%
@@ -3068,12 +3588,12 @@
                     symbol      {sbl:\s!cite\c!stopper:initials}%
                     connector   {sbl:\s!cite\c!connector:initials}%
                 }%
-            }
-            \btxcomma
-            \btxdoif {part} {
-              \btxflush{part}
-              \btxcolon
-              \removeunwantedspaces
+              \btxcomma
+              \btxdoif {part} {
+                \def\btxsblvolumebeforeloctext{yes}
+                \btxflush{part}
+                \btxcomma
+              }
             }
           }
           \texdefinition{btx:sbl:inlineshort:loctext}
@@ -3272,9 +3792,11 @@
     \texdefinition{btx:sbl:doifsametitleelse}{\currentbtxtag}{\crossreftag} {
       % If they are the same, then just recursively cite the collection, adding it to the list
       \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag} {
-        \cite[alternative=inlinelong,useauthor=no,usepubl=no,punct=][\crossreftag]
+        %TODO: We should register the collection's entry to the list, but using \cite here doesn't print it
+        \textcite[alternative=inlinelong,useauthor=no,usepubl=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
       } {
-        \cite[alternative=inlinelong,titleauthor=yes,usepubl=no,punct=][\crossreftag]
+        %TODO: We should register the collection's entry to the list, but using \cite here doesn't print it
+        \textcite[alternative=inlinelong,titleauthor=yes,usepubl=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
       }
     } {
       % Otherwise, print the volume and part, and cite the collection without adding it to the list
@@ -3303,9 +3825,9 @@
       }
       % Recursively cite the collection, but do not add it to the list
       \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\crossreftag} {
-        \textcite[alternative=inlinelong,useauthor=no,usepubl=no,punct=][\crossreftag]
+        \textcite[alternative=inlinelong,useauthor=no,usepubl=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
       } {
-        \textcite[alternative=inlinelong,titleauthor=yes,usepubl=no,punct=][\crossreftag]
+        \textcite[alternative=inlinelong,titleauthor=yes,usepubl=no,lefttext=,righttext=,loctext=,altloctext=,punct=][\crossreftag]
       }
     }
     \btxcomma
@@ -3861,9 +4383,9 @@
     \begingroup
     \def\relatedtag{\btxflush{related}}
     \texdefinition{btx:sbl:doifsamefoundnameauthorelse}{\currentbtxtag}{\relatedtag}{
-      \textcite[alternative=inlinelong,useauthor=no,usepubl=yes,punct=][\relatedtag]
+      \textcite[alternative=inlinelong,useauthor=no,usepubl=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\relatedtag]
     } {
-      \textcite[alternative=inlinelong,titleauthor=yes,usepubl=yes,punct=][\relatedtag]
+      \textcite[alternative=inlinelong,titleauthor=yes,usepubl=yes,lefttext=,righttext=,loctext=,altloctext=,punct=][\relatedtag]
     }
     \endgroup
     \btxcomma
@@ -4113,9 +4635,116 @@
 
 \starttexdefinition btx:sbl:inlineshort:loctext
   % Same as inline variant, except that we don't need to check for existing page ranges
+  % and we redefine the \loc macro to behave like the \loctextloc macro (which removes preceding punctuation contextually)
   \doifnot {\currentbtxloctext} {\empty} {
+    \begingroup
+    \let\loc\loctextloc
+    % If the loctext has a numeric prefix (i.e., if the user has input just a page number and not a locator),
+    % then apply any necessary formatting
+    \btx_sbl_doifhasnumericprefix{\currentbtxloctext} {
+      \doif{\btxsblvolumebeforeloctext}{yes} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxcolon
+        \removeunwantedspaces
+      }
+    }
+    % If the loctext starts with a volume division,
+    % then apply any necessary formatting
+    \btx_sbl_doifhasvolumepartprefix{\currentbtxloctext} {
+      \doif{\btxsblshorthandbeforeloctext}{yes} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxspace
+      }
+    }
+    % If the loctext starts with a section or paragraph mark,
+    % then replace any preceding punctuation with a space
+    \btx_sbl_doifprefix{§}{\currentbtxloctext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
+    \btx_sbl_doifprefix{¶}{\currentbtxloctext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
     \currentbtxloctext
     \btxcomma
+    \endgroup
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:inlinelong:altloctext
+  \doifnot {\currentbtxaltloctext} {\empty} {
+    \begingroup
+    \let\loc\loctextloc
+    % If the loctext has a numeric prefix (i.e., if the user has input just a passage index and not a locator),
+    % then apply any necessary formatting
+    \btx_sbl_doifhasnumericprefix{\currentbtxaltloctext} {
+      % Only remove the comma after the title if the title of this entry does not end with a number of its own (e.g., "Epistle 1")
+      \btx_sbl_doifhasnumericsuffixelse{\btxdirect{title}} {} {
+        \removeunwantedspaces
+        \removepunctuation
+        \btxspace
+      }
+    }
+    % If the loctext starts with a section or paragraph mark,
+    % then replace any preceding punctuation with a space
+    \btx_sbl_doifprefix{§}{\currentbtxaltloctext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
+    \btx_sbl_doifprefix{¶}{\currentbtxaltloctext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
+    \currentbtxaltloctext
+    \btxcomma
+    \endgroup
+  }
+\stoptexdefinition
+
+\starttexdefinition btx:sbl:inlineshort:altloctext
+  \doifnot {\currentbtxaltloctext} {\empty} {
+    \begingroup
+    \let\loc\loctextloc
+    % If the loctext has a numeric prefix (i.e., if the user has input just a passage index and not a locator),
+    % then apply any necessary formatting
+    \btx_sbl_doifhasnumericprefix{\currentbtxaltloctext} {
+      % Only remove the comma after the title if the short title of this entry (or the title, if there is no short title) does not end with a number of its own (e.g., "Epistle 1")
+      \texdefinition{btx:sbl:doifownfieldelse} {shorttitle} {
+        \btx_sbl_doifhasnumericsuffixelse{\btxdirect{shorttitle}} {} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxspace
+        }
+      } {
+        \btx_sbl_doifhasnumericsuffixelse{\btxdirect{title}} {} {
+          \removeunwantedspaces
+          \removepunctuation
+          \btxspace
+        }
+      }
+    }
+    % If the loctext starts with a section or paragraph mark,
+    % then replace any preceding punctuation with a space
+    \btx_sbl_doifprefix{§}{\currentbtxaltloctext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
+    \btx_sbl_doifprefix{¶}{\currentbtxaltloctext} {
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+    }
+    \currentbtxaltloctext
+    \btxcomma
+    \endgroup
   }
 \stoptexdefinition
 
@@ -4907,7 +5536,7 @@
       \texdefinition{btx:sbl:inlinelong:title}
       % A classictext may not have an author,
       % so be sure not to use one inherited from a cross-referenced source
-      % TODO: This would mess up entries that correctly list the ancient author as the author of both the individual text and the volume;
+      % TODO: This will mess up entries that correctly list the classical author as the author of both the individual text and the volume;
       % the correct way to solve this is to have inherited field mappings properly implemented.
       \texdefinition{btx:sbl:doifownfield} {author} {
         \texdefinition{btx:sbl:inlinelong:author-after-title}
@@ -4915,7 +5544,7 @@
     } {
       % A classictext may not have an author, 
       % so be sure not to use one inherited from a cross-referenced source
-      % TODO: This would mess up entries that correctly list the ancient author as the author of both the individual text and the volume;
+      % TODO: This would mess up entries that correctly list the classical author as the author of both the individual text and the volume;
       % the correct way to solve this is to have inherited field mappings properly implemented.
       \texdefinition{btx:sbl:doifownfield} {author} {
         \texdefinition{btx:sbl:inlinelong:author}
@@ -5169,21 +5798,16 @@
 
 \startsetups btx:sbl:inlineshort:mvbook
   \begingroup
-  % If this entry has its own type, then check it requires special handling
+  % If this entry has its own type, then it requires special handling
   \texdefinition{btx:sbl:doifownfieldelse} {type} {
     % If this entry is of type "seriesascollection", then cite the series (and number), followed by any cited page numbers
     \doif {\btxflush{type}} {seriesascollection} {
+      \def\btxsblvolumebeforeloctext{yes}
       \texdefinition{btx:sbl:inlinelong:seriesxref}
-      \doifnot {\currentbtxloctext} {\empty} {
-        \removeunwantedspaces
-        \removepunctuation
-        \btxcolon
-        \removeunwantedspaces
-        \texdefinition{btx:sbl:inlineshort:loctext}
-      }
     }
     % If this entry is of type "useseriesshorthand", then cite the shorthand of its series (without series and entry numbers) as its shorthand, followed by any cited page numbers
     \doif{\btxflush{type}}{useseriesshorthand} {
+      \def\btxsblshorthandbeforeloctext{yes}
       % Is this a cross-reference to a separate entry for the series?
       \doifelse {\btxfoundname{series}} {seriesxref} {
         % If so, then recursively cite the shorthand for the series
@@ -5199,11 +5823,11 @@
         \btxstopstyleandcolor
         \btxcomma
       }
-      \texdefinition{btx:sbl:inlineshort:loctext}
     }
     % Otherwise, proceed normally
     \doifnotinset{\btxflush{type}}{seriesascollection, useseriesshorthand} {
       \btxdoifelse {shorthand} {
+        \def\btxsblshorthandbeforeloctext{yes}
         \texdefinition{btx:sbl:inlineshort:shorthand}
       } {
         % Only cite the author if the useauthor option is set
@@ -5212,11 +5836,11 @@
         }
         \texdefinition{btx:sbl:inlineshort:title}
       }
-      \texdefinition{btx:sbl:inlineshort:loctext}
     }
   } {
     % Otherwise, proceed normally
     \btxdoifelse {shorthand} {
+      \def\btxsblshorthandbeforeloctext{yes}
       \texdefinition{btx:sbl:inlineshort:shorthand}
     } {
       % Only cite the author if the useauthor option is set
@@ -5225,11 +5849,11 @@
       }
       \texdefinition{btx:sbl:inlineshort:title}
     }
-    \texdefinition{btx:sbl:inlineshort:loctext}
   }
+  \texdefinition{btx:sbl:inlineshort:loctext}
+  \endgroup
   \removeunwantedspaces
   \removepunctuation
-  \endgroup
 \stopsetups
 
 \startsetups btx:sbl:inlineshort:mvreference
@@ -5245,27 +5869,23 @@
 \stopsetups
 
 \startsetups btx:sbl:inlineshort:book
+  \begingroup
   % If this entry has its own type, then check it requires special handling
   \texdefinition{btx:sbl:doifownfieldelse} {type} {
     % If this entry is of type "seriesascollection", then cite the series (and number), followed by any cited page numbers
     \doif {\btxflush{type}} {seriesascollection} {
+      \def\btxsblvolumebeforeloctext{yes}
       \texdefinition{btx:sbl:inlinelong:seriesxref}
-      \doifnot {\currentbtxloctext} {\empty} {
-        \removeunwantedspaces
-        \removepunctuation
-        \btxcolon
-        \removeunwantedspaces
-        \texdefinition{btx:sbl:inlineshort:loctext}
-      }
     }
     % If this entry is of type "useseriesshorthand", then cite the shorthand of its series (without series and entry numbers) as its shorthand, followed by any cited page numbers
     \doif {\btxflush{type}}{useseriesshorthand} {
+      \def\btxsblshorthandbeforeloctext{yes}
       % Is this a cross-reference to a separate entry for the series?
       \doifelse {\btxfoundname{series}} {seriesxref} {
         % If so, then recursively cite the shorthand for the series
         \def\seriesxreftag{\btxflush{series}}
         \textcite[alternative=inlineshort][\seriesxreftag]
-        \btxspace
+        \btxcomma
       } {
         % Otherwise, this field just contains the series shorthand or name; print it with the appropriate formatting
         \btxstartstyleandcolor[sbl:\s!list:title:series]
@@ -5275,7 +5895,6 @@
         \btxstopstyleandcolor
         \btxcomma
       }
-      \texdefinition{btx:sbl:inlineshort:loctext}
     }
     % Otherwise, proceed normally
     \doifnotinset{\btxflush{type}}{seriesascollection, useseriesshorthand} {
@@ -5285,74 +5904,57 @@
         % otherwise, use the shorthand of the set containing it, if there is one;
         % otherwise, use its title
         \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
+          \def\btxsblshorthandbeforeloctext{yes}
           \texdefinition{btx:sbl:inlineshort:shorthand}
-          \texdefinition{btx:sbl:inlineshort:loctext}
         } {
           \btxdoifelse{crossref} {
-            \begingroup
             \def\crossreftag{\btxflush{crossref}}
+            \def\btxsblvolumebeforeloctext{yes}
             \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
-              % If the set containing this entry has a shorthand, then cite it
+              % If the set containing this entry has a shorthand, then cite it, followed by the volume and part of this entry
               \textcite[alternative=inlineshort][\crossreftag]
-              \btxcomma
-              % If there are any cited page numbers, then prefix them with the volume and part of this entry
-              \doifnot {\currentbtxloctext} {\empty} {
+              \btxspace
+              \btxflush{volume}
+              \btxdoif{part} {
+                \btxperiod
                 \removeunwantedspaces
-                \removepunctuation
-                \btxspace
-                \btxflush{volume}
-                \btxdoif{part} {
-                  \btxperiod
-                  \removeunwantedspaces
-                  \btxflush{part}
-                }
-                \btxcolon
-                \removeunwantedspaces
-                \texdefinition{btx:sbl:inlineshort:loctext}
+                \btxflush{part}
               }
+              \btxcomma
             } {
               % Only cite the author if the useauthor option is set
               \doif {\btxparameter{useauthor}} {\v!yes} {
                 \texdefinition{btx:sbl:inlineshort:author}
               }
               \texdefinition{btx:sbl:inlineshort:title}
-              \texdefinition{btx:sbl:inlineshort:loctext}
             }
-            \endgroup
           } {
             % Only cite the author if the useauthor option is set
             \doif {\btxparameter{useauthor}} {\v!yes} {
               \texdefinition{btx:sbl:inlineshort:author}
             }
             \texdefinition{btx:sbl:inlineshort:title}
-            \texdefinition{btx:sbl:inlineshort:loctext}
           }
         }
       } {
-        % If not, then it is part of a multivolume set; do a short citation of the set
-        \begingroup
+        % If not, then it is part of a multivolume set; do a short citation of the set followed by the volume and part of this entry
         \def\crossreftag{\btxflush{crossref}}
+        \def\btxsblvolumebeforeloctext{yes}
         \textcite[alternative=inlineshort][\crossreftag]
         \btxcomma
-        % If there are any cited page numbers, then prefix them with the volume and part of this entry
-        \doifnot {\currentbtxloctext} {\empty} {
-          % If the set has a shorthand, then remove the preceding comma
-          \clf_btxdoif{\currentbtxdataset}{\crossreftag}{shorthand} {
-            \removeunwantedspaces
-            \removepunctuation
-            \btxspace
-          }
-          \btxflush{volume}% required field for incollection
-          \btxdoif{part} {
-            \btxperiod
-            \removeunwantedspaces
-            \btxflush{part}
-          }
-          \btxcolon
+        % If the set has a shorthand, then remove the preceding comma
+        \clf_btxdoif{\currentbtxdataset}{\crossreftag}{shorthand} {
           \removeunwantedspaces
-          \texdefinition{btx:sbl:inlineshort:loctext}
+          \removepunctuation
+          \btxspace
         }
-        \endgroup
+        \btxflush{volume}
+        \btxdoif{part} {
+          \btxperiod
+          \removeunwantedspaces
+          \btxflush{part}
+        }
+        \btxcomma
       }
     }
   } {
@@ -5363,77 +5965,55 @@
       % otherwise, use the shorthand of the set containing it, if there is one;
       % otherwise, use its title
       \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
+        \def\btxsblshorthandbeforeloctext{yes}
         \texdefinition{btx:sbl:inlineshort:shorthand}
-        \texdefinition{btx:sbl:inlineshort:loctext}
       } {
         \btxdoifelse{crossref} {
-          \begingroup
           \def\crossreftag{\btxflush{crossref}}
           \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
+            \def\btxsblvolumebeforeloctext{yes}
             % If the set containing this entry has a shorthand, then cite it
             \textcite[alternative=inlineshort][\crossreftag]
-            \btxcomma
-            % If there are any cited page numbers, then prefix them with the volume and part of this entry
-            \doifnot {\currentbtxloctext} {\empty} {
+            \btxspace
+            \btxflush{volume}
+            \btxdoif{part} {
+              \btxperiod
               \removeunwantedspaces
-              \removepunctuation
-              \btxspace
-              \btxflush{volume}
-              \btxdoif{part} {
-                \btxperiod
-                \removeunwantedspaces
-                \btxflush{part}
-              }
-              \btxcolon
-              \removeunwantedspaces
-              \texdefinition{btx:sbl:inlineshort:loctext}
+              \btxflush{part}
             }
+            \btxcomma
           } {
             % Only cite the author if the useauthor option is set
             \doif {\btxparameter{useauthor}} {\v!yes} {
               \texdefinition{btx:sbl:inlineshort:author}
             }
             \texdefinition{btx:sbl:inlineshort:title}
-            \texdefinition{btx:sbl:inlineshort:loctext}
           }
-          \endgroup
         } {
           % Only cite the author if the useauthor option is set
           \doif {\btxparameter{useauthor}} {\v!yes} {
             \texdefinition{btx:sbl:inlineshort:author}
           }
           \texdefinition{btx:sbl:inlineshort:title}
-          \btxcomma
-          \currentbtxloctext
         }
       }
     } {
-      % If not, then it is part of a multivolume set; do a short citation of the set
-      \begingroup
+      % If not, then it is part of a multivolume set; do a short citation of the set followed by the volume and part of this entry
+      \def\btxsblvolumebeforeloctext{yes}
       \def\crossreftag{\btxflush{crossref}}
       \textcite[alternative=inlineshort][\crossreftag]
-      \btxcomma
-      % If there are any cited page numbers, then prefix them with the volume and part of this entry
-      \doifnot {\currentbtxloctext} {\empty} {
-        % If the set has a shorthand, then remove the preceding comma
-        \clf_btxdoif{\currentbtxdataset}{\crossreftag}{shorthand} {
-          \removeunwantedspaces
-          \removepunctuation
-          \btxspace
-        }
-        \btxflush{volume}% required field for incollection
-        \btxdoif{part} {
-          \btxperiod
-          \removeunwantedspaces
-          \btxflush{part}
-        }
-        \btxcolon
+      \btxspace
+      \btxflush{volume}
+      \btxdoif{part} {
+        \btxperiod
         \removeunwantedspaces
-        \texdefinition{btx:sbl:inlineshort:loctext}
+        \btxflush{part}
       }
-      \endgroup
+      \btxcomma
     }
   }
+  \texdefinition{btx:sbl:inlineshort:loctext}
+  \endgroup
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
@@ -5455,15 +6035,11 @@
 \stopsetups
 
 \startsetups btx:sbl:inlineshort:inbook
-  \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
-    \texdefinition{btx:sbl:inlineshort:shorthand}
-  } {
-    % Only cite the author if the useauthor option is set
-    \doif {\btxparameter{useauthor}} {\v!yes} {
-      \texdefinition{btx:sbl:inlineshort:author}
-    }
-    \texdefinition{btx:sbl:inlineshort:title}
+  % Only cite the author if the useauthor option is set
+  \doif {\btxparameter{useauthor}} {\v!yes} {
+    \texdefinition{btx:sbl:inlineshort:author}
   }
+  \texdefinition{btx:sbl:inlineshort:title}
   \texdefinition{btx:sbl:inlineshort:loctext}
   \removeunwantedspaces
   \removepunctuation
@@ -5474,26 +6050,54 @@
   \doif {\btxparameter{useauthor}} {\v!yes} {
     \texdefinition{btx:sbl:inlineshort:author}
   }
-  % If this is part of a multivolume reference with a shorthand, 
-  % then print that shorthand instead of this entry's title
+  \begingroup
+  % This entry should be contained in a reference book,
+  % but if it isn't, then just print its title
   \btxdoifelse{crossref} {
-    \begingroup
+    % Does the book containing this entry belong to a multivolume set?
     \def\crossreftag{\btxflush{crossref}}
     \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{crossref} {
+      % If so, does the multivolume set have a shorthand?
       \def\collectiontag{\clf_btxdirect{\currentbtxdataset}{\crossreftag}{crossref}}
       \clf_btxdoifelse{\currentbtxdataset}{\collectiontag}{shorthand} {
-        \texdefinition{btx:sbl:inlineshort:inreferencecrossref}
+        % If so, then print the shorthand followed by the volume number (and any part numbers)
+        \def\btxsblvolumebeforeloctext{yes}
+        \texdefinition{btx:sbl:inlineshort:inbookcrossref}
       } {
-        \texdefinition{btx:sbl:inlineshort:title}
+        % If not, does the book containing this entry have a shorthand?
+        \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
+          % If so, then print the shorthand followed by any part numbers
+          \btxdoifelse {part} {
+            \def\btxsblvolumebeforeloctext{yes}
+          } {
+            \def\btxsblshorthandbeforeloctext{yes}
+          }
+          \texdefinition{btx:sbl:inlineshort:inbookcrossref}
+        } {
+          % If not, then just print the title of this entry
+          \texdefinition{btx:sbl:inlineshort:title}
+        }
       }
     } {
-      \texdefinition{btx:sbl:inlineshort:title}
+      % If not, does the book containing this entry have a shorthand?
+      \clf_btxdoifelse{\currentbtxdataset}{\crossreftag}{shorthand} {
+        % If so, then print the shorthand followed by any part numbers
+        \btxdoifelse {part} {
+          \def\btxsblvolumebeforeloctext{yes}
+        } {
+          \def\btxsblshorthandbeforeloctext{yes}
+        }
+        \texdefinition{btx:sbl:inlineshort:inbookcrossref}
+      } {
+        % If not, then just print the title of this entry
+        \texdefinition{btx:sbl:inlineshort:title}
+      }
     }
-    \endgroup
   } {
     \texdefinition{btx:sbl:inlineshort:title}
   }
   \texdefinition{btx:sbl:inlineshort:loctext}
+  \endgroup
   \removeunwantedspaces
   \removepunctuation
 \stopsetups
@@ -5519,8 +6123,8 @@
 
 \startsetups btx:sbl:inlineshort:ancienttext
   \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
-    \texdefinition{btx:sbl:inlineshort:shorthand}
-    \texdefinition{btx:sbl:inlineshort:ancienttextcrossref}
+    \texdefinition{btx:sbl:inlineshort:shorthand} % currentbtxaltloctext is handled in here
+    \texdefinition{btx:sbl:inlineshort:ancienttextcrossref} % currentbtxloctext is handled in here
   } {
     % Only cite the author if the useauthor option is set
     \doif {\btxparameter{useauthor}} {\v!yes} {
@@ -5540,16 +6144,17 @@
 \startsetups btx:sbl:inlineshort:classictext
   \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
     \texdefinition{btx:sbl:inlineshort:shorthand}
-    \doifnot {\currentbtxlefttext} {\empty} {
-      \removeunwantedspaces
-      \removepunctuation
-      \btxspace
-      \texdefinition{btx:sbl:inlineshort:lefttext}
-    }
+    \texdefinition{btx:sbl:inlineshort:altloctext}
   } {
     % Only cite the author if the useauthor option is set
     \doif {\btxparameter{useauthor}} {\v!yes} {
-      \texdefinition{btx:sbl:inlineshort:author}
+      % A classictext may not have an author, 
+      % so be sure not to use one inherited from a cross-referenced source
+      % TODO: This would mess up entries that correctly list the classical author as the author of both the individual text and the volume;
+      % the correct way to solve this is to have inherited field mappings properly implemented.
+      \texdefinition{btx:sbl:doifownfield} {author} {
+        \texdefinition{btx:sbl:inlineshort:author}
+      }
     }
     \texdefinition{btx:sbl:inlineshort:classictexttitle} % currentbtxaltloctext is handled in here
     \texdefinition{btx:sbl:inlineshort:classictextcrossref} % currentbtxloctext is handled in here
@@ -5644,6 +6249,8 @@
   \begingroup
   \def\currentbtxcitealternative{inlinelong}
   \def\currentbtxcategory{\btxfield{category}}
+  \def\currentbtxloctext{\btxparameter{loctext}}
+  \def\currentbtxaltloctext{\btxparameter{altloctext}}
   \fastsetup{btx:sbl:inlinelong:\currentbtxcategory}
   \endgroup
 \stopsetups
@@ -5653,27 +6260,24 @@
   \begingroup
   \def\currentbtxcitealternative{inlineshort}
   \def\currentbtxcategory{\btxfield{category}}
+  \def\currentbtxloctext{\btxparameter{loctext}}
+  \def\currentbtxaltloctext{\btxparameter{altloctext}}
   % If this entry has its own shorthand, then add it to the abbreviations list
-  \texdefinition{btx:sbl:doifownfieldelse} {shorthand} {
+  \texdefinition{btx:sbl:doifownfield} {shorthand} {
     % If the shorthand matches the shorttitle, then use the titleauthor option for the long-form citation;
     % otherwise, use the standard list entry variant.
     % NB: Alternate abbreviation lists (e.g., a separate one for the bibliography, or individual ones for journals, series, books, etc.)
     % could be used based on user settings if we replace "abbreviation" below with the appropriate name
     \doifelse {\btxflush{shorthand}} {\btxflush{shorttitle}} {
-      %\expanded{\definesynonym[yes][abbreviation][\currentbtxtag]{\fastsetup{btx:sbl:cite:shorthand}}{\fastsetup{btx:sbl:cite:entry}}}
+      %\expanded{\definesynonym[yes][abbreviation][\currentbtxtag]{\fastsetup{btx:sbl:cite:shorthand}}{\fastsetup{btx:sbl:cite:entry}\removepunctuation}}
       \expanded{\definesynonym[yes][abbreviation][\currentbtxtag]{\textcite[alternative=shorthand][\currentbtxtag]}{\textcite[alternative=entry,usecrossref=no,titleauthor=yes][\currentbtxtag]\removeunwantedspaces\removepunctuation}}
     } {
       %\expanded{\definesynonym[yes][abbreviation][\currentbtxtag]{\fastsetup{btx:sbl:cite:shorthand}}{\fastsetup{btx:sbl:cite:entry}\removepunctuation}}
       \expanded{\definesynonym[yes][abbreviation][\currentbtxtag]{\textcite[alternative=shorthand][\currentbtxtag]}{\textcite[alternative=entry,usecrossref=no,titleauthor=no][\currentbtxtag]\removeunwantedspaces\removepunctuation}}
     }
-    \inshort{\currentbtxtag}
-    \btxcomma
-    \texdefinition{btx:sbl:inlineshort:loctext}
-    \removeunwantedspaces
-    \removepunctuation
-  } {
-    \fastsetup{btx:sbl:inlineshort:\currentbtxcategory}
+    \registersynonym[abbreviation][\currentbtxtag]% register as being printed in text, but don't print (we'll do that separately next)
   }
+  \fastsetup{btx:sbl:inlineshort:\currentbtxcategory}
   \endgroup
 \stopsetups
 
@@ -5683,15 +6287,30 @@
 % For this reason, it should be the entry point for most biblatex-style citation macros (\autocite, \parencite, \footcite, \inlinecite)
 \startsetups btx:sbl:cite:inline
   \fastsetup{\s!btx:\s!cite:concat}
-  \fastsetup{\s!btx:\s!cite:lefttext}
+  \doifnot{\currentbtxlefttext}{\empty} {
+    \fastsetup{\s!btx:\s!cite:lefttext}
+    \btxspace
+  }
   \begingroup
   \def\currentbtxcitealternative{inline}
   \def\currentbtxcategory{\btxfield{category}}
+  \def\currentbtxloctext{\btxparameter{loctext}}
+  \def\currentbtxaltloctext{\btxparameter{altloctext}}
   % If the useibid option is set and this entry matches the last one cited, then just print "ibid.", followed by any cited passages and page numbers
   \texdefinition{btx:sbl:doifibidelse} {\currentbtxtag} {
     \btxlabeltext{sbl:ibid}
     \btxcomma
-    \texdefinition{btx:sbl:inlineshort:loctext}
+    \doifelse {\currentbtxaltloctext} {\empty} {
+      \texdefinition{btx:sbl:inlineshort:loctext}
+    } {
+      \texdefinition{btx:sbl:inlineshort:altloctext}
+      \removeunwantedspaces
+      \removepunctuation
+      \btxspace
+      \startparen
+        \currentbtxloctext %don't redefine \loc to remove any preceding punctuation in this case
+      \stopparen
+    }
     \removeunwantedspaces
     \removepunctuation
   } {
@@ -5710,12 +6329,13 @@
         \texdefinition{btx:sbl:doifownfieldelse} {type} {
           % If this entry is of type "useseriesshorthand", then cite the shorthand of its series (without series and entry numbers) as its shorthand, followed by any cited page numbers
           \doif{\btxflush{type}}{useseriesshorthand} {
+            \def\btxsblshorthandbeforeloctext{yes}
             % Is this a cross-reference to a separate entry for the series?
             \doifelse {\btxfoundname{series}} {seriesxref} {
               % If so, then recursively cite the shorthand for the series
               \def\seriesxreftag{\btxflush{series}}
               \textcite[alternative=inlineshort][\seriesxreftag]
-              \btxspace
+              \btxcomma
             } {
               % Otherwise, this field just contains the series shorthand or name; print it with the appropriate formatting
               \btxstartstyleandcolor[sbl:\s!list:title:series]
@@ -5743,10 +6363,13 @@
   \endgroup
   \removeunwantedspaces
   \removepunctuation
+  \doifnot{\currentbtxrighttext}{\empty} {
+    \btxspace %TODO: if currentbtxrighttext begins with a punctuation mark, then no space is needed
+    \fastsetup{\s!btx:\s!cite:righttext}
+  }
   \doifnot{\btxparameter{punct}}{\empty} {
     \btxparameter{punct}
   }
-  \fastsetup{\s!btx:\s!cite:righttext}
   % Finally, update the global variable for the previous inline citation
   % TODO: remove this after general ibid and idem tracking helpers have been written
   \setxvariables[btx:sbl][previousinlinetag=\currentbtxtag]
@@ -5769,7 +6392,7 @@
   \removeunwantedspaces
   \doifinstring{\btxparameter{punct}}{\btxparameter{autopunctuation}}{\btxparameter{punct}}
   \startfootnote
-    \fastsetup{btx:sbl:cite:inline}
+    \Word{\fastsetup{btx:sbl:cite:inline}} % capitalize the first word in the footnote (needed to render "Ibid." and "Idem" correctly)
     \removeunwantedspaces
     \removepunctuation
     \btxperiod
@@ -5792,6 +6415,8 @@
   \begingroup
   \def\currentbtxcitealternative{short}
   \def\currentbtxcategory{\btxfield{category}}
+  \def\currentbtxloctext{\btxparameter{loctext}}
+  \def\currentbtxaltloctext{\btxparameter{altloctext}}
   \texdefinition{btx:sbl:inlineshort:shorthand}
   \endgroup
   \removeunwantedspaces
@@ -5823,81 +6448,129 @@
 % Define more concise biblatex-style citation commands
 
 % default alternative citation
-\def\autocite{\dodoubleempty\doautocite}
-\def\doautocite[#1][#2]#3#4{%
-  \ifsecondargument
-    % if there are two optional arguments,
-    % then assume the first is the prenote and the second is the postnote
-    \cite[lefttext={#1},righttext={#2},punct={#4}][#3]%
+\def\autocite{\doquadrupleempty\doautocite}
+\def\doautocite[#1][#2][#3][#4]#5#6{%
+  \iffourthargument
+    % if there are four optional arguments,
+    % then assume that they are the prenote, the alternate locator, the locator, and the postnote, respectively
+    \cite[lefttext={#1},altloctext={#2},loctext={#3},righttext={#4},punct={#6}][#5]%
   \else
-    \iffirstargument
-      % if there is only one optional argument,
-      % then assume it is a postnote
-      \cite[righttext={#1},punct={#4}][#3]%
+    \ifthirdargument
+      % if there are three optional arguments,
+      % then assume that they are the alternate locator, the locator, and the postnote, respectively
+      \cite[altloctext={#1},loctext={#2},righttext={#3},punct={#6}][#5]%
     \else
-      % if there are no optional arguments,
-      % then just cite the entry by itself
-      \cite[punct={#4}][#3]%
+      \ifsecondargument
+        % if there are two optional arguments,
+        % then assume that they are the the locator and the postnote respectively
+        \cite[loctext={#1},righttext={#2},punct={#6}][#5]%
+      \else
+        \iffirstargument
+          % if there is only one optional argument,
+          % then assume it is the postnote
+          \cite[righttext={#1},punct={#6}][#5]%
+        \else
+          % if there are no optional arguments,
+          % then just cite the entry by itself
+          \cite[punct={#6}][#5]%
+        \fi
+      \fi
     \fi
   \fi
 }
 
 % inline citation (biblatex uses \textcite, but that is reserved for a different function in publ-ini.mkiv)
-\def\inlinecite{\dodoubleempty\doinlinecite}
-\def\doinlinecite[#1][#2]#3#4{%
-  \ifsecondargument
-    % if there are two optional arguments,
-    % then assume the first is the prenote and the second is the postnote
-    \cite[alternative=inline,lefttext={#1},righttext={#2},punct={#4}][#3]%
+\def\inlinecite{\doquadrupleempty\doinlinecite}
+\def\doinlinecite[#1][#2][#3][#4]#5#6{%
+  \iffourthargument
+    % if there are four optional arguments,
+    % then assume that they are the prenote, the alternate locator, the locator, and the postnote, respectively
+    \cite[alternative=inline,lefttext={#1},altloctext={#2},loctext={#3},righttext={#4},punct={#6}][#5]%
   \else
-    \iffirstargument
-      % if there is only one optional argument,
-      % then assume it is a postnote
-      \cite[alternative=inline,righttext={#1},punct={#4}][#3]%
+    \ifthirdargument
+      % if there are three optional arguments,
+      % then assume that they are the alternate locator, the locator, and the postnote, respectively
+      \cite[alternative=inline,altloctext={#1},loctext={#2},righttext={#3},punct={#6}][#5]%
     \else
-      % if there are no optional arguments,
-      % then just cite the entry by itself
-      \cite[alternative=inline,punct={#4}][#3]%
+      \ifsecondargument
+        % if there are two optional arguments,
+        % then assume that they are the the locator and the postnote respectively
+        \cite[alternative=inline,loctext={#1},righttext={#2},punct={#6}][#5]%
+      \else
+        \iffirstargument
+          % if there is only one optional argument,
+          % then assume it is the postnote
+          \cite[alternative=inline,righttext={#1},punct={#6}][#5]%
+        \else
+          % if there are no optional arguments,
+          % then just cite the entry by itself
+          \cite[alternative=inline,punct={#6}][#5]%
+        \fi
+      \fi
     \fi
   \fi
 }
 
 % parenthetical citation
-\unexpanded\def\parencite{\dodoubleempty\doparencite}
-\unexpanded\def\doparencite[#1][#2]#3#4{%
-  \ifsecondargument
-    % if there are two optional arguments,
-    % then assume the first is the prenote and the second is the postnote
-    \cite[alternative=paren,lefttext={#1},righttext={#2},punct={#4}][#3]%
+\def\parencite{\doquadrupleempty\doparencite}
+\def\doparencite[#1][#2][#3][#4]#5#6{%
+  \iffourthargument
+    % if there are four optional arguments,
+    % then assume that they are the prenote, the alternate locator, the locator, and the postnote, respectively
+    \cite[alternative=paren,lefttext={#1},altloctext={#2},loctext={#3},righttext={#4},punct={#6}][#5]%
   \else
-    \iffirstargument
-      % if there is only one optional argument,
-      % then assume it is a postnote
-      \cite[alternative=paren,righttext={#1},punct={#4}][#3]%
+    \ifthirdargument
+      % if there are three optional arguments,
+      % then assume that they are the alternate locator, the locator, and the postnote, respectively
+      \cite[alternative=paren,altloctext={#1},loctext={#2},righttext={#3},punct={#6}][#5]%
     \else
-      % if there are no optional arguments,
-      % then just cite the entry by itself
-      \cite[alternative=paren,punct={#4}][#3]%
+      \ifsecondargument
+        % if there are two optional arguments,
+        % then assume that they are the the locator and the postnote respectively
+        \cite[alternative=paren,loctext={#1},righttext={#2},punct={#6}][#5]%
+      \else
+        \iffirstargument
+          % if there is only one optional argument,
+          % then assume it is the postnote
+          \cite[alternative=paren,righttext={#1},punct={#6}][#5]%
+        \else
+          % if there are no optional arguments,
+          % then just cite the entry by itself
+          \cite[alternative=paren,punct={#6}][#5]%
+        \fi
+      \fi
     \fi
   \fi
 }
 
 % footnote citation
-\def\footcite{\dodoubleempty\dofootcite}
-\def\dofootcite[#1][#2]#3#4{%
-  \ifsecondargument
-    % if there are two optional arguments,
-    % then assume the first is the prenote and the second is the postnote
-    \cite[alternative=footnote,lefttext={#1},righttext={#2},punct={#4}][#3]%
+\def\footcite{\doquadrupleempty\dofootcite}
+\def\dofootcite[#1][#2][#3][#4]#5#6{%
+  \iffourthargument
+    % if there are four optional arguments,
+    % then assume that they are the prenote, the alternate locator, the locator, and the postnote, respectively
+    \cite[alternative=footnote,lefttext={#1},altloctext={#2},loctext={#3},righttext={#4},punct={#6}][#5]%
   \else
-    \iffirstargument
-      % if there is only one optional argument,
-      % then assume it is a postnote
-      \cite[alternative=footnote,righttext={#1},punct={#4}][#3]%
+    \ifthirdargument
+      % if there are three optional arguments,
+      % then assume that they are the alternate locator, the locator, and the postnote, respectively
+      \cite[alternative=footnote,altloctext={#1},loctext={#2},righttext={#3},punct={#6}][#5]%
     \else
-      % if there are no optional arguments,
-      % then just cite the entry by itself
-      \cite[alternative=footnote,punct={#4}][#3]%
+      \ifsecondargument
+        % if there are two optional arguments,
+        % then assume that they are the the locator and the postnote respectively
+        \cite[alternative=footnote,loctext={#1},righttext={#2},punct={#6}][#5]%
+      \else
+        \iffirstargument
+          % if there is only one optional argument,
+          % then assume it is the postnote
+          \cite[alternative=footnote,righttext={#1},punct={#6}][#5]%
+        \else
+          % if there are no optional arguments,
+          % then just cite the entry by itself
+          \cite[alternative=footnote,punct={#6}][#5]%
+        \fi
+      \fi
     \fi
   \fi
 }
