@@ -113,7 +113,7 @@ The SBL rendering also includes support for page number and other references spe
 
 \autocite[{\loc[sv={\quotation{ἐνθύημα}, \quotation{λεαίνω}}]}][]{LEH}
 
-\autocite[See][][p=8][; but there are also contradictory statements, e.g. \loc[p=12].]{Doe:Title} % locators can also be invoked in the lefttext or righttext
+\autocite[See][][p=8][\btxcomma but there are also contradictory statements, e.g. \loc[p=12].]{Doe:Title} % locators can also be invoked in the lefttext or righttext; note, however, that \btxcomma must be used in place of the usual comma (otherwise ConTeXt will parse the bracketed argument incorrectly)
 ```
 
 ### Other Options

@@ -890,6 +890,48 @@
     end
   end
 
+  function sbl.startswithpunct(str)
+    if string.match(str, "^[%.%?,;:!]") then
+      return(true)
+    end
+    return(false)
+  end
+
+  function sbl.doifstartswithpunct(str, ifyes)
+    if sbl.startswithpunct(str) then
+      context(ifyes)
+    end
+  end
+
+  function sbl.doifstartswithpunctelse(str, ifyes, ifno)
+    if sbl.startswithpunct(str) then
+      context(ifyes)
+    else
+      context(ifno)
+    end
+  end
+
+  function sbl.endswithpunct(str)
+    if string.match(str, "[%.%?,;:!]$") then
+      return(true)
+    end
+    return(false)
+  end
+
+  function sbl.doifendswithpunct(str, ifyes)
+    if sbl.endswithpunct(str) then
+      context(ifyes)
+    end
+  end
+
+  function sbl.doifendswithpunctelse(str, ifyes, ifno)
+    if sbl.endswithpunct(str) then
+      context(ifyes)
+    else
+      context(ifno)
+    end
+  end
+
   function sbl.ispagerange(str)
     -- a page citation may consist of several page ranges separated by commas (and whitespace)
     if string.count(str, ",%s*") > 0 then
@@ -1209,6 +1251,10 @@
 \def\btx_sbl_doifhasnumericsuffixelse#1#2#3{\ctxlua{publications.btx.sbl.doifhasnumericsuffixelse([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifhasvolumepartprefix#1#2{\ctxlua{publications.btx.sbl.doifhasvolumepartprefix([==[#1]==],[==[#2]==])}}
 \def\btx_sbl_doifhasvolumepartprefixelse#1#2#3{\ctxlua{publications.btx.sbl.doifhasvolumepartprefixelse([==[#1]==],[==[#2]==],[==[#3]==])}}
+\def\btx_sbl_doifstartswithpunct#1#2{\ctxlua{publications.btx.sbl.doifstartswithpunct([==[#1]==],[==[#2]==])}}
+\def\btx_sbl_doifstartswithpunctelse#1#2#3{\ctxlua{publications.btx.sbl.doifstartswithpunctelse([==[#1]==],[==[#2]==],[==[#3]==])}}
+\def\btx_sbl_doifendswithpunct#1#2{\ctxlua{publications.btx.sbl.doifendswithpunct([==[#1]==],[==[#2]==])}}
+\def\btx_sbl_doifendswithpunctelse#1#2#3{\ctxlua{publications.btx.sbl.doifendswithpunctelse([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_doifpagerange#1#2{\ctxlua{publications.btx.sbl.doifpagerange([==[#1]==],[==[#2]==])}}
 \def\btx_sbl_doifpagerangeelse#1#2#3{\ctxlua{publications.btx.sbl.doifpagerangeelse([==[#1]==],[==[#2]==],[==[#3]==])}}
 \def\btx_sbl_ordinal#1{\ctxlua{publications.btx.sbl.ordinal([==[#1]==])}}
@@ -6231,17 +6277,43 @@
 % Cite alternative setups
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Lefttext citation setup
+\startsetups btx:sbl:cite:lefttext {
+  \doifnot{\currentbtxlefttext} {\empty} {
+    \currentbtxlefttext
+    % Remove any trailing space and replace it with a single space
+    \removeunwantedspaces
+    \btxspace
+  }
+}
+\stopsetups
+
+% Righttext citation setup
+\startsetups btx:sbl:cite:righttext {
+  \doifnot{\currentbtxrighttext} {\empty} {
+    % If the righttext starts with a punctuation mark, then remove any preceding space before typesetting it
+    \btx_sbl_doifstartswithpunctelse{\currentbtxrighttext} {
+      \removeunwantedspaces
+    } {
+      \removeunwantedspaces
+      \btxspace
+    }
+    \currentbtxrighttext
+  }
+}
+\stopsetups
+
 % List citation setup
 \startsetups btx:sbl:cite:entry
   \fastsetup{\s!btx:\s!cite:concat}
-  \fastsetup{\s!btx:\s!cite:lefttext}
+  \fastsetup{btx:sbl:cite:lefttext}
   \begingroup
   % Reset variables for new citation
   \def\currentbtxcitealternative{list}
   \def\currentbtxcategory{\btxfield{category}}
   \btxhandleciteentry
   \endgroup
-  \fastsetup{\s!btx:\s!cite:righttext}
+  \fastsetup{btx:sbl:cite:righttext}
 \stopsetups
 
 % Long-form inline citation setup
@@ -6287,11 +6359,9 @@
 % For this reason, it should be the entry point for most biblatex-style citation macros (\autocite, \parencite, \footcite, \inlinecite)
 \startsetups btx:sbl:cite:inline
   \fastsetup{\s!btx:\s!cite:concat}
-  \doifnot{\currentbtxlefttext}{\empty} {
-    \fastsetup{\s!btx:\s!cite:lefttext}
-    \btxspace
-  }
+  \fastsetup{btx:sbl:cite:lefttext}
   \begingroup
+  \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to any other setup
   \def\currentbtxcitealternative{inline}
   \def\currentbtxcategory{\btxfield{category}}
   \def\currentbtxloctext{\btxparameter{loctext}}
@@ -6363,10 +6433,7 @@
   \endgroup
   \removeunwantedspaces
   \removepunctuation
-  \doifnot{\currentbtxrighttext}{\empty} {
-    \btxspace %TODO: if currentbtxrighttext begins with a punctuation mark, then no space is needed
-    \fastsetup{\s!btx:\s!cite:righttext}
-  }
+  \fastsetup{btx:sbl:cite:righttext}
   \doifnot{\btxparameter{punct}}{\empty} {
     \btxparameter{punct}
   }
@@ -6377,11 +6444,14 @@
 
 % Inline parenthetical citation setup
 \startsetups btx:sbl:cite:paren
+  \begingroup
+  \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to the inline setup
   \startparen
     \fastsetup{btx:sbl:cite:inline}
     \removeunwantedspaces
     \removepunctuation
   \stopparen
+  \endgroup
   \doifnot{\btxparameter{punct}}{\empty} {
     \btxparameter{punct}
   }
@@ -6391,18 +6461,29 @@
 \startsetups btx:sbl:cite:footnote
   \removeunwantedspaces
   \doifinstring{\btxparameter{punct}}{\btxparameter{autopunctuation}}{\btxparameter{punct}}
+  \begingroup
+  \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to the inline setup
+  \let\doifendswithpunctelse\btx_sbl_doifendswithpunctelse % why is this necessary? For some reason, \btx_sbl_doifendswithpunctelse is not recognizd within the footnote environment...
   \startfootnote
-    \Word{\fastsetup{btx:sbl:cite:inline}} % capitalize the first word in the footnote (needed to render "Ibid." and "Idem" correctly)
-    \removeunwantedspaces
-    \removepunctuation
-    \btxperiod
+    \Word{\fastsetup{btx:sbl:cite:inline}}% capitalize the first word in the footnote (needed to render "Ibid." and "Idem" correctly)
+    % Add a closing period, unless the righttext ends with punctuation
+    \doifendswithpunctelse{\currentbtxrighttext} {
+      \removeunwantedspaces
+    } {
+      \removeunwantedspaces
+      \btxperiod
+    }
   \stopfootnote
+  \endgroup
   \doifnotinstring{\btxparameter{punct}}{\btxparameter{autopunctuation}}{\btxparameter{punct}}
 \stopsetups
 
 % Title citation setup
 \startsetups btx:sbl:cite:title
+  \begingroup
+  \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to any other setup
   \texdefinition{btx:sbl:inlinelong:title}
+  \endgroup
   \removeunwantedspaces
   \removepunctuation
   \doifnot{\btxparameter{punct}}{\empty} {
@@ -6413,6 +6494,7 @@
 % Shorthand citation setup
 \startsetups btx:sbl:cite:shorthand
   \begingroup
+  \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to any other setup
   \def\currentbtxcitealternative{short}
   \def\currentbtxcategory{\btxfield{category}}
   \def\currentbtxloctext{\btxparameter{loctext}}
@@ -6428,6 +6510,8 @@
 
 % Volume (and part) number citation setup
 \startsetups btx:sbl:cite:volume
+  \begingroup
+  \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to any other setup
   \btxdoif{volume} {
     \btxflush{volume}
     \removeunwantedspaces
@@ -6443,6 +6527,7 @@
     \removepunctuation
     \btxparameter{punct}
   }
+  \endgroup
 \stopsetups
 
 % Define more concise biblatex-style citation commands
