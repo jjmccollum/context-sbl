@@ -6437,9 +6437,8 @@
   \doifnot{\btxparameter{punct}}{\empty} {
     \btxparameter{punct}
   }
-  % Finally, update the global variable for the previous inline citation
-  % TODO: remove this after general ibid and idem tracking helpers have been written
-  \setxvariables[btx:sbl][previousinlinetag=\currentbtxtag]
+  % TODO: register this entry for ibid and idem tracking here, if this is not built into the \cite command
+  %\setxvariables[btx:sbl][previousinlinetag=\currentbtxtag]
 \stopsetups
 
 % Inline parenthetical citation setup

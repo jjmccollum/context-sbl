@@ -107,13 +107,13 @@ The SBL rendering also includes support for page number and other references spe
 
 \autocite[{obv. \loc[l={10--17}]}][{\loc[p={143--144}]}][]{ashurinscription} % "obv. lines 10–17" appears after the title of the ancient text, and "143–44" is cited as a page number in the book reproducing the text
 
-\autocite[See the discussion of ἐκρατοῦντο in][][{\loc[vol=2,p=271]}][]{Str-B}.
+\autocite[{See the discussion of ἐκρατοῦντο in}][][{\loc[vol=2,p=271]}][]{Str-B}.
 
 \autocite[{\loc[sec=6.2.1]}][]{SBLHS}
 
 \autocite[{\loc[sv={\quotation{ἐνθύημα}, \quotation{λεαίνω}}]}][]{LEH}
 
-\autocite[See][][p=8][\btxcomma but there are also contradictory statements, e.g. \loc[p=12].]{Doe:Title} % locators can also be invoked in the lefttext or righttext; note, however, that \btxcomma must be used in place of the usual comma (otherwise ConTeXt will parse the bracketed argument incorrectly)
+\autocite[{See}][][{\loc[p=8]}][{\btxcomma but there are also contradictory statements\btxcomma e.g. \loc[p=12].}]{Doe:Title} % locators can also be invoked in the lefttext or righttext; note, however, that \btxcomma must be used in place of the usual comma (otherwise ConTeXt will parse the bracketed argument incorrectly)
 ```
 
 ### Other Options
