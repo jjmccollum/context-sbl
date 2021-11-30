@@ -6279,8 +6279,8 @@
 
 % Lefttext citation setup
 \startsetups btx:sbl:cite:lefttext {
-  \doifnot{\currentbtxlefttext} {\empty} {
-    \currentbtxlefttext
+  \doifnot{\btxparameter{lefttext}} {\empty} {
+    \btxparameter{lefttext}
     % Remove any trailing space and replace it with a single space
     \removeunwantedspaces
     \btxspace
@@ -6290,15 +6290,15 @@
 
 % Righttext citation setup
 \startsetups btx:sbl:cite:righttext {
-  \doifnot{\currentbtxrighttext} {\empty} {
+  \doifnot{\btxparameter{righttext}} {\empty} {
     % If the righttext starts with a punctuation mark, then remove any preceding space before typesetting it
-    \btx_sbl_doifstartswithpunctelse{\currentbtxrighttext} {
+    \btx_sbl_doifstartswithpunctelse{\btxparameter{righttext}} {
       \removeunwantedspaces
     } {
       \removeunwantedspaces
       \btxspace
     }
-    \currentbtxrighttext
+    \btxparameter{righttext}
   }
 }
 \stopsetups
@@ -6466,7 +6466,7 @@
   \startfootnote
     \Word{\fastsetup{btx:sbl:cite:inline}}% capitalize the first word in the footnote (needed to render "Ibid." and "Idem" correctly)
     % Add a closing period, unless the righttext ends with punctuation
-    \doifendswithpunctelse{\currentbtxrighttext} {
+    \doifendswithpunctelse{\btxparameter{righttext}} {
       \removeunwantedspaces
     } {
       \removeunwantedspaces
