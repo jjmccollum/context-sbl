@@ -270,8 +270,7 @@ categories.book = {
         "origlocation", "origpublisher", "origdate",
         "location",
         "date",
-        "volume",
-        "part",
+        "volumeseries", "volume", "part",
         "crossref",
         "related", "relatedtype", -- (for things like "reprintof" and "translationof")
         "eprint",
@@ -319,6 +318,8 @@ categories.collection = {
         "origlocation", "origpublisher", "origdate",
         "location",
         "date",
+        "volumeseries", "volume", "part",
+        "crossref",
         "related", "relatedtype", -- (for things like "reprintof" and "translationof")
         "eprint",
         "doi",
@@ -354,6 +355,10 @@ categories.proceedings = {
         "origlocation", "origpublisher", "origdate",
         "location",
         "date",
+        "volumeseries", "volume", "part",
+        "crossref",
+        "related", "relatedtype", -- (for things like "reprintof" and "translationof")
+        "eprint",
         "doi", 
         "note",
     },

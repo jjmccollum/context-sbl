@@ -3785,6 +3785,11 @@
         }
       }
       \btxspace
+      % Is there a volume series number preceding the volume?
+      \btxdoif {volumeseries} {
+        \btxflush{volumeseries}
+        {/}
+      }
       \btxflush{volume}
       % Is there a part number subdividing the volume?
       \btxdoif {part} {
@@ -3853,6 +3858,11 @@
           \btxlabeltext{sbl:volumes}
         }
         \btxspace
+        % Is there a volume series number preceding the volume?
+        \btxdoif {volumeseries} {
+          \btxflush{volumeseries}
+          {/}
+        }
         \btxflush{volume}
         % Is there a part number subdividing the volume?
         \btxdoif {part} {
@@ -3890,8 +3900,8 @@
     } {
       \btxlabeltext{sbl:volumes}
     }
-    % If the volumes are subdivided by a specified number of parts,
-    % then print the number of parts, as well
+    % If the volumes are subdivided into a specified number of parts or series,
+    % then print the number of parts or series, as well
     \btxdoif {parts} {
       \btxspace
       \btxlabeltext{sbl:in}
@@ -5960,6 +5970,11 @@
               % If the set containing this entry has a shorthand, then cite it, followed by the volume and part of this entry
               \textcite[alternative=inlineshort][\crossreftag]
               \btxspace
+              % Is there a volume series number preceding the volume?
+              \btxdoif{volumeseries} {
+                \btxflush{volumeseries}
+                {/}
+              }
               \btxflush{volume}
               \btxdoif{part} {
                 \btxperiod
@@ -5994,6 +6009,11 @@
           \removepunctuation
           \btxspace
         }
+        % Is there a volume series number preceding the volume?
+        \btxdoif{volumeseries} {
+          \btxflush{volumeseries}
+          {/}
+        }
         \btxflush{volume}
         \btxdoif{part} {
           \btxperiod
@@ -6021,6 +6041,11 @@
             % If the set containing this entry has a shorthand, then cite it
             \textcite[alternative=inlineshort][\crossreftag]
             \btxspace
+            % Is there a volume series number preceding the volume?
+            \btxdoif{volumeseries} {
+              \btxflush{volumeseries}
+              {/}
+            }
             \btxflush{volume}
             \btxdoif{part} {
               \btxperiod
@@ -6049,6 +6074,11 @@
       \def\crossreftag{\btxflush{crossref}}
       \textcite[alternative=inlineshort][\crossreftag]
       \btxspace
+      % Is there a volume series number preceding the volume?
+      \btxdoif{volumeseries} {
+        \btxflush{volumeseries}
+        {/}
+      }
       \btxflush{volume}
       \btxdoif{part} {
         \btxperiod
@@ -6512,6 +6542,11 @@
   \begingroup
   \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to any other setup
   \btxdoif{volume} {
+    % Is there a volume series number preceding the volume?
+    \btxdoif{volumeseries} {
+      \btxflush{volumeseries}
+      {/}
+    }
     \btxflush{volume}
     \removeunwantedspaces
     \btxdoif{part} {
