@@ -870,7 +870,7 @@
   end
 
   function sbl.hasvolumepartprefix(str)
-    if string.match(str, "^%d+[%.:]") then
+    if string.match(str, "^%d+[%.:/]") then
       return(true)
     end
     return(false)
