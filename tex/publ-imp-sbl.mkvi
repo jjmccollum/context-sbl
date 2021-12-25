@@ -6492,14 +6492,11 @@
   \doifinstring{\btxparameter{punct}}{\btxparameter{autopunctuation}}{\btxparameter{punct}}
   \begingroup
   \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to the inline setup
-  \let\doifendswithpunctelse\btx_sbl_doifendswithpunctelse % why is this necessary? For some reason, \btx_sbl_doifendswithpunctelse is not recognizd within the footnote environment...
+  \let\doifendswithpunctelse\btx_sbl_doifendswithpunctelse % why is this necessary? For some reason, \btx_sbl_doifendswithpunctelse is not recognized within the footnote environment...
   \startfootnote
     \Word{\fastsetup{btx:sbl:cite:inline}}% capitalize the first word in the footnote (needed to render "Ibid." and "Idem" correctly)
-    % Add a closing period, unless the righttext ends with punctuation
-    \doifendswithpunctelse{\btxparameter{righttext}} {
-      \removeunwantedspaces
-    } {
-      \removeunwantedspaces
+    % Add a closing period if there is no righttext
+    \doif{\btxparameter{righttext}}{\empty} {
       \btxperiod
     }
   \stopfootnote
