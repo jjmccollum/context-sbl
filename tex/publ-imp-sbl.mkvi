@@ -291,6 +291,11 @@
   [sbl:\s!list:title:inbook]
 
 \definebtx
+  [sbl:\s!list:title:unpublished]
+  [sbl:\s!list:title]
+  [\c!command=\titlequote] % unpublished title is quoted and its first word is capitalized
+
+\definebtx
   [sbl:\s!list:title:thesis]
   [sbl:\s!list:title:unpublished]
 
@@ -301,11 +306,6 @@
 \definebtx
   [sbl:\s!list:title:phdthesis]
   [sbl:\s!list:title:thesis]
-
-\definebtx
-  [sbl:\s!list:title:unpublished]
-  [sbl:\s!list:title]
-  [\c!command=\titlequote] % unpublished title is quoted and its first word is capitalized
 
 \definebtx
   [sbl:\s!list:title:online]
@@ -6488,8 +6488,8 @@
 
 % Inline footnote citation setup (with intelligent trailing punctuation replacement)
 \startsetups btx:sbl:cite:footnote
-  \removeunwantedspaces
-  \doifinstring{\btxparameter{punct}}{\btxparameter{autopunctuation}}{\btxparameter{punct}}
+  \removeunwantedspaces % remove preceding space
+  \doifinstring{\btxparameter{punct}}{\btxparameter{autopunctuation}}{\btxparameter{punct}} % for appropriate trailing punctuation, move it before the footnote instead
   \begingroup
   \letbtxparameter{punct}\empty % don't pass the trailing punctuation down to the inline setup
   \let\doifendswithpunctelse\btx_sbl_doifendswithpunctelse % why is this necessary? For some reason, \btx_sbl_doifendswithpunctelse is not recognized within the footnote environment...
